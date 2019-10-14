@@ -1,0 +1,160 @@
+import * as faker from 'faker';
+
+beforeEach(() => {
+  jest.resetModules();
+});
+
+const getConfig = () => require('../Configuration').default;
+
+test('can set LogGroup name from environment', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_LOG_GROUP_NAME = expectedValue;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.logGroupName;
+  expect(result).toBe(expectedValue);
+});
+
+test('can set LogStream name from environment', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_LOG_STREAM_NAME = expectedValue;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.logStreamName;
+  expect(result).toBe(expectedValue);
+});
+
+test('can enable debug logging from environment', () => {
+  // arrange
+  const expectedValue = true;
+  process.env.AWS_EMF_ENABLE_DEBUG_LOGGING = expectedValue.toString();
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.debuggingLoggingEnabled;
+  expect(result).toBe(expectedValue);
+});
+
+test('can set ServiceName from environment', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_SERVICE_NAME = expectedValue;
+  delete process.env.SERVICE_NAME;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.serviceName;
+  expect(result).toBe(expectedValue);
+});
+
+test('can set ServiceName from environment w/o prefix', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  delete process.env.AWS_EMF_SERVICE_NAME;
+  process.env.SERVICE_NAME = expectedValue;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.serviceName;
+  expect(result).toBe(expectedValue);
+});
+
+test('ServiceName w/ prefix takes precendence over w/o prefix', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_SERVICE_NAME = expectedValue;
+  process.env.SERVICE_NAME = faker.random.word();
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.serviceName;
+  expect(result).toBe(expectedValue);
+});
+
+test('can manually set ServiceName', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_SERVICE_NAME = faker.random.word();
+  process.env.SERVICE_NAME = faker.random.word();
+  const config = getConfig();
+
+  // act
+  config.serviceName = expectedValue;
+
+  // assert
+  const result = config.serviceName;
+  expect(result).toBe(expectedValue);
+});
+
+test('can set ServiceType from environment', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_SERVICE_TYPE = expectedValue;
+  delete process.env.SERVICE_TYPE;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.serviceType;
+  expect(result).toBe(expectedValue);
+});
+
+test('can set ServiceType from environment w/o prefix', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  delete process.env.AWS_EMF_SERVICE_TYPE;
+  process.env.SERVICE_TYPE = expectedValue;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.serviceType;
+  expect(result).toBe(expectedValue);
+});
+
+test('ServiceType w/ prefix takes precendence over w/o prefix', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_SERVICE_TYPE = expectedValue;
+  process.env.SERVICE_TYPE = faker.random.word();
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.serviceType;
+  expect(result).toBe(expectedValue);
+});
+
+test('can manually set ServiceType', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_SERVICE_TYPE = faker.random.word();
+  process.env.SERVICE_TYPE = faker.random.word();
+  const config = getConfig();
+
+  // act
+  config.serviceType = expectedValue;
+
+  // assert
+  const result = config.serviceType;
+  expect(result).toBe(expectedValue);
+});

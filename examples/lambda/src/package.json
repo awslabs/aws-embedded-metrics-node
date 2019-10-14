@@ -1,0 +1,17 @@
+{
+  "name": "aws-embedded-metrics-lambda-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-embedded-metrics": "https://d1nkmq72i65j7q.cloudfront.net/node/aws-embedded-metrics-0.1.0-beta.1569268006.tgz"
+  },
+  "volta": {
+    "node": "10.16.0"
+  }
+}

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2019 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { Constants } from '../Constants';
+import { MetricsContext } from '../logger/MetricsContext';
+import { ISerializer } from './Serializer';
+
+/**
+ * Serializes the provided context to the CWL Structured
+ * Logs format with Embedded Metric Filters.
+ */
+export class LogSerializer implements ISerializer {
+  /**
+   * Retrieve the current context as a JSON string
+   */
+  public serialize(context: MetricsContext): string {
+    const dimensionKeys: string[][] = [];
+    let dimensionProperties = {};
+
+    context.getDimensions().forEach(d => {
+      // we can only take the first 10 defined dimensions
+      // the reason we do this in the serializer is because
+      // it is possible that other sinks or formats can
+      // support more dimensions
+      // in the future it may make sense to introduce a higher-order
+      // representation for sink-specific validations
+      const keys = Object.keys(d).slice(0, Constants.MAX_DIMENSIONS);
+      dimensionKeys.push(keys);
+      dimensionProperties = { ...dimensionProperties, ...d };
+    });
+
+    const body: any = {
+      ...dimensionProperties,
+      ...context.properties,
+      CloudWatchMetrics: [
+        {
+          Dimensions: dimensionKeys,
+          Metrics: [],
+          Namespace: context.namespace,
+        },
+      ],
+      Version: '0',
+    };
+
+    for (const [key, metric] of context.metrics) {
+      body[key] = metric.value;
+      body.CloudWatchMetrics[0].Metrics.push({ Name: key, Unit: metric.unit });
+    }
+
+    return JSON.stringify(body);
+  }
+}
