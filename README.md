@@ -1,5 +1,7 @@
 # aws-embedded-metrics
 
+![](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiRWFRdGtyUGw4a0JyaUR3THF4cTZxU2J6aEE1RVJFdmpxcUk5ekFHdUwzMnJXa1dYRmpzKzBCZlBNMU41cVkwNTNsQjZieUVGc3FGbUw1eHovTERrMStVPSIsIml2UGFyYW1ldGVyU3BlYyI6IjFuQ0VXN2l4YnNVMVpYMHIiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+
 aws-embedded-metrics is a new package from AWS CloudWatch that allows you to generate CloudWatch Metrics from log data without requiring a control plane operation (e.g. PutMetricFilter). You are now able to embed metric filters (EMFs) inside structured Log Events that direct CloudWatch Logs to extract and publish metrics to CloudWatch Metrics.
 
 ## Use Cases

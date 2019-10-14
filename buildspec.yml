@@ -5,10 +5,9 @@ phases:
     runtime-versions:
       nodejs: 10
     commands:
-      - pwd && cd aws-embedded-metrics
       - npm install
   build:
     commands:
-      - pwd
       - npm run lint
       - npm run build
+      - npm test
