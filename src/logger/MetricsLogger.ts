@@ -13,13 +13,10 @@
  * limitations under the License.
  */
 
-import CloudWatch = require('aws-sdk/clients/cloudwatch');
 import Configuration from '../config/Configuration';
 import { EnvironmentProvider } from '../environment/EnvironmentDetector';
 import { IEnvironment } from '../environment/IEnvironment';
 import { MetricsContext } from './MetricsContext';
-
-type Unit = CloudWatch.StandardUnit;
 
 /**
  * An async metrics logger.
@@ -102,7 +99,7 @@ export class MetricsLogger {
    * @param value
    * @param unit
    */
-  public putMetric(key: string, value: number, unit?: Unit): MetricsLogger {
+  public putMetric(key: string, value: number, unit?: string): MetricsLogger {
     this.context.putMetric(key, value, unit);
     return this;
   }

@@ -39,9 +39,7 @@
   "files": [
     "lib/**/*"
   ],
-  "dependencies": {
-    "aws-sdk": "^2.478.0"
-  },
+  "dependencies": {},
   "volta": {
     "node": "10.16.0"
   }
