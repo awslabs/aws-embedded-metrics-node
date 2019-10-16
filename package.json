@@ -1,12 +1,14 @@
 {
   "name": "aws-embedded-metrics",
   "version": "0.1.0-beta.1569268006",
-  "description": "AWS Observability Metrics Package",
+  "description": "AWS Embedded Metrics Package",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "repository": {},
   "scripts": {
     "test": "jest --config jestconfig.json",
+    "integ": "./bin/run-integ-tests.sh",
+    "exec-integ": "jest --config jestconfig.integ.json",
     "watch": "npm run test -- --watch",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",

@@ -14,6 +14,7 @@
  */
 
 import { MetricsLogger } from '../logger/MetricsLogger';
+import { LOG } from '../utils/Logger';
 
 /**
  * The executor is responsible for:
@@ -29,7 +30,11 @@ const executor = async (operation: () => void, metrics: MetricsLogger) => {
   } catch (e) {
     exception = e;
   } finally {
-    metrics.flush();
+    try {
+      await metrics.flush();
+    } catch (e) {
+      LOG('Failed to flush metrics', e);
+    }
   }
 
   if (exception) {

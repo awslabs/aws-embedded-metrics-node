@@ -1,7 +1,3 @@
-import { DefaultEnvironment } from './DefaultEnvironment';
-import { IEnvironment } from './IEnvironment';
-import { LambdaEnvironment } from './LambdaEnvironment';
-
 /*
  * Copyright 2019 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
@@ -17,17 +13,40 @@ import { LambdaEnvironment } from './LambdaEnvironment';
  * limitations under the License.
  */
 
-const environments = [new LambdaEnvironment()];
+import { LOG } from '../utils/Logger';
+import { DefaultEnvironment } from './DefaultEnvironment';
+import { EC2Environment } from './EC2Environment';
+import { IEnvironment } from './IEnvironment';
+import { LambdaEnvironment } from './LambdaEnvironment';
 
-const detectEnvironment = (): IEnvironment => {
-  let environment = new DefaultEnvironment();
+type EnvironmentProvider = () => Promise<IEnvironment>;
+
+const environments = [new LambdaEnvironment(), new EC2Environment()];
+
+let environment: IEnvironment | undefined;
+
+const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+  if (environment) {
+    return environment;
+  }
+
   for (const envUnderTest of environments) {
-    if (envUnderTest.probe()) {
+    LOG(`Testing: ${envUnderTest.constructor.name}`);
+    if (await envUnderTest.probe()) {
       environment = envUnderTest;
       break;
     }
   }
+
+  if (!environment) {
+    environment = new DefaultEnvironment();
+  }
+
+  LOG(`Using Environment: ${environment.constructor.name}`);
+
   return environment;
 };
 
-export { detectEnvironment };
+const resetEnvironment = () => (environment = undefined);
+
+export { EnvironmentProvider, resolveEnvironment, resetEnvironment };

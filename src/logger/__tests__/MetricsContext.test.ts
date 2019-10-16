@@ -1,5 +1,4 @@
 import * as faker from 'faker';
-import { TestSink } from '../../../testutils/TestSink';
 import { MetricsContext } from '../MetricsContext';
 
 test('can set property', () => {

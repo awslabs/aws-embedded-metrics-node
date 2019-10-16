@@ -1,15 +1,14 @@
 import * as faker from 'faker';
-import config from '../../config/Configuration';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { LambdaEnvironment } from '../LambdaEnvironment';
 
-test('probe() returns true if function name provided in environment', () => {
+test('probe() returns true if function name provided in environment', async () => {
   // arrange
   process.env.AWS_LAMBDA_FUNCTION_NAME = faker.random.word();
   const env = new LambdaEnvironment();
 
   // act
-  const result = env.probe();
+  const result = await env.probe();
 
   // assert
   expect(result).toBe(true);
@@ -39,13 +38,26 @@ test('getType() returns "AWS::Lambda::Function"', () => {
   expect(result).toBe('AWS::Lambda::Function');
 });
 
+test('getLogGroupName() returns function name', () => {
+  // arrange
+  const env = new LambdaEnvironment();
+  const expectedName = faker.random.word();
+  process.env.AWS_LAMBDA_FUNCTION_NAME = expectedName;
+
+  // act
+  const result = env.getLogGroupName();
+
+  // assert
+  expect(result).toBe(expectedName);
+});
+
 test('createSink() creates a LambdaSink', () => {
   // arrange
   const expectedSink = 'LambdaSink';
   const env = new LambdaEnvironment();
 
   // act
-  const sink = env.createSink();
+  const sink = env.getSink();
 
   // assert
   expect(sink.name).toBe(expectedSink);

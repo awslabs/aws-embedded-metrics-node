@@ -19,7 +19,9 @@ import { ISink } from '../sinks/Sink';
 import { IEnvironment } from './IEnvironment';
 
 export class LambdaEnvironment implements IEnvironment {
-  public probe(): boolean {
+  private sink: ISink | undefined;
+
+  public async probe(): Promise<boolean> {
     return process.env.AWS_LAMBDA_FUNCTION_NAME ? true : false;
   }
 
@@ -29,6 +31,10 @@ export class LambdaEnvironment implements IEnvironment {
 
   public getType(): string {
     return 'AWS::Lambda::Function';
+  }
+
+  public getLogGroupName(): string {
+    return this.getName();
   }
 
   public configureContext(context: MetricsContext): void {
@@ -43,8 +49,11 @@ export class LambdaEnvironment implements IEnvironment {
     }
   }
 
-  public createSink(): ISink {
-    return new LambdaSink();
+  public getSink(): ISink {
+    if (!this.sink) {
+      this.sink = new LambdaSink();
+    }
+    return this.sink;
   }
 
   private addProperty(context: MetricsContext, key: string, value: string | undefined) {

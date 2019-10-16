@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # usage:
 # ./deploy/deploy-lambda.sh { LAMBDA_ARN } { region }
 

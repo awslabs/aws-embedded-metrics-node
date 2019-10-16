@@ -14,7 +14,9 @@
  */
 
 import CloudWatch = require('aws-sdk/clients/cloudwatch');
-import { ISink } from '../sinks/Sink';
+import Configuration from '../config/Configuration';
+import { EnvironmentProvider } from '../environment/EnvironmentDetector';
+import { IEnvironment } from '../environment/IEnvironment';
 import { MetricsContext } from './MetricsContext';
 
 type Unit = CloudWatch.StandardUnit;
@@ -26,18 +28,28 @@ type Unit = CloudWatch.StandardUnit;
  */
 export class MetricsLogger {
   private context: MetricsContext;
-  private sink: ISink;
+  private resolveEnvironment: EnvironmentProvider;
 
-  constructor(sink: ISink, context?: MetricsContext) {
-    this.sink = sink;
+  constructor(resolveEnvironment: EnvironmentProvider, context?: MetricsContext) {
+    this.resolveEnvironment = resolveEnvironment;
     this.context = context || MetricsContext.empty();
   }
 
   /**
    * Flushes the current context state to the configured sink.
    */
-  public flush(): void {
-    this.sink.accept(this.context);
+  public async flush(): Promise<void> {
+    // resolve the environment and get the sink
+    // MOST of the time this will run synchonrously
+    // This only runs asynchronously if executing for the
+    // first time in a non-lambda environment
+    const environment = await this.resolveEnvironment();
+
+    this.configureContextForEnvironment(this.context, environment);
+    const sink = environment.getSink();
+
+    // accept and reset the context
+    sink.accept(this.context);
     this.context = MetricsContext.empty();
   }
 
@@ -101,6 +113,18 @@ export class MetricsLogger {
    * independently.
    */
   public new(): MetricsLogger {
-    return new MetricsLogger(this.sink, this.context.createCopyWithContext());
+    return new MetricsLogger(this.resolveEnvironment, this.context.createCopyWithContext());
   }
+
+  private configureContextForEnvironment = (context: MetricsContext, environment: IEnvironment) => {
+    const defaultDimensions = {
+      // LogGroup name will entirely depend on the environment since there
+      // are some cases where the LogGroup cannot be configured (e.g. Lambda)
+      LogGroup: environment.getLogGroupName(),
+      ServiceName: Configuration.serviceName || environment.getName(),
+      ServiceType: Configuration.serviceType || environment.getType(),
+    };
+    context.setDefaultDimensions(defaultDimensions);
+    environment.configureContext(context);
+  };
 }

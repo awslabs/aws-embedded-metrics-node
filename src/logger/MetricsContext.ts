@@ -15,6 +15,7 @@
 
 import CloudWatch = require('aws-sdk/clients/cloudwatch');
 import { Constants } from '../Constants';
+import { LOG } from '../utils/Logger';
 import { MetricDatum } from './MetricDatum';
 
 interface IProperties {
@@ -76,6 +77,7 @@ export class MetricsContext {
    * and all calls to putDimensions will be prepended with the defaults.
    */
   public setDefaultDimensions(dimensions: Record<string, string>) {
+    LOG(`Received default dimensions`, dimensions);
     this.defaultDimensions = dimensions;
   }
 
@@ -86,7 +88,7 @@ export class MetricsContext {
    * @param dimensions
    */
   public putDimensions(dimensions: Record<string, string>) {
-    this.dimensions.push({ ...this.defaultDimensions, ...dimensions });
+    this.dimensions.push(dimensions);
   }
 
   /**
@@ -112,7 +114,12 @@ export class MetricsContext {
       return [this.defaultDimensions];
     }
 
-    return this.dimensions;
+    // otherwise, merge the dimensions
+    // we do this on the read path because default dimensions
+    // may get updated asynchronously by environment detection
+    return this.dimensions.map(custom => {
+      return { ...this.defaultDimensions, ...custom };
+    });
   }
 
   public putMetric(key: string, value: number, unit?: Unit) {

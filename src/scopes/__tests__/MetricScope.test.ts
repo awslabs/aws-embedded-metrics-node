@@ -1,11 +1,11 @@
-import sleep from '../../../testutils/Sleep';
+import sleep from '../../../test/utils/Sleep';
 import { MetricsLogger } from '../../logger/MetricsLogger';
 import { LambdaSink } from '../../sinks/LambdaSink';
 import { metricScope } from '../MetricScope';
 
 jest.mock('../../logger/MetricsLoggerFactory', () => {
   return {
-    createMetricsLogger: () => new MetricsLogger(new LambdaSink()),
+    createMetricsLogger: () => new MetricsLogger(jest.fn()),
   };
 });
 

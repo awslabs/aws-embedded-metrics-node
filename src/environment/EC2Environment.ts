@@ -17,14 +17,35 @@ import config from '../config/Configuration';
 import { MetricsContext } from '../logger/MetricsContext';
 import { AgentSink } from '../sinks/AgentSink';
 import { ISink } from '../sinks/Sink';
+import { fetch } from '../utils/Fetch';
 import { LOG } from '../utils/Logger';
 import { IEnvironment } from './IEnvironment';
 
-export class DefaultEnvironment implements IEnvironment {
+const endpoint = 'http://169.254.169.254/latest/dynamic/instance-identity/document';
+
+interface IEC2MetadataResponse {
+  imageId: string;
+  availabilityZone: string;
+  privateIp: string;
+  instanceId: string;
+  instanceType: string;
+}
+
+export class EC2Environment implements IEnvironment {
+  private metadata: IEC2MetadataResponse | undefined;
   private sink: ISink | undefined;
 
   public async probe(): Promise<boolean> {
-    return true;
+    try {
+      this.metadata = await fetch<IEC2MetadataResponse>(endpoint);
+      if (this.metadata) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      LOG(e);
+      return false;
+    }
   }
 
   public getName(): string {
@@ -36,11 +57,12 @@ export class DefaultEnvironment implements IEnvironment {
   }
 
   public getType(): string {
-    if (!config.serviceType) {
-      LOG('Unknown ServiceType.');
-      return 'Unknown';
+    if (this.metadata) {
+      return 'AWS::EC2::Instance';
     }
-    return config.serviceType;
+
+    // this will only happen if probe() is not called first
+    return 'Unknown';
   }
 
   public getLogGroupName(): string {
@@ -48,7 +70,13 @@ export class DefaultEnvironment implements IEnvironment {
   }
 
   public configureContext(context: MetricsContext): void {
-    // no-op
+    if (this.metadata) {
+      context.setProperty('imageId', this.metadata.imageId);
+      context.setProperty('instanceId', this.metadata.instanceId);
+      context.setProperty('instanceType', this.metadata.instanceType);
+      context.setProperty('privateIP', this.metadata.privateIp);
+      context.setProperty('availabilityZone', this.metadata.availabilityZone);
+    }
   }
 
   public getSink(): ISink {

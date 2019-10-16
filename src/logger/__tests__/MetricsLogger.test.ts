@@ -1,28 +1,43 @@
 import * as faker from 'faker';
-import { TestSink } from '../../../testutils/TestSink';
+import { TestSink } from '../../../test/utils/TestSink';
+import Configuration from '../../config/Configuration';
+import { EnvironmentProvider } from '../../environment/EnvironmentDetector';
+import { IEnvironment } from '../../environment/IEnvironment';
+import { ISink } from '../../sinks/Sink';
 import { MetricsContext } from '../MetricsContext';
 import { MetricsLogger } from '../MetricsLogger';
-import { ISink } from '../../sinks/Sink';
 
 const createSink = () => new TestSink();
-const createLogger = (sink: ISink) => new MetricsLogger(sink);
+const createEnvironment = (sink: ISink) => {
+  return {
+    probe: async () => true,
+    getSink: () => sink,
+    getName: () => 'test',
+    getType: () => 'test',
+    getLogGroupName: () => 'test',
+    configureContext: jest.fn(),
+  };
+};
+const createLogger = (env: EnvironmentProvider) => new MetricsLogger(env);
 
 let sink: TestSink;
+let environment: IEnvironment;
 let logger: MetricsLogger;
 
 beforeEach(() => {
   sink = createSink();
-  logger = createLogger(sink);
+  environment = createEnvironment(sink);
+  logger = createLogger(async () => environment);
 });
 
-test('can set property', () => {
+test('can set property', async () => {
   // arrange
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.word();
 
   // act
   logger.setProperty(expectedKey, expectedValue);
-  logger.flush();
+  await logger.flush();
 
   // assert
   expect(sink.events).toHaveLength(1);
@@ -31,14 +46,14 @@ test('can set property', () => {
   expect(actualValue).toBe(expectedValue);
 });
 
-test('can put metric', () => {
+test('can put metric', async () => {
   // arrange
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.number();
 
   // act
   logger.putMetric(expectedKey, expectedValue);
-  logger.flush();
+  await logger.flush();
 
   // assert
   expect(sink.events).toHaveLength(1);
@@ -48,7 +63,7 @@ test('can put metric', () => {
   expect(actualMetric!.unit).toBe('None');
 });
 
-test('put metric overwrites previous calls using same key', () => {
+test('put metric overwrites previous calls using same key', async () => {
   // arrange
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.number();
@@ -57,7 +72,7 @@ test('put metric overwrites previous calls using same key', () => {
   logger.putMetric(expectedKey, faker.random.number());
   logger.putMetric(expectedKey, faker.random.number());
   logger.putMetric(expectedKey, expectedValue);
-  logger.flush();
+  await logger.flush();
 
   // assert
   expect(sink.events).toHaveLength(1);
@@ -67,7 +82,7 @@ test('put metric overwrites previous calls using same key', () => {
   expect(actualMetric!.unit).toBe('None');
 });
 
-test('can put dimension', () => {
+test('can put dimension', async () => {
   // arrange
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.word();
@@ -76,7 +91,7 @@ test('can put dimension', () => {
 
   // act
   logger.putDimensions(dimensions);
-  logger.flush();
+  await logger.flush();
 
   // assert
   expect(sink.events).toHaveLength(1);
@@ -87,13 +102,14 @@ test('can put dimension', () => {
   expect(actualValue).toBe(expectedValue);
 });
 
-test('setDimensions overwrites default dimensions', () => {
+test('setDimensions overwrites default dimensions', async () => {
   // arrange
   const context = MetricsContext.empty();
   context.setDefaultDimensions({ Foo: 'Bar' });
 
   const sink = createSink();
-  const logger = new MetricsLogger(sink, context);
+  const env = createEnvironment(sink);
+  const logger = new MetricsLogger(async () => env, context);
 
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.word();
@@ -102,7 +118,7 @@ test('setDimensions overwrites default dimensions', () => {
 
   // act
   logger.setDimensions(dimensions);
-  logger.flush();
+  await logger.flush();
 
   // assert
   expect(sink.events).toHaveLength(1);
@@ -113,7 +129,7 @@ test('setDimensions overwrites default dimensions', () => {
   expect(actualValue).toBe(expectedValue);
 });
 
-test('setDimensions overwrites previous dimensions', () => {
+test('setDimensions overwrites previous dimensions', async () => {
   // arrange
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.word();
@@ -123,7 +139,7 @@ test('setDimensions overwrites previous dimensions', () => {
   // act
   logger.putDimensions({ Foo: 'Bar' });
   logger.setDimensions(dimensions);
-  logger.flush();
+  await logger.flush();
 
   // assert
   expect(sink.events).toHaveLength(1);
@@ -133,3 +149,75 @@ test('setDimensions overwrites previous dimensions', () => {
   const actualValue = dimension[expectedKey];
   expect(actualValue).toBe(expectedValue);
 });
+
+test('flush() uses configured serviceName for default dimension if provided', async () => {
+  // arrange
+  const expected = faker.random.word();
+  Configuration.serviceName = expected;
+
+  // act
+  await logger.flush();
+
+  // assert
+  expectDimension('ServiceName', expected);
+});
+
+test('flush() uses environment serviceName for default dimension if not configured', async () => {
+  // arrange
+  const expected = faker.random.word();
+  Configuration.serviceName = undefined;
+  environment.getName = () => expected;
+
+  // act
+  await logger.flush();
+
+  // assert
+  expectDimension('ServiceName', expected);
+});
+
+test('flush() uses configured serviceType for default dimension if provided', async () => {
+  // arrange
+  const expected = faker.random.word();
+  Configuration.serviceType = expected;
+
+  // act
+  await logger.flush();
+
+  // assert
+  expectDimension('ServiceType', expected);
+});
+
+test('flush() uses environment serviceType for default dimension if not configured', async () => {
+  // arrange
+  const expected = faker.random.word();
+  Configuration.serviceType = undefined;
+  environment.getType = () => expected;
+
+  // act
+  await logger.flush();
+
+  // assert
+  expectDimension('ServiceType', expected);
+});
+
+test('flush() delegates context configuration to the environment by calling configureContext()', async () => {
+  // arrange
+  const expected = faker.random.word();
+  Configuration.serviceType = expected;
+
+  // act
+  await logger.flush();
+
+  // assert
+  expect(environment.configureContext).toBeCalled();
+});
+
+const expectDimension = (key: string, value: string) => {
+  expect(sink.events).toHaveLength(1);
+  const dimensionSets = sink.events[0].getDimensions();
+
+  expect(dimensionSets).toHaveLength(1);
+  const dimension = dimensionSets[0];
+  const actualValue = dimension[key];
+  expect(actualValue).toBe(value);
+};
