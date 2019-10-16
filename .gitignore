@@ -2,3 +2,7 @@ node_modules
 /lib
 *.bak
 *.log
+.DS_Store
+.buildutils/
+*.temp
+*.zip

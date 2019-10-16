@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-import { MetricsContext } from '../src/logger/MetricsContext';
-import { ISink } from '../src/sinks/Sink';
+import { MetricsContext } from '../../src/logger/MetricsContext';
+import { ISink } from '../../src/sinks/Sink';
 
 /**
  * A sink that flushes log data to stdout.

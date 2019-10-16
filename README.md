@@ -2,7 +2,7 @@
 
 ![](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiRWFRdGtyUGw4a0JyaUR3THF4cTZxU2J6aEE1RVJFdmpxcUk5ekFHdUwzMnJXa1dYRmpzKzBCZlBNMU41cVkwNTNsQjZieUVGc3FGbUw1eHovTERrMStVPSIsIml2UGFyYW1ldGVyU3BlYyI6IjFuQ0VXN2l4YnNVMVpYMHIiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
 
-aws-embedded-metrics is a new package from AWS CloudWatch that allows you to generate CloudWatch Metrics from log data without requiring a control plane operation (e.g. PutMetricFilter). You are now able to embed metric filters (EMFs) inside structured Log Events that direct CloudWatch Logs to extract and publish metrics to CloudWatch Metrics.
+A new package from AWS CloudWatch that allows you to generate CloudWatch Metrics from log data without requiring a control plane operation (e.g. PutMetricFilter). You are now able to embed metrics inside structured log events that direct CloudWatch Logs to extract and publish metrics to CloudWatch Metrics.
 
 ## Use Cases
 
@@ -75,6 +75,10 @@ setProperty("Device", {
 
 Adds a new set of dimensions that will be associated to all metric values.
 
+**WARNING**: Every distinct value will result in a new CloudWatch Metric name. 
+If the cardinality of a particular value is expected to be high, you should consider
+using `setProperty` instead.
+
 Requirements:
 - Length 1-255 characters
 - ASCII characters only
@@ -88,6 +92,10 @@ putDimensions({ Operation: "Aggregator", DeviceType: "Actuator" })
 - **setDimensions**(Record<String, String>[] dimensions...)
 
 Explicitly override all dimensions. This will remove the default dimensions.
+
+**WARNING**: Every distinct value will result in a new CloudWatch Metric name. 
+If the cardinality of a particular value is expected to be high, you should consider
+using `setProperty` instead.
 
 Requirements:
 - Length 1-255 characters
@@ -196,6 +204,10 @@ Configuration.logStreamName = "LogStreamName";
 AWS_EMF_LOG_STREAM_NAME=LogStreamName
 ```
 
+## Examples
+
+Check out the [examples](https://github.com/awslabs/aws-embedded-metrics-node/tree/master/examples) directory to get started.
+
 ## Development
 
 ### Building
@@ -203,7 +215,7 @@ AWS_EMF_LOG_STREAM_NAME=LogStreamName
 This project uses [Volta](https://volta.sh/) to pin the currently supported version of node.
 
 ```
-npm run build
+npm i && npm run build
 ```
 
 ## Running Locally
@@ -223,11 +235,20 @@ npm run build
 
 ### Testing
 
-```sh
-npm test
-# or
-npm run watch
-```
+We have 2 different types of tests:
+1. Unit tests which can be run using the following commands:
+  ```sh
+  npm test
+  # or
+  npm run watch
+  ```
+2. Integration tests. These tests require Docker to run the CloudWatch Agent and valid AWS credentials. Tests can be run by:
+  ```
+  export AWS_ACCESS_KEY_ID=
+  export AWS_SECRET_ACCESS_KEY=
+  export AWS_REGION=us-west-2
+  npm run integ
+  ```
 
 ## Formatting
 
