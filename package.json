@@ -1,6 +1,6 @@
 {
   "name": "aws-embedded-metrics",
-  "version": "0.1.0-beta.1571255907",
+  "version": "0.1.0-beta.1571255949",
   "description": "AWS Embedded Metrics Package",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
