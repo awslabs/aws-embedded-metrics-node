@@ -8,7 +8,6 @@ const cwmClient = new CloudWatch();
 const now = () => new Date().getTime();
 const startTime = new Date();
 const timeoutSeconds = 120;
-const testTimeout = startTime.getTime() + timeoutSeconds * 1000;
 
 const serviceName = `IntegrationTests-${os.hostname()}`;
 const serviceType = 'AutomatedTest';
