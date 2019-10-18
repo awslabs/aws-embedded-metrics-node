@@ -1,10 +1,10 @@
 # Release Notes
 
-## 0.1.0-beta.1571413944
+## v0.1.0-beta.1571427024
 
-Layer Version: 3
-Source: `git checkout tags/v0.1.0-beta.1571413944`
-Download: https://d11f0v0426du4p.cloudfront.net/aws-embedded-metrics-0.1.0-beta.1571413944.tgz
+Layer Version: 4
+Source: `git checkout tags/v0.1.0-beta.1571427024`
+Download: https://d11f0v0426du4p.cloudfront.net/aws-embedded-metrics-0.1.0-beta.1571427024.tgz
 
 Fixes socket hang up issue for agent-based environments. Exposes Configuration as an exported member.
 
