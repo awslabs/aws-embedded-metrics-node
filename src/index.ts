@@ -16,5 +16,5 @@
 export { MetricsLogger } from './logger/MetricsLogger';
 export { LambdaSink } from './sinks/LambdaSink';
 export { AgentSink } from './sinks/AgentSink';
-export { metricScope } from './scopes/MetricScope';
+export { metricScope } from './logger/MetricScope';
 export { createMetricsLogger } from './logger/MetricsLoggerFactory';

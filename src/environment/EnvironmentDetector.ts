@@ -31,7 +31,15 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
 
   for (const envUnderTest of environments) {
     LOG(`Testing: ${envUnderTest.constructor.name}`);
-    if (await envUnderTest.probe()) {
+
+    let isEnvironment = false;
+    try {
+      isEnvironment = await envUnderTest.probe();
+    } catch (e) {
+      // @ts-ignore
+    }
+
+    if (isEnvironment) {
       environment = envUnderTest;
       break;
     }
