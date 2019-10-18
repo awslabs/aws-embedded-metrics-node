@@ -14,7 +14,7 @@
  */
 
 import dgram = require('dgram');
-import { URL } from 'url';
+import url = require('url');
 import Configuration from '../config/Configuration';
 import { MetricsContext } from '../logger/MetricsContext';
 import { LogSerializer } from '../serializers/LogSerializer';
@@ -40,13 +40,19 @@ const parseEndpoint = (endpoint: string | undefined): IEndpoint => {
       return defaultUdpEndpoint;
     }
 
-    const url = new URL(endpoint);
+    const parsedUrl = url.parse(endpoint);
+    if (!parsedUrl.hostname || !parsedUrl.port || !parsedUrl.protocol) {
+      LOG('Failed to parse the provided agent endpoint', parsedUrl);
+      return defaultUdpEndpoint;
+    }
+
     return {
-      host: url.hostname,
-      port: Number(url.port),
-      protocol: url.protocol,
+      host: parsedUrl.hostname,
+      port: Number(parsedUrl.port),
+      protocol: parsedUrl.protocol,
     };
   } catch (e) {
+    LOG('Failed to parse the provided agent endpoint', e);
     return defaultUdpEndpoint;
   }
 };
