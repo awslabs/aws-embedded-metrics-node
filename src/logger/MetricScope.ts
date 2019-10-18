@@ -13,24 +13,38 @@
  * limitations under the License.
  */
 
-import { MetricsLogger } from '../logger/MetricsLogger';
-import { createMetricsLogger } from '../logger/MetricsLoggerFactory';
-import { executor } from './ScopeExecutor';
+import { LOG } from '../utils/Logger';
+import { MetricsLogger } from './MetricsLogger';
+import { createMetricsLogger } from './MetricsLoggerFactory';
 
 /**
  * An asynchronous wrapper that provides a metrics instance.
  */
-const metricScope = (handler: (m: MetricsLogger) => any) => {
-  // tslint:disable-next-line
-  const wrappedHandler = async function(...args: any[]) {
-    return await executionWrapper(handler, args);
+const metricScope = <T>(
+  handler: (m: MetricsLogger) => (...args: any[]) => T | Promise<T>,
+): ((...args: any[]) => Promise<T | undefined>) => {
+  const wrappedHandler = async (...args: any[]): Promise<T | undefined> => {
+    const metrics = createMetricsLogger();
+    let exception;
+    try {
+      return await handler(metrics)(...args);
+    } catch (e) {
+      exception = e;
+    } finally {
+      try {
+        await metrics.flush();
+      } catch (e) {
+        LOG('Failed to flush metrics', e);
+      }
+    }
+
+    if (exception) {
+      throw exception;
+    }
+
+    return;
   };
   return wrappedHandler;
-};
-
-const executionWrapper = async (handler: (m: MetricsLogger) => any, args: any[]) => {
-  const metrics = createMetricsLogger();
-  await executor(async () => (await handler(metrics))(...args), metrics);
 };
 
 export { metricScope };

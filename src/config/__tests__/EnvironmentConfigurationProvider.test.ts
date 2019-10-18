@@ -158,3 +158,16 @@ test('can manually set ServiceType', () => {
   const result = config.serviceType;
   expect(result).toBe(expectedValue);
 });
+
+test('can set agent endpoint from environment', () => {
+  // arrange
+  const expectedValue = faker.internet.url();
+  process.env.AWS_EMF_AGENT_ENDPOINT = expectedValue;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.agentEndpoint;
+  expect(result).toBe(expectedValue);
+});

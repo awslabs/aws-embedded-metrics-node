@@ -1,4 +1,4 @@
-import { metricScope } from '../../../src/scopes/MetricScope';
+import { metricScope } from '../../../src/logger/MetricScope';
 import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
 const os = require('os');
@@ -8,7 +8,6 @@ const cwmClient = new CloudWatch();
 const now = () => new Date().getTime();
 const startTime = new Date();
 const timeoutSeconds = 120;
-const testTimeout = startTime.getTime() + timeoutSeconds * 1000;
 
 const serviceName = `IntegrationTests-${os.hostname()}`;
 const serviceType = 'AutomatedTest';
