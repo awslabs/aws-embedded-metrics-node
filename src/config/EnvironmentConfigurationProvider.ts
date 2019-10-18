@@ -23,11 +23,13 @@ enum ConfigKeys {
   ENABLE_DEBUG_LOGGING = 'ENABLE_DEBUG_LOGGING',
   SERVICE_NAME = 'SERVICE_NAME',
   SERVICE_TYPE = 'SERVICE_TYPE',
+  AGENT_ENDPOINT = 'AGENT_ENDPOINT',
 }
 
 export class EnvironmentConfigurationProvider {
   public getConfiguration(): IConfiguration {
     return {
+      agentEndpoint: this.getEnvVariable(ConfigKeys.AGENT_ENDPOINT),
       debuggingLoggingEnabled: this.tryGetEnvVariableAsBoolean(ConfigKeys.ENABLE_DEBUG_LOGGING, false),
       logGroupName: this.getEnvVariable(ConfigKeys.LOG_GROUP_NAME),
       logStreamName: this.getEnvVariable(ConfigKeys.LOG_STREAM_NAME),

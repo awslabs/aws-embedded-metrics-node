@@ -1,7 +1,6 @@
 import sleep from '../../../test/utils/Sleep';
-import { MetricsLogger } from '../../logger/MetricsLogger';
-import { LambdaSink } from '../../sinks/LambdaSink';
 import { metricScope } from '../MetricScope';
+import { MetricsLogger } from '../MetricsLogger';
 
 jest.mock('../../logger/MetricsLoggerFactory', () => {
   return {
@@ -31,7 +30,6 @@ test('sync scope executes handler function', async () => {
 
   const handler = metricScope(metrics => (evt: any) => {
     a = true;
-    return true;
   });
 
   // act
@@ -60,6 +58,23 @@ test('async scope passes arguments', async () => {
   expect(arg).toBe(true);
 });
 
+test('async scope returns child function return value', async () => {
+  // arrange
+  const expected = true;
+
+  const handler = metricScope(metrics => async () => {
+    return expected;
+  });
+
+  // act
+  // the customer can pass in a synchronous function, but we will still return
+  // an async function back to the Lambda caller
+  const result = await handler();
+
+  // assert
+  expect(result).toBe(expected);
+});
+
 test('sync scope passes arguments', async () => {
   // arrange
   let arg = false;
@@ -75,4 +90,21 @@ test('sync scope passes arguments', async () => {
 
   // assert
   expect(arg).toBe(true);
+});
+
+test('sync scope returns child function return value', async () => {
+  // arrange
+  const expected = true;
+
+  const handler = metricScope(metrics => () => {
+    return expected;
+  });
+
+  // act
+  // the customer can pass in a synchronous function, but we will still return
+  // an async function back to the Lambda caller
+  const result = await handler();
+
+  // assert
+  expect(result).toBe(expected);
 });
