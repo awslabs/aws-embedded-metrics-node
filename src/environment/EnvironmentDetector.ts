@@ -24,7 +24,6 @@ type EnvironmentProvider = () => Promise<IEnvironment>;
 const environments = [new LambdaEnvironment(), new EC2Environment()];
 
 let environment: IEnvironment | undefined;
-
 const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
   if (environment) {
     return environment;
@@ -32,7 +31,15 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
 
   for (const envUnderTest of environments) {
     LOG(`Testing: ${envUnderTest.constructor.name}`);
-    if (await envUnderTest.probe()) {
+
+    let isEnvironment = false;
+    try {
+      isEnvironment = await envUnderTest.probe();
+    } catch (e) {
+      // @ts-ignore
+    }
+
+    if (isEnvironment) {
       environment = envUnderTest;
       break;
     }
@@ -48,5 +55,11 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
 };
 
 const resetEnvironment = () => (environment = undefined);
+
+// pro-actively begin resolving the environment
+// this will allow us to kick off any async tasks
+// at module load time to reduce any blocking that
+// may occur on the initial flush()
+resolveEnvironment();
 
 export { EnvironmentProvider, resolveEnvironment, resetEnvironment };

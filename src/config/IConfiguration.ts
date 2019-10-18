@@ -40,4 +40,9 @@ export interface IConfiguration {
    * Lambda scope.
    */
   logStreamName: string | undefined;
+
+  /**
+   * The endpoint to use to connect to the CloudWatch Agent
+   */
+  agentEndpoint: string | undefined;
 }
