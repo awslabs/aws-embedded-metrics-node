@@ -13,28 +13,19 @@
  * limitations under the License.
  */
 
-import { MetricsLogger } from '../logger/MetricsLogger';
+import { MetricsContext } from '../../src/logger/MetricsContext';
+import { ISink } from '../../src/sinks/Sink';
 
 /**
- * The executor is responsible for:
- *
- * - executing the customer defined operation
- * - ensuring that the metrics context gets flushed in the event of an unhandled
- *      exception
+ * A sink that flushes log data to stdout.
+ * This is the preferred sink for Lambda functions.
  */
-const executor = async (operation: () => void, metrics: MetricsLogger) => {
-  let exception = null;
-  try {
-    return await operation();
-  } catch (e) {
-    exception = e;
-  } finally {
-    metrics.flush();
-  }
+export class TestSink implements ISink {
+  public readonly name: string = 'TestSink';
 
-  if (exception) {
-    throw exception;
-  }
-};
+  public events: MetricsContext[] = [];
 
-export { executor };
+  public accept(context: MetricsContext): void {
+    this.events.push(context);
+  }
+}

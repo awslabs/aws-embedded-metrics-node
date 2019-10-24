@@ -1,4 +1,10 @@
 node_modules
-/lib
+lib
+.buildutils
+temp
 *.bak
 *.log
+.DS_Store
+*.temp
+*.zip
+*.tgz

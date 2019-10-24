@@ -2,12 +2,12 @@ import * as faker from 'faker';
 import config from '../../config/Configuration';
 import { DefaultEnvironment } from '../DefaultEnvironment';
 
-test('probe() always returns true', () => {
+test('probe() always returns true', async () => {
   // arrange
   const env = new DefaultEnvironment();
 
   // act
-  const result = env.probe();
+  const result = await env.probe();
 
   // assert
   expect(result).toBe(true);
@@ -61,7 +61,34 @@ test('getType() returns type if configured', () => {
   expect(result).toBe(expectedType);
 });
 
-test('createSink() creates an AgentSink', () => {
+test('getLogGroupName() returns logGroup if configured', () => {
+  // arrange
+  const name = faker.random.word();
+  config.logGroupName = name;
+  const env = new DefaultEnvironment();
+
+  // act
+  const result = env.getLogGroupName();
+
+  // assert
+  expect(result).toBe(name);
+});
+
+test('getLogGroupName() returns <ServiceName>-metrics if not configured', () => {
+  // arrange
+  const serviceName = faker.random.word();
+  config.logGroupName = undefined;
+  config.serviceName = serviceName;
+  const env = new DefaultEnvironment();
+
+  // act
+  const result = env.getLogGroupName();
+
+  // assert
+  expect(result).toBe(`${serviceName}-metrics`);
+});
+
+test('getSink() creates an AgentSink', () => {
   // arrange
   const expectedSink = 'AgentSink';
   const env = new DefaultEnvironment();
@@ -69,13 +96,13 @@ test('createSink() creates an AgentSink', () => {
   config.logStreamName = faker.random.word();
 
   // act
-  const sink = env.createSink();
+  const sink = env.getSink();
 
   // assert
   expect(sink.name).toBe(expectedSink);
 });
 
-test('createSink() uses service name if LogGroup is not configured', () => {
+test('getSink() uses service name if LogGroup is not configured', () => {
   // arrange
   const env = new DefaultEnvironment();
   const expectedName = faker.random.word();
@@ -83,7 +110,7 @@ test('createSink() uses service name if LogGroup is not configured', () => {
   config.logGroupName = undefined;
 
   // act
-  const sink: any = env.createSink();
+  const sink: any = env.getSink();
 
   // assert
   expect(sink.logGroupName).toBe(`${expectedName}-metrics`);

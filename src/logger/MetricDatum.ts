@@ -13,13 +13,11 @@
  * limitations under the License.
  */
 
-import CloudWatch = require('aws-sdk/clients/cloudwatch');
-
 export class MetricDatum {
   public value: number;
-  public unit: CloudWatch.StandardUnit;
+  public unit: string;
 
-  constructor(value: number, unit?: CloudWatch.StandardUnit) {
+  constructor(value: number, unit?: string) {
     this.value = value;
     this.unit = unit || 'None';
   }

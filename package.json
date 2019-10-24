@@ -1,12 +1,14 @@
 {
   "name": "aws-embedded-metrics",
-  "version": "0.1.0-beta.1569268006",
-  "description": "AWS Observability Metrics Package",
+  "version": "0.1.0-beta.1571427024",
+  "description": "AWS Embedded Metrics Package",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "repository": {},
   "scripts": {
     "test": "jest --config jestconfig.json",
+    "integ": "./bin/run-integ-tests.sh",
+    "exec-integ": "jest --config jestconfig.integ.json",
     "watch": "npm run test -- --watch",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
@@ -18,12 +20,13 @@
     "version": "npm run format"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "jaredcnance",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/faker": "^4.1.5",
     "@types/jest": "^24.0.15",
     "@types/node": "^12.0.8",
+    "aws-sdk": "^2.551.0",
     "faker": "^4.1.0",
     "jest": "^24.8.0",
     "npm-pack-zip": "^1.2.7",
@@ -37,9 +40,7 @@
   "files": [
     "lib/**/*"
   ],
-  "dependencies": {
-    "aws-sdk": "^2.478.0"
-  },
+  "dependencies": {},
   "volta": {
     "node": "10.16.0"
   }

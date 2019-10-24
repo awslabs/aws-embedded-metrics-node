@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-embedded-metrics": "https://d1nkmq72i65j7q.cloudfront.net/node/aws-embedded-metrics-0.1.0-beta.1569268006.tgz"
+    "aws-embedded-metrics": "1.0.0"
   },
   "volta": {
     "node": "10.16.0"

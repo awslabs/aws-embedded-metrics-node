@@ -14,27 +14,13 @@
  */
 
 import { MetricsLogger } from '..';
-import Configuration from '../config/Configuration';
-import { detectEnvironment } from '../environment/EnvironmentDetector';
-import { LOG } from '../utils/Logger';
+import { resolveEnvironment } from '../environment/EnvironmentDetector';
 import { MetricsContext } from './MetricsContext';
-
-const environment = detectEnvironment();
-
-LOG(`Runtime environment is: ${environment.constructor.name}`);
 
 const createMetricsLogger = (): MetricsLogger => {
   const context = MetricsContext.empty();
-  const defaultDimensions = {
-    ServiceName: Configuration.serviceName || environment.getName(),
-    ServiceType: Configuration.serviceType || environment.getType(),
-  };
-
-  LOG(`Received default dimensions`, defaultDimensions);
-
-  context.setDefaultDimensions(defaultDimensions);
-  environment.configureContext(context);
-  return new MetricsLogger(environment.createSink(), context);
+  const logger = new MetricsLogger(resolveEnvironment, context);
+  return logger;
 };
 
 export { createMetricsLogger };

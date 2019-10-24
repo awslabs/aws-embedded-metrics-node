@@ -1,7 +1,3 @@
-import { DefaultEnvironment } from './DefaultEnvironment';
-import { IEnvironment } from './IEnvironment';
-import { LambdaEnvironment } from './LambdaEnvironment';
-
 /*
  * Copyright 2019 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
@@ -17,17 +13,53 @@ import { LambdaEnvironment } from './LambdaEnvironment';
  * limitations under the License.
  */
 
-const environments = [new LambdaEnvironment()];
+import { LOG } from '../utils/Logger';
+import { DefaultEnvironment } from './DefaultEnvironment';
+import { EC2Environment } from './EC2Environment';
+import { IEnvironment } from './IEnvironment';
+import { LambdaEnvironment } from './LambdaEnvironment';
 
-const detectEnvironment = (): IEnvironment => {
-  let environment = new DefaultEnvironment();
+type EnvironmentProvider = () => Promise<IEnvironment>;
+
+const environments = [new LambdaEnvironment(), new EC2Environment()];
+
+let environment: IEnvironment | undefined;
+const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+  if (environment) {
+    return environment;
+  }
+
   for (const envUnderTest of environments) {
-    if (envUnderTest.probe()) {
+    LOG(`Testing: ${envUnderTest.constructor.name}`);
+
+    let isEnvironment = false;
+    try {
+      isEnvironment = await envUnderTest.probe();
+    } catch (e) {
+      // @ts-ignore
+    }
+
+    if (isEnvironment) {
       environment = envUnderTest;
       break;
     }
   }
+
+  if (!environment) {
+    environment = new DefaultEnvironment();
+  }
+
+  LOG(`Using Environment: ${environment.constructor.name}`);
+
   return environment;
 };
 
-export { detectEnvironment };
+const resetEnvironment = () => (environment = undefined);
+
+// pro-actively begin resolving the environment
+// this will allow us to kick off any async tasks
+// at module load time to reduce any blocking that
+// may occur on the initial flush()
+resolveEnvironment();
+
+export { EnvironmentProvider, resolveEnvironment, resetEnvironment };
