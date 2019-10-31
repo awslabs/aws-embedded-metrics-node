@@ -36,6 +36,7 @@ export class MetricsContext {
   public metrics: Metrics = new Map<string, MetricDatum>();
   private dimensions: Array<Record<string, string>>;
   private defaultDimensions: Record<string, string>;
+  private shouldUseDefaultDimensions: boolean = true;
 
   /**
    * Constructor used to create child instances.
@@ -95,6 +96,7 @@ export class MetricsContext {
    * @param dimensionSets
    */
   public setDimensions(dimensionSets: Array<Record<string, string>>) {
+    this.shouldUseDefaultDimensions = false;
     this.dimensions = dimensionSets;
   }
 
@@ -102,6 +104,11 @@ export class MetricsContext {
    * Get the current dimensions.
    */
   public getDimensions(): Array<Record<string, string>> {
+    // caller has explicitly called setDimensions
+    if (this.shouldUseDefaultDimensions === false) {
+      return this.dimensions;
+    }
+
     // if there are no default dimensions, return the custom dimensions
     if (Object.keys(this.defaultDimensions).length === 0) {
       return this.dimensions;

@@ -124,8 +124,9 @@ test('setDimensions overwrites default dimensions', async () => {
   expect(sink.events).toHaveLength(1);
   const dimensionSets = sink.events[0].getDimensions();
   expect(dimensionSets).toHaveLength(1);
-  const dimension = dimensionSets[0];
-  const actualValue = dimension[expectedKey];
+  const actualDimensions = dimensionSets[0];
+  expect(Object.keys(actualDimensions).length).toBe(1);
+  const actualValue = actualDimensions[expectedKey];
   expect(actualValue).toBe(expectedValue);
 });
 
