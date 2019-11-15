@@ -13,12 +13,6 @@
  * limitations under the License.
  */
 
-export class MetricDatum {
-  public value: number;
-  public unit: string;
-
-  constructor(value: number, unit?: string) {
-    this.value = value;
-    this.unit = unit || 'None';
-  }
+export interface ISocketClient {
+  sendMessage(message: Buffer): Promise<void>;
 }

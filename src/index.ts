@@ -18,5 +18,7 @@ export { LambdaSink } from './sinks/LambdaSink';
 export { AgentSink } from './sinks/AgentSink';
 export { metricScope } from './logger/MetricScope';
 export { createMetricsLogger } from './logger/MetricsLoggerFactory';
+export { Unit } from './logger/Unit';
+
 import Configuration from './config/Configuration';
 export { Configuration };

@@ -1,3 +1,5 @@
+import { Unit } from '..';
+
 /*
  * Copyright 2019 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
@@ -13,20 +15,20 @@
  * limitations under the License.
  */
 
-import { MetricsContext } from '../logger/MetricsContext';
+export class MetricValues {
+  public values: number[];
+  public unit: string;
 
-/**
- * An interface used to emit metric logs.
- */
-export interface ISink {
-  /**
-   * The name of the sink.
-   */
-  readonly name: string;
+  constructor(value: number, unit?: Unit | string) {
+    this.values = [value];
+    this.unit = unit || 'None';
+  }
 
   /**
-   * Flushes the metrics context to the sink.
-   * @param context
+   * Appends the provided value to the current metric
+   * @param value
    */
-  accept(context: MetricsContext): Promise<void>;
+  public addValue(value: number) {
+    this.values.push(value);
+  }
 }

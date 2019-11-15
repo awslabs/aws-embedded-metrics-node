@@ -33,6 +33,7 @@ echo "Agent started in container: $containerId."
 
 cd $rootdir
 npm run exec-integ
+status_code=$?
 
 ###################################
 # Cleanup
@@ -42,3 +43,5 @@ docker stop $containerId
 rm -rf $tempfile
 rm -rf ./.aws/credentials
 rm -rf ./.aws/config
+
+exit $status_code

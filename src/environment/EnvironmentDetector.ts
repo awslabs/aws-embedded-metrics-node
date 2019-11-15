@@ -22,6 +22,7 @@ import { LambdaEnvironment } from './LambdaEnvironment';
 type EnvironmentProvider = () => Promise<IEnvironment>;
 
 const environments = [new LambdaEnvironment(), new EC2Environment()];
+const defaultEnvironment = new DefaultEnvironment();
 
 let environment: IEnvironment | undefined;
 const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
@@ -46,7 +47,7 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
   }
 
   if (!environment) {
-    environment = new DefaultEnvironment();
+    environment = defaultEnvironment;
   }
 
   LOG(`Using Environment: ${environment.constructor.name}`);

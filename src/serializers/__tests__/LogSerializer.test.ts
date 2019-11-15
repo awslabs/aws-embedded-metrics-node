@@ -10,7 +10,7 @@ test('serializes dimensions', () => {
   dimensions[expectedKey] = expectedValue;
 
   const expected: any = { ...getEmptyPayload(), ...dimensions };
-  expected.CloudWatchMetrics[0].Dimensions.push([expectedKey]);
+  expected._aws.CloudWatchMetrics[0].Dimensions.push([expectedKey]);
 
   const context = getContext();
   context.putDimensions(dimensions);
@@ -37,7 +37,7 @@ test('cannot serialize more than 10 dimensions', () => {
   const expectedDimensionPointers = dimensionPointers.slice(0, allowedDimensions);
 
   const expected: any = { ...getEmptyPayload(), ...dimensions };
-  expected.CloudWatchMetrics[0].Dimensions.push(expectedDimensionPointers);
+  expected._aws.CloudWatchMetrics[0].Dimensions.push(expectedDimensionPointers);
 
   const context = getContext();
   context.putDimensions(dimensions);
@@ -66,7 +66,7 @@ test('serializes properties', () => {
   assertJsonEquality(resultJson, expected);
 });
 
-test('serializes metrics', () => {
+test('serializes metrics with single datapoint', () => {
   // arrange
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.number();
@@ -76,10 +76,33 @@ test('serializes metrics', () => {
   };
   const expected: any = { ...getEmptyPayload() };
   expected[expectedKey] = expectedValue;
-  expected.CloudWatchMetrics[0].Metrics.push(expectedMetricDefinition);
+  expected._aws.CloudWatchMetrics[0].Metrics.push(expectedMetricDefinition);
 
   const context = getContext();
   context.putMetric(expectedKey, expectedValue);
+
+  // act
+  const resultJson = serializer.serialize(context);
+
+  // assert
+  assertJsonEquality(resultJson, expected);
+});
+
+test('serializes metrics with multiple datapoints', () => {
+  // arrange
+  const expectedKey = faker.random.word();
+  const expectedValues = [faker.random.number(), faker.random.number()];
+  const expectedMetricDefinition = {
+    Name: expectedKey,
+    Unit: 'None',
+  };
+  const expected: any = { ...getEmptyPayload() };
+  expected[expectedKey] = expectedValues;
+  expected._aws.CloudWatchMetrics[0].Metrics.push(expectedMetricDefinition);
+
+  const context = getContext();
+  context.putMetric(expectedKey, expectedValues[0]);
+  context.putMetric(expectedKey, expectedValues[1]);
 
   // act
   const resultJson = serializer.serialize(context);
@@ -97,15 +120,16 @@ const getEmptyPayload = () => {
   return Object.assign(
     {},
     {
-      CloudWatchMetrics: [
-        {
-          Dimensions: [],
-          Metrics: [],
-          Namespace: 'aws-embedded-metrics',
-        },
-      ],
-      Version: '0',
-      Timestamp: 0,
+      _aws: {
+        CloudWatchMetrics: [
+          {
+            Dimensions: [],
+            Metrics: [],
+            Namespace: 'aws-embedded-metrics',
+          },
+        ],
+        Timestamp: 0,
+      },
     },
   );
 };
@@ -113,6 +137,6 @@ const getEmptyPayload = () => {
 const serializer = new LogSerializer();
 const getContext = () => {
   const context = MetricsContext.empty();
-  context.setProperty('Timestamp', 0);
+  context.meta.Timestamp = 0;
   return context;
 };

@@ -86,7 +86,7 @@ test('putMetric adds metric to metrics key', () => {
   // assert
   const metricDatum: any = context.metrics.get(expectedKey);
   expect(metricDatum).toBeTruthy();
-  expect(metricDatum.value).toBe(expectedValue);
+  expect(metricDatum.values).toStrictEqual([expectedValue]);
   expect(metricDatum.unit).toBe(expectedUnit);
 });
 
@@ -103,7 +103,7 @@ test('putMetric uses None unit if not provided', () => {
   // assert
   const metricDatum: any = context.metrics.get(expectedKey);
   expect(metricDatum).toBeTruthy();
-  expect(metricDatum.value).toBe(expectedValue);
+  expect(metricDatum.values).toStrictEqual([expectedValue]);
   expect(metricDatum.unit).toBe(expectedUnit);
 });
 
