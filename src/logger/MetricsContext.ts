@@ -15,13 +15,14 @@
 
 import { Constants } from '../Constants';
 import { LOG } from '../utils/Logger';
-import { MetricDatum } from './MetricDatum';
+import { MetricValues } from './MetricValues';
+import { Unit } from './Unit';
 
 interface IProperties {
   [s: string]: any;
 }
 
-type Metrics = Map<string, MetricDatum>;
+type Metrics = Map<string, MetricValues>;
 
 export class MetricsContext {
   /**
@@ -33,7 +34,8 @@ export class MetricsContext {
 
   public namespace: string;
   public properties: IProperties;
-  public metrics: Metrics = new Map<string, MetricDatum>();
+  public metrics: Metrics = new Map<string, MetricValues>();
+  public meta: Record<string, string | number> = {};
   private dimensions: Array<Record<string, string>>;
   private defaultDimensions: Record<string, string>;
   private shouldUseDefaultDimensions: boolean = true;
@@ -58,7 +60,7 @@ export class MetricsContext {
     this.namespace = namespace || Constants.DEFAULT_NAMESPACE;
     this.properties = properties || {};
     this.dimensions = dimensions || [];
-    this.properties.Timestamp = new Date().getTime();
+    this.meta.Timestamp = new Date().getTime();
     this.defaultDimensions = defaultDimensions || {};
   }
 
@@ -127,8 +129,13 @@ export class MetricsContext {
     });
   }
 
-  public putMetric(key: string, value: number, unit?: string) {
-    this.metrics.set(key, new MetricDatum(value, unit));
+  public putMetric(key: string, value: number, unit?: Unit | string) {
+    const currentMetric = this.metrics.get(key);
+    if (currentMetric) {
+      currentMetric.addValue(value);
+    } else {
+      this.metrics.set(key, new MetricValues(value, unit));
+    }
   }
 
   /**

@@ -17,6 +17,7 @@ import Configuration from '../config/Configuration';
 import { EnvironmentProvider } from '../environment/EnvironmentDetector';
 import { IEnvironment } from '../environment/IEnvironment';
 import { MetricsContext } from './MetricsContext';
+import { Unit } from './Unit';
 
 /**
  * An async metrics logger.
@@ -99,8 +100,17 @@ export class MetricsLogger {
    * @param value
    * @param unit
    */
-  public putMetric(key: string, value: number, unit?: string): MetricsLogger {
+  public putMetric(key: string, value: number, unit?: Unit | string): MetricsLogger {
     this.context.putMetric(key, value, unit);
+    return this;
+  }
+
+  /**
+   * Set the CloudWatch namespace that metrics should be published to.
+   * @param value
+   */
+  public setNamespace(value: string): MetricsLogger {
+    this.context.setNamespace(value);
     return this;
   }
 

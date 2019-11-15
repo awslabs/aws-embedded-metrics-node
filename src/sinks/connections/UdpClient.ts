@@ -13,20 +13,27 @@
  * limitations under the License.
  */
 
-import { MetricsContext } from '../logger/MetricsContext';
+import dgram = require('dgram');
+import { LOG } from '../../utils/Logger';
+import { IEndpoint } from './IEndpoint';
+import { ISocketClient } from './ISocketClient';
 
-/**
- * An interface used to emit metric logs.
- */
-export interface ISink {
-  /**
-   * The name of the sink.
-   */
-  readonly name: string;
+export class UdpClient implements ISocketClient {
+  private endpoint: IEndpoint;
 
-  /**
-   * Flushes the metrics context to the sink.
-   * @param context
-   */
-  accept(context: MetricsContext): Promise<void>;
+  constructor(endpoint: IEndpoint) {
+    this.endpoint = endpoint;
+  }
+
+  public sendMessage(message: Buffer): Promise<void> {
+    const client = dgram.createSocket('udp4');
+    client.send(message, this.endpoint.port, this.endpoint.host, (error: any) => {
+      if (error) {
+        LOG(error);
+      }
+      client.close();
+    });
+
+    return Promise.resolve();
+  }
 }

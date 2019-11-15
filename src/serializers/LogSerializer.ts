@@ -44,19 +44,23 @@ export class LogSerializer implements ISerializer {
     const body: any = {
       ...dimensionProperties,
       ...context.properties,
-      CloudWatchMetrics: [
-        {
-          Dimensions: dimensionKeys,
-          Metrics: [],
-          Namespace: context.namespace,
-        },
-      ],
-      Version: '0',
+      _aws: {
+        ...context.meta,
+        CloudWatchMetrics: [
+          {
+            Dimensions: dimensionKeys,
+            Metrics: [],
+            Namespace: context.namespace,
+          },
+        ],
+      },
     };
 
     for (const [key, metric] of context.metrics) {
-      body[key] = metric.value;
-      body.CloudWatchMetrics[0].Metrics.push({ Name: key, Unit: metric.unit });
+      // if there is only one metric value, unwrap it to make querying easier
+      const metricValue = metric.values.length === 1 ? metric.values[0] : metric.values;
+      body[key] = metricValue;
+      body._aws.CloudWatchMetrics[0].Metrics.push({ Name: key, Unit: metric.unit });
     }
 
     return JSON.stringify(body);

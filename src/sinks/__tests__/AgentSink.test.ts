@@ -2,7 +2,7 @@ import * as faker from 'faker';
 import Configuration from '../../config/Configuration';
 import { AgentSink } from '../AgentSink';
 
-test('default endpoint', () => {
+test('default endpoint is tcp', () => {
   // arrange
   const logGroupName = faker.random.word();
 
@@ -11,7 +11,7 @@ test('default endpoint', () => {
 
   // assert
   // @ts-ignore
-  expect(sink.endpoint.protocol).toBe('udp:');
+  expect(sink.endpoint.protocol).toBe('tcp:');
   // @ts-ignore
   expect(sink.endpoint.host).toBe('0.0.0.0');
   // @ts-ignore

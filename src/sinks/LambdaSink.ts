@@ -31,8 +31,9 @@ export class LambdaSink implements ISink {
     this.serializer = serializer || new LogSerializer();
   }
 
-  public accept(context: MetricsContext): void {
+  public accept(context: MetricsContext): Promise<void> {
     // tslint:disable-next-line
     console.log(this.serializer.serialize(context));
+    return Promise.resolve();
   }
 }

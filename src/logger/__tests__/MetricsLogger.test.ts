@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+import { Unit } from '../..';
 import { TestSink } from '../../../test/utils/TestSink';
 import Configuration from '../../config/Configuration';
 import { EnvironmentProvider } from '../../environment/EnvironmentDetector';
@@ -59,27 +60,60 @@ test('can put metric', async () => {
   expect(sink.events).toHaveLength(1);
   const actualMetric = sink.events[0].metrics.get(expectedKey);
   expect(actualMetric).toBeTruthy();
-  expect(actualMetric!.value).toBe(expectedValue);
+  expect(actualMetric!.values).toStrictEqual([expectedValue]);
   expect(actualMetric!.unit).toBe('None');
 });
 
-test('put metric overwrites previous calls using same key', async () => {
+test('put metric appends metrics using same key', async () => {
   // arrange
   const expectedKey = faker.random.word();
-  const expectedValue = faker.random.number();
+  const expectedValues = [faker.random.number(), faker.random.number()];
 
   // act
-  logger.putMetric(expectedKey, faker.random.number());
-  logger.putMetric(expectedKey, faker.random.number());
-  logger.putMetric(expectedKey, expectedValue);
+  logger.putMetric(expectedKey, expectedValues[0]);
+  logger.putMetric(expectedKey, expectedValues[1]);
   await logger.flush();
 
   // assert
   expect(sink.events).toHaveLength(1);
   const actualMetric = sink.events[0].metrics.get(expectedKey);
   expect(actualMetric).toBeTruthy();
-  expect(actualMetric!.value).toBe(expectedValue);
+  expect(actualMetric!.values).toStrictEqual(expectedValues);
   expect(actualMetric!.unit).toBe('None');
+});
+
+test('can put metric with enum unit', async () => {
+  // arrange
+  const expectedKey = faker.random.word();
+  const expectedValue = faker.random.number();
+  const expectedUnit = Unit.Bits;
+
+  // act
+  logger.putMetric(expectedKey, expectedValue, expectedUnit);
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const actualMetric = sink.events[0].metrics.get(expectedKey);
+  expect(actualMetric).toBeTruthy();
+  expect(actualMetric!.unit).toBe('Bits');
+});
+
+test('can put metric with string unit', async () => {
+  // arrange
+  const expectedKey = faker.random.word();
+  const expectedValue = faker.random.number();
+  const expectedUnit = 'Bits/Second';
+
+  // act
+  logger.putMetric(expectedKey, expectedValue, expectedUnit);
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const actualMetric = sink.events[0].metrics.get(expectedKey);
+  expect(actualMetric).toBeTruthy();
+  expect(actualMetric!.unit).toBe(expectedUnit);
 });
 
 test('can put dimension', async () => {
@@ -148,6 +182,20 @@ test('setDimensions overwrites previous dimensions', async () => {
   expect(dimensionSets).toHaveLength(1);
   const dimension = dimensionSets[0];
   const actualValue = dimension[expectedKey];
+  expect(actualValue).toBe(expectedValue);
+});
+
+test('can set namespace', async () => {
+  // arrange
+  const expectedValue = faker.random.word();
+
+  // act
+  logger.setNamespace(expectedValue);
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const actualValue = sink.events[0].namespace;
   expect(actualValue).toBe(expectedValue);
 });
 

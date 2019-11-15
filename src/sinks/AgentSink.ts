@@ -13,37 +13,46 @@
  * limitations under the License.
  */
 
-import dgram = require('dgram');
 import url = require('url');
+
 import Configuration from '../config/Configuration';
 import { MetricsContext } from '../logger/MetricsContext';
 import { LogSerializer } from '../serializers/LogSerializer';
 import { ISerializer } from '../serializers/Serializer';
 import { LOG } from '../utils/Logger';
+import { IEndpoint } from './connections/IEndpoint';
+import { ISocketClient } from './connections/ISocketClient';
+import { TcpClient } from './connections/TcpClient';
+import { UdpClient } from './connections/UdpClient';
 import { ISink } from './Sink';
 
-interface IEndpoint {
-  host: string;
-  port: number;
-  protocol: string;
-}
+const TCP = 'tcp:';
+const UDP = 'udp:';
 
-const defaultUdpEndpoint = {
+const defaultTcpEndpoint = {
   host: '0.0.0.0',
   port: 25888,
-  protocol: 'udp:',
+  protocol: TCP,
 };
 
 const parseEndpoint = (endpoint: string | undefined): IEndpoint => {
   try {
     if (!endpoint) {
-      return defaultUdpEndpoint;
+      return defaultTcpEndpoint;
     }
 
     const parsedUrl = url.parse(endpoint);
     if (!parsedUrl.hostname || !parsedUrl.port || !parsedUrl.protocol) {
-      LOG('Failed to parse the provided agent endpoint', parsedUrl);
-      return defaultUdpEndpoint;
+      LOG(`Failed to parse the provided agent endpoint. Falling back to the default TCP endpoint.`, parsedUrl);
+      return defaultTcpEndpoint;
+    }
+
+    if (parsedUrl.protocol !== TCP && parsedUrl.protocol !== UDP) {
+      LOG(
+        `The provided agent endpoint protocol '${parsedUrl.protocol}' is not supported. Please use TCP or UDP. Falling back to the default TCP endpoint.`,
+        parsedUrl,
+      );
+      return defaultTcpEndpoint;
     }
 
     return {
@@ -53,12 +62,14 @@ const parseEndpoint = (endpoint: string | undefined): IEndpoint => {
     };
   } catch (e) {
     LOG('Failed to parse the provided agent endpoint', e);
-    return defaultUdpEndpoint;
+    return defaultTcpEndpoint;
   }
 };
 
 /**
- * A sink that flushes to the CW Agent
+ * A sink that flushes to the CW Agent.
+ * This sink instance should be re-used to avoid
+ * leaking connections.
  */
 export class AgentSink implements ISink {
   public readonly name: string = 'AgentSink';
@@ -66,32 +77,31 @@ export class AgentSink implements ISink {
   private readonly endpoint: IEndpoint;
   private readonly logGroupName: string;
   private readonly logStreamName: string | undefined;
+  private readonly socketClient: ISocketClient;
 
   constructor(logGroupName: string, logStreamName?: string, serializer?: ISerializer) {
     this.logGroupName = logGroupName;
     this.logStreamName = logStreamName;
     this.serializer = serializer || new LogSerializer();
     this.endpoint = parseEndpoint(Configuration.agentEndpoint);
+    this.socketClient = this.getSocketClient(this.endpoint);
+    LOG('Using socket client', this.socketClient.constructor.name);
   }
 
-  public accept(context: MetricsContext): void {
-    context.setProperty('log_group_name', this.logGroupName);
-
+  public async accept(context: MetricsContext): Promise<void> {
+    context.meta.LogGroupName = this.logGroupName;
     if (this.logStreamName) {
-      context.setProperty('log_stream_name', this.logStreamName);
+      context.meta.LogStreamName = this.logStreamName;
     }
 
-    if (this.endpoint.protocol !== 'udp:') {
-      throw new Error('');
-    }
-    const message = this.serializer.serialize(context);
+    const message = this.serializer.serialize(context) + '\n';
     const bytes = Buffer.from(message);
-    const client = dgram.createSocket('udp4');
-    client.send(bytes, this.endpoint.port, this.endpoint.host, (error: any) => {
-      if (error) {
-        LOG(error);
-      }
-      client.close();
-    });
+
+    await this.socketClient.sendMessage(bytes);
+  }
+
+  private getSocketClient(endpoint: IEndpoint): ISocketClient {
+    LOG('Getting socket client for connection.', endpoint);
+    return endpoint.protocol === TCP ? new TcpClient(endpoint).connect() : new UdpClient(endpoint);
   }
 }

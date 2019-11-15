@@ -25,7 +25,8 @@ export class TestSink implements ISink {
 
   public events: MetricsContext[] = [];
 
-  public accept(context: MetricsContext): void {
+  public accept(context: MetricsContext): Promise<void> {
     this.events.push(context);
+    return Promise.resolve();
   }
 }
