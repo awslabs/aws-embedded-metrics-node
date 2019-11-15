@@ -5,6 +5,13 @@
 
 A new package from Amazon CloudWatch that allows you to generate CloudWatch Metrics from structured log events. The embedded metrics will be extracted so you can visualize and alarm on them for real-time incident detection. This allows you to monitor aggregated values while preserving the detailed event context that generated them.
 
+* [Use Cases](#use-cases)
+* [Installation](#installation)
+* [Usage](#usage)
+* [API](#api)
+* [Examples](#examples)
+* [Development](#development)
+
 ## Use Cases
 
 - **Asynchronous emission of metrics from Lambda functions**
