@@ -255,7 +255,7 @@ This project uses [Volta](https://volta.sh/) to pin the currently supported vers
 npm i && npm run build
 ```
 
-## Running Locally
+### Running Locally
 
 If you are running the CW agent locally, you can test the workflow:
 
@@ -287,7 +287,7 @@ We have 2 different types of tests:
   npm run integ
   ```
 
-## Formatting
+### Formatting
 
 We use [Prettier](https://prettier.io/) for auto-formatting.
 You should install the plugin for your editor-of-choice and enabled format-on-save.
