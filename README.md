@@ -1,6 +1,7 @@
 # aws-embedded-metrics
 
 ![](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiRWFRdGtyUGw4a0JyaUR3THF4cTZxU2J6aEE1RVJFdmpxcUk5ekFHdUwzMnJXa1dYRmpzKzBCZlBNMU41cVkwNTNsQjZieUVGc3FGbUw1eHovTERrMStVPSIsIml2UGFyYW1ldGVyU3BlYyI6IjFuQ0VXN2l4YnNVMVpYMHIiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+[![](https://img.shields.io/npm/v/aws-embedded-metrics.svg)](https://www.npmjs.com/package/aws-embedded-metrics)
 
 A new package from Amazon CloudWatch that allows you to generate CloudWatch Metrics from log data without requiring a control plane operation (e.g. PutMetricFilter). You are now able to embed metrics inside structured log events that direct CloudWatch Logs to extract and publish metrics to CloudWatch Metrics.
 
@@ -11,6 +12,12 @@ A new package from Amazon CloudWatch that allows you to generate CloudWatch Metr
 - **Linking metrics to high cardinality context**
   Using the Embedded Metric Format, you will be able to extract metrics and configure alarms on those metrics, but also be able to jump back to the logs—using [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html)—that emitted those metrics to view high cardinality context.
 
+## Installation
+
+```
+npm install aws-embedded-metrics
+```
+
 ## Usage
 
 To get a metric logger, you can either decorate your function with a metricScope, or manually create and flush the logger.
@@ -18,12 +25,12 @@ To get a metric logger, you can either decorate your function with a metricScope
 Using the metricScope decorator:
 
 ```js
-const { metricScope } = require("aws-embedded-metrics");
+const { metricScope, Unit } = require("aws-embedded-metrics");
 
 const myFunc = metricScope(metrics => 
   async () => {
     metrics.putDimensions({ Service: "Aggregator" });
-    metrics.putMetric("ProcessingLatency", 100, "Milliseconds");
+    metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds);
     metrics.setProperty("RequestId", "422b1569-16f6-4a03-b8f0-fe3fd9b100f8");
     // ...
   });
@@ -34,18 +41,33 @@ await myFunc();
 Manually constructing and flushing the logger:
 
 ```js
-const { createMetricsLogger } = require("aws-embedded-metrics");
+const { createMetricsLogger, Unit } = require("aws-embedded-metrics");
 
 const myFunc = async () => {
   const metrics = createMetricsLogger();
   metrics.putDimensions({ Service: "Aggregator" });
-  metrics.putMetric("ProcessingLatency", 100, "Milliseconds");
+  metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds);
   metrics.setProperty("RequestId", "422b1569-16f6-4a03-b8f0-fe3fd9b100f8");
   // ...
   metrics.flush();
 };
 
 await myFunc();
+```
+
+### Lambda
+
+If you are running on Lambda, export your function like so:
+
+```js
+const { metricScope } = require("aws-embedded-metrics");
+
+const myFunc = metricScope(metrics => 
+  async () => {
+    // ...
+  });
+
+exports.handler = myFunc();
 ```
 
 ## API
