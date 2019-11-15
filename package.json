@@ -1,10 +1,16 @@
 {
   "name": "aws-embedded-metrics",
-  "version": "0.1.0-beta.1573242639",
-  "description": "AWS Embedded Metrics Package",
+  "version": "0.1.0-beta.1573852273571",
+  "description": "AWS Embedded Metrics Client Library",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "repository": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/awslabs/aws-embedded-metrics-node.git"
+  },
+  "engines": {
+    "node": ">=10.0.0"
+  },
   "scripts": {
     "test": "jest --config jestconfig.json",
     "integ": "./bin/run-integ-tests.sh",
@@ -20,7 +26,10 @@
     "version": "npm run format"
   },
   "keywords": [],
-  "author": "jaredcnance",
+  "author": "Amazon Web Services",
+  "contributors": [
+    "Jared Nance <jarnance@amazon.com>"
+  ],
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/faker": "^4.1.5",
