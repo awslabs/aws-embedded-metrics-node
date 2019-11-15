@@ -3,14 +3,14 @@
 ![](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiRWFRdGtyUGw4a0JyaUR3THF4cTZxU2J6aEE1RVJFdmpxcUk5ekFHdUwzMnJXa1dYRmpzKzBCZlBNMU41cVkwNTNsQjZieUVGc3FGbUw1eHovTERrMStVPSIsIml2UGFyYW1ldGVyU3BlYyI6IjFuQ0VXN2l4YnNVMVpYMHIiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
 [![](https://img.shields.io/npm/v/aws-embedded-metrics.svg)](https://www.npmjs.com/package/aws-embedded-metrics)
 
-A new package from Amazon CloudWatch that allows you to generate CloudWatch Metrics from log data without requiring a control plane operation (e.g. PutMetricFilter). You are now able to embed metrics inside structured log events that direct CloudWatch Logs to extract and publish metrics to CloudWatch Metrics.
+A new package from Amazon CloudWatch that allows you to generate CloudWatch Metrics from structured log events. The embedded metrics will be extracted so you can visualize and alarm on them for real-time incident detection. This allows you to monitor aggregated values while preserving the detailed event context that generated them.
 
 ## Use Cases
 
 - **Asynchronous emission of metrics from Lambda functions**
-  There are two natively supported options for emitting metrics from Lambda today: executing synchronous calls to CloudWatch via PutMetricData or extracting metrics from your function logs through CloudWatch Logs Metric Filters. The first couples the TPS of your function to your PutMetricData TPS and also blocks function execution while waiting on a response from CloudWatch Metrics. The second requires you to make a control plane call, forces you to keep code and configuration synchronized and also only supports a maximum of 100 filters per LogGroup. These are no longer problems if you use CloudWatch embedded metrics since your metric definitions are included in the log data.
+  There are two natively supported options for emitting metrics from Lambda today: executing synchronous calls to CloudWatch via PutMetricData or extracting metrics from your function logs through CloudWatch Logs Metric Filters. The first couples the TPS of your function to your PutMetricData TPS and also blocks function execution while waiting on a response from CloudWatch Metrics. The second requires you to make a control plane call, forces you to keep code and configuration synchronized. These are no longer problems if you use CloudWatch Embedded Metrics since your metric definitions are included in the log data.
 - **Linking metrics to high cardinality context**
-  Using the Embedded Metric Format, you will be able to extract metrics and configure alarms on those metrics, but also be able to jump back to the logs—using [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html)—that emitted those metrics to view high cardinality context.
+  Using the Embedded Metric Format, you will be able to extract metrics and configure alarms on those metrics, but also be able to jump back to the logs—using [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html)—that emitted those metrics to view high cardinality event context.
 
 ## Installation
 
