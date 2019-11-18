@@ -15,8 +15,11 @@ Generate CloudWatch Metrics embedded within structured log events. The embedded 
 ## Use Cases
 
 - **Custom metrics from Lambda functions**
+
   Easily generate custom metrics from Lambda functions without requiring custom batching code, making blocking network requests or relying on 3rd party software.
+
 - **Linking metrics to high cardinality context**
+
   Using the Embedded Metric Format, you will be able to visualize and alarm on custom metrics, but also retain the original, detailed and high-cardinality context which is queryable using [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html).
 
 ## Installation
