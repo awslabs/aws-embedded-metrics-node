@@ -14,10 +14,10 @@ Generate CloudWatch Metrics embedded within structured log events. The embedded 
 
 ## Use Cases
 
-- **Asynchronous emission of metrics from Lambda functions**
-  There are two natively supported options for emitting metrics from Lambda today: executing synchronous calls to CloudWatch via PutMetricData or extracting metrics from your function logs through CloudWatch Logs Metric Filters. The first couples the TPS of your function to your PutMetricData TPS and also blocks function execution while waiting on a response from CloudWatch Metrics. The second requires you to make a control plane call, forces you to keep code and configuration synchronized. These are no longer problems if you use CloudWatch Embedded Metrics since your metric definitions are included in the log data.
+- **Custom metrics from Lambda functions**
+  Easily generate custom metrics from Lambda functions without requiring custom batching code, making blocking network requests or relying on 3rd party software.
 - **Linking metrics to high cardinality context**
-  Using the Embedded Metric Format, you will be able to extract metrics and configure alarms on those metrics, but also be able to jump back to the logs—using [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html)—that emitted those metrics to view high cardinality event context.
+  Using the Embedded Metric Format, you will be able to visualize and alarm on custom metrics, but also retain the original, detailed and high-cardinality context which is queryable using [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html).
 
 ## Installation
 
