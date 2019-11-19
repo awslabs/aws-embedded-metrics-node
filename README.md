@@ -60,7 +60,7 @@ const myFunc = async () => {
   metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds);
   metrics.setProperty("RequestId", "422b1569-16f6-4a03-b8f0-fe3fd9b100f8");
   // ...
-  metrics.flush();
+  await metrics.flush();
 };
 
 await myFunc();
