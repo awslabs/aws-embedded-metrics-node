@@ -33,8 +33,6 @@ export class TcpClient implements ISocketClient {
       .on('data', data => LOG('TcpClient received data.', data));
   }
 
-  // create the connection as soon as we can, but don't block
-  // we can block on flush if we have to.
   public async warmup() {
     try {
       await this.establishConnection();
