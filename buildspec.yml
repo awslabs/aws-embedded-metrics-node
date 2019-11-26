@@ -19,7 +19,6 @@ phases:
   build:
     commands:
       - npm run lint
-      - npm audit
       - npm run build
       - npm run test
       - npm run integ
