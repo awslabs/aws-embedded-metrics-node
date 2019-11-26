@@ -1,5 +1,6 @@
 import * as faker from 'faker';
 import Configuration from '../../config/Configuration';
+import { MetricsContext } from '../../logger/MetricsContext';
 import { AgentSink } from '../AgentSink';
 
 test('default endpoint is tcp', () => {
@@ -33,4 +34,18 @@ test('can parse udp endpoints', () => {
   expect(sink.endpoint.host).toBe('127.0.0.1');
   // @ts-ignore
   expect(sink.endpoint.port).toBe(1000);
+});
+
+test('handles tcp connection error', async () => {
+  // arrange
+  const noProcessPort = faker.random.number({min: 1000, max: 9999})
+  Configuration.agentEndpoint = `tcp://127.0.0.1:${noProcessPort}`;
+  const context = MetricsContext.empty()
+  const logGroupName = faker.random.word();
+  const sink = new AgentSink(logGroupName);
+
+  // assert
+  return expect(
+    sink.accept(context)
+  ).rejects.toThrowError(/ECONNREFUSED/)
 });

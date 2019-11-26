@@ -33,24 +33,30 @@ export class TcpClient implements ISocketClient {
       .on('data', data => LOG('TcpClient received data.', data));
   }
 
-  public connect(): TcpClient {
-    // create the connection as soon as we can, but don't block
-    // we can block on flush if we have to.
-    this.establishConnection();
-    return this;
+  public async warmup() {
+    try {
+      await this.establishConnection();
+    } catch (err) {
+      LOG('Failed to connect', err)
+    }
   }
 
   public async sendMessage(message: Buffer): Promise<void> {
     await this.waitForOpenConnection();
     await new Promise((resolve, reject) => {
-      const wasFlushedToKernel = this.socket.write(message, (err?: Error) => {
+      const onSendError = (err: Error) => {
+        LOG('Failed to write', err);
+        LOG('Socket', this.socket);
+        reject(err);
+      }
+      const wasFlushedToKernel = this.socket
+      .once('error', onSendError)
+      .write(message, (err?: Error) => {
         if (!err) {
           LOG('Write succeeded');
           resolve();
         } else {
-          LOG('Failed to write', err);
-          LOG('Socket', this.socket);
-          reject();
+          onSendError(err)
         }
       });
 
@@ -79,10 +85,10 @@ export class TcpClient implements ISocketClient {
           LOG('TcpClient connected.', this.endpoint);
           resolve();
         })
-        .once('error', () => {
+        .once('error', (e) => {
           this.disconnect('error');
           this.socket.removeListener('connection', resolve);
-          reject();
+          reject(e);
         });
     });
   }
