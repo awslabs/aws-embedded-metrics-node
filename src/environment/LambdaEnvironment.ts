@@ -21,8 +21,8 @@ import { IEnvironment } from './IEnvironment';
 export class LambdaEnvironment implements IEnvironment {
   private sink: ISink | undefined;
 
-  public async probe(): Promise<boolean> {
-    return process.env.AWS_LAMBDA_FUNCTION_NAME ? true : false;
+  public probe(): Promise<boolean> {
+    return Promise.resolve(process.env.AWS_LAMBDA_FUNCTION_NAME ? true : false);
   }
 
   public getName(): string {
@@ -56,7 +56,7 @@ export class LambdaEnvironment implements IEnvironment {
     return this.sink;
   }
 
-  private addProperty(context: MetricsContext, key: string, value: string | undefined) {
+  private addProperty(context: MetricsContext, key: string, value: string | undefined): void {
     if (value) {
       context.setProperty(key, value);
     }
@@ -64,7 +64,7 @@ export class LambdaEnvironment implements IEnvironment {
 
   private getSampledTrace(): string | void {
     // only collect traces which have been sampled
-    if (process.env._X_AMZN_TRACE_ID && process.env._X_AMZN_TRACE_ID.indexOf('Sampled=1') > -1) {
+    if (process.env._X_AMZN_TRACE_ID && process.env._X_AMZN_TRACE_ID.includes('Sampled=1')) {
       return process.env._X_AMZN_TRACE_ID;
     }
   }

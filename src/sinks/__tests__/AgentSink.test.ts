@@ -38,14 +38,12 @@ test('can parse udp endpoints', () => {
 
 test('handles tcp connection error', async () => {
   // arrange
-  const noProcessPort = faker.random.number({min: 1000, max: 9999})
+  const noProcessPort = faker.random.number({ min: 1000, max: 9999 });
   Configuration.agentEndpoint = `tcp://127.0.0.1:${noProcessPort}`;
-  const context = MetricsContext.empty()
+  const context = MetricsContext.empty();
   const logGroupName = faker.random.word();
   const sink = new AgentSink(logGroupName);
 
   // assert
-  return expect(
-    sink.accept(context)
-  ).rejects.toThrowError(/ECONNREFUSED/)
+  return expect(sink.accept(context)).rejects.toThrowError(/ECONNREFUSED/);
 });

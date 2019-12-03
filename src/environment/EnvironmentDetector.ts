@@ -37,7 +37,7 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
     try {
       isEnvironment = await envUnderTest.probe();
     } catch (e) {
-      // @ts-ignore
+      LOG(`Failed probe: ${envUnderTest.constructor.name}`);
     }
 
     if (isEnvironment) {
@@ -55,7 +55,7 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
   return environment;
 };
 
-const resetEnvironment = () => (environment = undefined);
+const resetEnvironment = (): void => (environment = undefined);
 
 // pro-actively begin resolving the environment
 // this will allow us to kick off any async tasks

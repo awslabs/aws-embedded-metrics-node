@@ -15,9 +15,8 @@
 
 import config from '../config/Configuration';
 
-const LOG = (...args: any) => {
+const LOG = (...args: unknown[]): void => {
   if (config.debuggingLoggingEnabled) {
-    // tslint:disable-next-line
     console.log(...args);
   }
 };

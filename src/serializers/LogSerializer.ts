@@ -41,6 +41,7 @@ export class LogSerializer implements ISerializer {
       dimensionProperties = { ...dimensionProperties, ...d };
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body: any = {
       ...dimensionProperties,
       ...context.properties,

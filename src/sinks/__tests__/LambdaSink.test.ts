@@ -10,7 +10,7 @@ test('accept serializes and writes result to stdout', () => {
   // arrange
   const expected = faker.random.alphaNumeric(20);
   const serializer: any = {
-    serialize: jest.fn(_ => expected),
+    serialize: jest.fn(() => expected),
   };
 
   const sink = new LambdaSink(serializer);

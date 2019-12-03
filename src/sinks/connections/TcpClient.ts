@@ -33,30 +33,28 @@ export class TcpClient implements ISocketClient {
       .on('data', data => LOG('TcpClient received data.', data));
   }
 
-  public async warmup() {
+  public async warmup(): Promise<void> {
     try {
       await this.establishConnection();
     } catch (err) {
-      LOG('Failed to connect', err)
+      LOG('Failed to connect', err);
     }
   }
 
   public async sendMessage(message: Buffer): Promise<void> {
     await this.waitForOpenConnection();
     await new Promise((resolve, reject) => {
-      const onSendError = (err: Error) => {
+      const onSendError = (err: Error): void => {
         LOG('Failed to write', err);
         LOG('Socket', this.socket);
         reject(err);
-      }
-      const wasFlushedToKernel = this.socket
-      .once('error', onSendError)
-      .write(message, (err?: Error) => {
+      };
+      const wasFlushedToKernel = this.socket.once('error', onSendError).write(message, (err?: Error) => {
         if (!err) {
           LOG('Write succeeded');
           resolve();
         } else {
-          onSendError(err)
+          onSendError(err);
         }
       });
 
@@ -66,13 +64,13 @@ export class TcpClient implements ISocketClient {
     });
   }
 
-  private disconnect(eventName: string) {
+  private disconnect(eventName: string): void {
     LOG('TcpClient disconnected due to:', eventName);
     this.socket.destroy();
     this.socket.unref();
   }
 
-  private async waitForOpenConnection() {
+  private async waitForOpenConnection(): Promise<void> {
     if (!this.socket.writable) {
       await this.establishConnection();
     }
@@ -85,7 +83,7 @@ export class TcpClient implements ISocketClient {
           LOG('TcpClient connected.', this.endpoint);
           resolve();
         })
-        .once('error', (e) => {
+        .once('error', e => {
           this.disconnect('error');
           this.socket.removeListener('connection', resolve);
           reject(e);

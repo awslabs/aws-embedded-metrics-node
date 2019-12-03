@@ -28,7 +28,7 @@ export class MetricValues {
    * Appends the provided value to the current metric
    * @param value
    */
-  public addValue(value: number) {
+  public addValue(value: number): void {
     this.values.push(value);
   }
 }
