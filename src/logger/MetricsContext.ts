@@ -19,7 +19,7 @@ import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
 
 interface IProperties {
-  [s: string]: any;
+  [s: string]: unknown;
 }
 
 type Metrics = Map<string, MetricValues>;
@@ -28,7 +28,7 @@ export class MetricsContext {
   /**
    * Use this to create a new, empty context.
    */
-  public static empty() {
+  public static empty(): MetricsContext {
     return new MetricsContext();
   }
 
@@ -38,7 +38,7 @@ export class MetricsContext {
   public meta: Record<string, string | number> = {};
   private dimensions: Array<Record<string, string>>;
   private defaultDimensions: Record<string, string>;
-  private shouldUseDefaultDimensions: boolean = true;
+  private shouldUseDefaultDimensions = true;
 
   /**
    * Constructor used to create child instances.
@@ -64,11 +64,11 @@ export class MetricsContext {
     this.defaultDimensions = defaultDimensions || {};
   }
 
-  public setNamespace(value: string) {
+  public setNamespace(value: string): void {
     this.namespace = value;
   }
 
-  public setProperty(key: string, value: any) {
+  public setProperty(key: string, value: unknown): void {
     this.properties[key] = value;
   }
 
@@ -77,7 +77,7 @@ export class MetricsContext {
    * A dimension set will be created with just the default dimensions
    * and all calls to putDimensions will be prepended with the defaults.
    */
-  public setDefaultDimensions(dimensions: Record<string, string>) {
+  public setDefaultDimensions(dimensions: Record<string, string>): void {
     LOG(`Received default dimensions`, dimensions);
     this.defaultDimensions = dimensions;
   }
@@ -88,7 +88,7 @@ export class MetricsContext {
    *
    * @param dimensions
    */
-  public putDimensions(dimensions: Record<string, string>) {
+  public putDimensions(dimensions: Record<string, string>): void {
     this.dimensions.push(dimensions);
   }
 
@@ -97,7 +97,7 @@ export class MetricsContext {
    *
    * @param dimensionSets
    */
-  public setDimensions(dimensionSets: Array<Record<string, string>>) {
+  public setDimensions(dimensionSets: Array<Record<string, string>>): void {
     this.shouldUseDefaultDimensions = false;
     this.dimensions = dimensionSets;
   }
@@ -129,7 +129,7 @@ export class MetricsContext {
     });
   }
 
-  public putMetric(key: string, value: number, unit?: Unit | string) {
+  public putMetric(key: string, value: number, unit?: Unit | string): void {
     const currentMetric = this.metrics.get(key);
     if (currentMetric) {
       currentMetric.addValue(value);

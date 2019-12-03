@@ -11,7 +11,7 @@ import { MetricsLogger } from '../MetricsLogger';
 const createSink = () => new TestSink();
 const createEnvironment = (sink: ISink) => {
   return {
-    probe: async () => true,
+    probe: () => Promise.resolve(true),
     getSink: () => sink,
     getName: () => 'test',
     getType: () => 'test',
@@ -28,7 +28,7 @@ let logger: MetricsLogger;
 beforeEach(() => {
   sink = createSink();
   environment = createEnvironment(sink);
-  logger = createLogger(async () => environment);
+  logger = createLogger(() => Promise.resolve(environment));
 });
 
 test('can set property', async () => {
@@ -143,7 +143,7 @@ test('setDimensions overwrites default dimensions', async () => {
 
   const sink = createSink();
   const env = createEnvironment(sink);
-  const logger = new MetricsLogger(async () => env, context);
+  const logger = new MetricsLogger(() => Promise.resolve(env), context);
 
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.word();

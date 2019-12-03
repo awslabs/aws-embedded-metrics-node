@@ -1,11 +1,7 @@
-import * as faker from 'faker';
-import Configuration from '../../config/Configuration';
-
-const sink = {};
-
 const createMetricsLogger = () => {
   // environment detection happens at module load time which is why
   // this needs to be inlined during test execution
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { createMetricsLogger } = require('../MetricsLoggerFactory');
   return createMetricsLogger();
 };

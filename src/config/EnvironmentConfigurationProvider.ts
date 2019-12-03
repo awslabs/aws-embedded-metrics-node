@@ -50,6 +50,6 @@ export class EnvironmentConfigurationProvider {
 
   private tryGetEnvVariableAsBoolean(configKey: string, fallback: boolean): boolean {
     const configValue = this.getEnvVariable(configKey);
-    return !configValue ? fallback : ((configValue.toLowerCase() === 'true') as boolean);
+    return !configValue ? fallback : configValue.toLowerCase() === 'true';
   }
 }

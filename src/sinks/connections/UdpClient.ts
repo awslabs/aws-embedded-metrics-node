@@ -26,13 +26,13 @@ export class UdpClient implements ISocketClient {
   }
 
   // No warm up for UDP
-  public warmup (): Promise<void> {
-    return Promise.resolve()
+  public warmup(): Promise<void> {
+    return Promise.resolve();
   }
 
   public async sendMessage(message: Buffer): Promise<void> {
     const client = dgram.createSocket('udp4');
-    client.send(message, this.endpoint.port, this.endpoint.host, (error: any) => {
+    client.send(message, this.endpoint.port, this.endpoint.host, (error: unknown) => {
       if (error) {
         LOG(error);
       }

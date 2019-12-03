@@ -19,7 +19,7 @@ enum FormatVersion {
   ZERO = '0',
 }
 
-const createSerializer = (version: FormatVersion) => {
+const createSerializer = (version: FormatVersion): LogSerializer => {
   switch (version) {
     case FormatVersion.ZERO:
       return new LogSerializer();

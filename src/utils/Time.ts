@@ -13,14 +13,13 @@
  * limitations under the License.
  */
 
-// tslint:disable-next-line
-const { performance } = require('perf_hooks');
+import { performance } from 'perf_hooks';
 
 /**
  * Returns the current high resolution millisecond timestamp,
  * measured in Unix time
  */
-const now = () => {
+const now = (): number => {
   return performance.timeOrigin + performance.now();
 };
 

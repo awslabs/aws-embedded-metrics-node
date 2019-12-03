@@ -60,7 +60,7 @@ const fetch = <T>(url: string): Promise<T> => {
           }
         });
       })
-      .on('error', (err: any) => {
+      .on('error', (err: unknown) => {
         reject(err);
       });
 

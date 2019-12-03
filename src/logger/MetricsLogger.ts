@@ -62,7 +62,7 @@ export class MetricsLogger {
    * @param key Property name
    * @param value Property value
    */
-  public setProperty(key: string, value: any): MetricsLogger {
+  public setProperty(key: string, value: unknown): MetricsLogger {
     this.context.setProperty(key, value);
     return this;
   }
@@ -123,7 +123,7 @@ export class MetricsLogger {
     return new MetricsLogger(this.resolveEnvironment, this.context.createCopyWithContext());
   }
 
-  private configureContextForEnvironment = (context: MetricsContext, environment: IEnvironment) => {
+  private configureContextForEnvironment = (context: MetricsContext, environment: IEnvironment): void => {
     const defaultDimensions = {
       // LogGroup name will entirely depend on the environment since there
       // are some cases where the LogGroup cannot be configured (e.g. Lambda)

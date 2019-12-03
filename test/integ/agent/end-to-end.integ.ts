@@ -1,7 +1,7 @@
 import { metricScope } from '../../../src/logger/MetricScope';
 import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
-const os = require('os');
+import os = require('os');
 import CloudWatch = require('aws-sdk/clients/cloudwatch');
 const cwmClient = new CloudWatch();
 
@@ -22,6 +22,41 @@ const dimensionKey = 'Operation';
 const dimensionValue = 'Integ-Test-Agent';
 const dimensions: Record<string, string> = {};
 dimensions[dimensionKey] = dimensionValue;
+
+const metricExists = async (metricName: string, expectedSampleCount: number): Promise<boolean> => {
+  const request = {
+    Namespace: 'aws-embedded-metrics',
+    MetricName: metricName,
+    Dimensions: [
+      { Name: 'ServiceName', Value: serviceName },
+      { Name: 'ServiceType', Value: serviceType },
+      { Name: 'LogGroup', Value: logGroupName },
+      { Name: dimensionKey, Value: dimensionValue },
+    ],
+    Period: 60,
+    StartTime: new Date(startTime.getTime() - 5000),
+    EndTime: new Date(now()),
+    Statistics: ['SampleCount'],
+  };
+
+  const result = await cwmClient.getMetricStatistics(request).promise();
+
+  if (result && result.Datapoints && result.Datapoints.length > 0) {
+    const samples = result.Datapoints.map(dataPoint => dataPoint.SampleCount || 0).reduce((total, i) => total + i);
+    console.log(`Received ${samples} samples.`);
+    return samples === expectedSampleCount;
+  }
+
+  return false;
+};
+
+const waitForMetricExistence = async (metricName: string, expectedSampleCount: number): Promise<void> => {
+  let attempts = 0;
+  while (!(await metricExists(metricName, expectedSampleCount))) {
+    console.log('No metrics yet. Sleeping before trying again. Attempt #', attempts++);
+    await Sleep(2000);
+  }
+};
 
 test(
   'end to end integration test with agent over UDP',
@@ -71,38 +106,3 @@ test(
   },
   timeoutMillis,
 );
-
-const waitForMetricExistence = async (metricName: string, expectedSampleCount: number): Promise<void> => {
-  let attempts = 0;
-  while (!(await metricExists(metricName, expectedSampleCount))) {
-    console.log('No metrics yet. Sleeping before trying again. Attempt #', attempts++);
-    await Sleep(2000);
-  }
-};
-
-const metricExists = async (metricName: string, expectedSampleCount: number): Promise<boolean> => {
-  const request = {
-    Namespace: 'aws-embedded-metrics',
-    MetricName: metricName,
-    Dimensions: [
-      { Name: 'ServiceName', Value: serviceName },
-      { Name: 'ServiceType', Value: serviceType },
-      { Name: 'LogGroup', Value: logGroupName },
-      { Name: dimensionKey, Value: dimensionValue },
-    ],
-    Period: 60,
-    StartTime: new Date(startTime.getTime() - 5000),
-    EndTime: new Date(now()),
-    Statistics: ['SampleCount'],
-  };
-
-  const result = await cwmClient.getMetricStatistics(request).promise();
-
-  if (result && result.Datapoints && result.Datapoints.length > 0) {
-    const samples = result.Datapoints.map(dataPoint => dataPoint.SampleCount || 0).reduce((total, i) => total + i);
-    console.log(`Received ${samples} samples.`);
-    return samples === expectedSampleCount;
-  }
-
-  return false;
-};

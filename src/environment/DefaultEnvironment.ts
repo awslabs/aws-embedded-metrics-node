@@ -14,7 +14,6 @@
  */
 
 import config from '../config/Configuration';
-import { MetricsContext } from '../logger/MetricsContext';
 import { AgentSink } from '../sinks/AgentSink';
 import { ISink } from '../sinks/Sink';
 import { LOG } from '../utils/Logger';
@@ -23,8 +22,8 @@ import { IEnvironment } from './IEnvironment';
 export class DefaultEnvironment implements IEnvironment {
   private sink: ISink | undefined;
 
-  public async probe(): Promise<boolean> {
-    return true;
+  public probe(): Promise<boolean> {
+    return Promise.resolve(true);
   }
 
   public getName(): string {
@@ -47,7 +46,7 @@ export class DefaultEnvironment implements IEnvironment {
     return config.logGroupName ? config.logGroupName : `${this.getName()}-metrics`;
   }
 
-  public configureContext(context: MetricsContext): void {
+  public configureContext(): void {
     // no-op
   }
 

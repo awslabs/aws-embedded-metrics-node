@@ -1,0 +1,9 @@
+// As of typescript-eslint 2.0, when project is specified within parserOptions, it will now hard fail when
+// parsing files that are not included within the provided tsconfig(s). Because of this, we need a dedicated
+// tsconfig for linting that includes tests that we want linted
+// See here for more details https://github.com/typescript-eslint/typescript-eslint/releases/tag/v2.0.0
+{
+  "extends": "./tsconfig.json",
+  "include": ["src", "test"],
+  "exclude": ["node_modules"]
+}

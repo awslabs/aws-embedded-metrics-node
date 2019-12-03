@@ -12,8 +12,8 @@ test('async scope executes handler function', async () => {
   // arrange
   let wasInvoked = false;
 
-  const handler = metricScope(metrics => async () => {
-    await sleep(100);
+  const handler = metricScope(() => async () => {
+    await sleep(1);
     wasInvoked = true;
   });
 
@@ -28,7 +28,7 @@ test('sync scope executes handler function', async () => {
   // arrange
   let a = false;
 
-  const handler = metricScope(metrics => () => {
+  const handler = metricScope(() => () => {
     a = true;
   });
 
@@ -46,7 +46,8 @@ test('async scope passes arguments', async () => {
   let arg1 = false;
   let arg2 = '';
 
-  const handler = metricScope(metrics => async (input1: boolean, input2: string) => {
+  const handler = metricScope(() => async (input1: boolean, input2: string) => {
+    await sleep(1);
     arg1 = input1;
     arg2 = input2;
   });
@@ -65,8 +66,8 @@ test('async scope returns child function return value', async () => {
   // arrange
   const expected = true;
 
-  const handler = metricScope(metrics => async () => {
-    return expected;
+  const handler = metricScope(() => async () => {
+    return await Promise.resolve(expected);
   });
 
   // act
@@ -83,7 +84,7 @@ test('sync scope passes arguments', async () => {
   let arg1 = false;
   let arg2 = '';
 
-  const handler = metricScope(metrics => (input1: boolean, input2: string) => {
+  const handler = metricScope(() => (input1: boolean, input2: string) => {
     arg1 = input1;
     arg2 = input2;
   });
@@ -102,7 +103,7 @@ test('sync scope returns child function return value', async () => {
   // arrange
   const expected = true;
 
-  const handler = metricScope(metrics => () => {
+  const handler = metricScope(() => () => {
     return expected;
   });
 
