@@ -22,7 +22,7 @@ Generate CloudWatch Metrics embedded within structured log events. The embedded 
 - **Linking metrics to high cardinality context**
 
   Using the Embedded Metric Format, you will be able to visualize and alarm on custom metrics, but also retain the original, detailed and high-cardinality context which is queryable using [CloudWatch Logs Insights](https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/AnalyzingLogData.html). For example, the library automatically injects environment metadata such as Lambda Function version, EC2 instance and image ids into the structured log event data.
-  
+
 ## Installation
 
 ```
@@ -33,12 +33,12 @@ npm install aws-embedded-metrics
 
 To get a metric logger, you can either decorate your function with a metricScope, or manually create and flush the logger.
 
-Using the metricScope decorator:
+Using the metricScope decorator without function parameters:
 
 ```js
 const { metricScope, Unit } = require("aws-embedded-metrics");
 
-const myFunc = metricScope(metrics => 
+const myFunc = metricScope(metrics =>
   async () => {
     metrics.putDimensions({ Service: "Aggregator" });
     metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds);
@@ -47,6 +47,22 @@ const myFunc = metricScope(metrics =>
   });
 
 await myFunc();
+```
+
+Using the metricScope decorator with function parameters:
+
+```js
+const { metricScope, Unit } = require("aws-embedded-metrics");
+
+const myFunc = metricScope(metrics =>
+  async (param1: string, param2: number) => {
+    metrics.putDimensions({ Service: "Aggregator" });
+    metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds);
+    metrics.setProperty("RequestId", "422b1569-16f6-4a03-b8f0-fe3fd9b100f8");
+    // ...
+  });
+
+await myFunc('myParam', 0);
 ```
 
 Manually constructing and flushing the logger:
@@ -73,7 +89,7 @@ If you are running on Lambda, export your function like so:
 ```js
 const { metricScope } = require("aws-embedded-metrics");
 
-const myFunc = metricScope(metrics => 
+const myFunc = metricScope(metrics =>
   async () => {
     // ...
   });
@@ -109,8 +125,8 @@ Adds or updates the value for a given property on this context. This value is no
 
 Requirements:
 - Length 1-255 characters
-    
-Examples: 
+
+Examples:
 ```js
 setProperty("RequestId", "422b1569-16f6-4a03-b8f0-fe3fd9b100f8")
 setProperty("InstanceId", "i-1234567890")
@@ -124,7 +140,7 @@ setProperty("Device", {
 
 Adds a new set of dimensions that will be associated to all metric values.
 
-**WARNING**: Every distinct value will result in a new CloudWatch Metric. 
+**WARNING**: Every distinct value will result in a new CloudWatch Metric.
 If the cardinality of a particular value is expected to be high, you should consider
 using `setProperty` instead.
 
@@ -132,7 +148,7 @@ Requirements:
 - Length 1-255 characters
 - ASCII characters only
 
-Examples: 
+Examples:
 ```js
 putDimensions({ Operation: "Aggregator" })
 putDimensions({ Operation: "Aggregator", DeviceType: "Actuator" })
@@ -142,7 +158,7 @@ putDimensions({ Operation: "Aggregator", DeviceType: "Actuator" })
 
 Explicitly override all dimensions. This will remove the default dimensions.
 
-**WARNING**: Every distinct value will result in a new CloudWatch Metric. 
+**WARNING**: Every distinct value will result in a new CloudWatch Metric.
 If the cardinality of a particular value is expected to be high, you should consider
 using `setProperty` instead.
 
@@ -206,7 +222,7 @@ Requirements:
 - Name Length 1-255 characters
 - Name must be ASCII characters only
 
-Example: 
+Example:
 
 ```js
 // in process

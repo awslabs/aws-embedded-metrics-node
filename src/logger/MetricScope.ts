@@ -20,10 +20,10 @@ import { createMetricsLogger } from './MetricsLoggerFactory';
 /**
  * An asynchronous wrapper that provides a metrics instance.
  */
-const metricScope = <T>(
-  handler: (m: MetricsLogger) => (...args: any[]) => T | Promise<T>,
-): ((...args: any[]) => Promise<T | undefined>) => {
-  const wrappedHandler = async (...args: any[]): Promise<T | undefined> => {
+const metricScope = <T, U extends readonly unknown[]>(
+  handler: (m: MetricsLogger) => (...args: U) => T | Promise<T>,
+): ((...args: U) => Promise<T | undefined>) => {
+  const wrappedHandler = async (...args: U): Promise<T | undefined> => {
     const metrics = createMetricsLogger();
     let exception;
     try {

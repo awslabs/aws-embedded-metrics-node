@@ -12,7 +12,7 @@ test('async scope executes handler function', async () => {
   // arrange
   let wasInvoked = false;
 
-  const handler = metricScope(metrics => async (evt: any) => {
+  const handler = metricScope(metrics => async () => {
     await sleep(100);
     wasInvoked = true;
   });
@@ -28,7 +28,7 @@ test('sync scope executes handler function', async () => {
   // arrange
   let a = false;
 
-  const handler = metricScope(metrics => (evt: any) => {
+  const handler = metricScope(metrics => () => {
     a = true;
   });
 
@@ -43,19 +43,22 @@ test('sync scope executes handler function', async () => {
 
 test('async scope passes arguments', async () => {
   // arrange
-  let arg = false;
+  let arg1 = false;
+  let arg2 = '';
 
-  const handler = metricScope(metrics => async (input: any) => {
-    arg = input;
+  const handler = metricScope(metrics => async (input1: boolean, input2: string) => {
+    arg1 = input1;
+    arg2 = input2;
   });
 
   // act
   // the customer can pass in a synchronous function, but we will still return
   // an async function back to the Lambda caller
-  await handler(true);
+  await handler(true, 'success');
 
   // assert
-  expect(arg).toBe(true);
+  expect(arg1).toBe(true);
+  expect(arg2).toBe('success');
 });
 
 test('async scope returns child function return value', async () => {
@@ -77,19 +80,22 @@ test('async scope returns child function return value', async () => {
 
 test('sync scope passes arguments', async () => {
   // arrange
-  let arg = false;
+  let arg1 = false;
+  let arg2 = '';
 
-  const handler = metricScope(metrics => (input: any) => {
-    arg = input;
+  const handler = metricScope(metrics => (input1: boolean, input2: string) => {
+    arg1 = input1;
+    arg2 = input2;
   });
 
   // act
   // the customer can pass in a synchronous function, but we will still return
   // an async function back to the Lambda caller
-  await handler(true);
+  await handler(true, 'success');
 
   // assert
-  expect(arg).toBe(true);
+  expect(arg1).toBe(true);
+  expect(arg2).toBe('success');
 });
 
 test('sync scope returns child function return value', async () => {
