@@ -261,6 +261,42 @@ test('flush() delegates context configuration to the environment by calling conf
   expect(environment.configureContext).toBeCalled();
 });
 
+test('context is preserved across flush() calls', async () => {
+  // arrange
+  const expectedNamespace = 'Namespace';
+  const metricKey = 'Metric';
+  const expectedDimensionKey = 'Dim';
+  const expectedPropertyKey = 'Prop';
+  const expectedValues = 'Value';
+
+  const dimensions: Record<string, string> = {};
+  dimensions[expectedDimensionKey] = expectedValues;
+
+  logger.setNamespace(expectedNamespace);
+  logger.setProperty(expectedPropertyKey, expectedValues);
+  logger.setDimensions(dimensions);
+
+  // act
+  logger.putMetric(metricKey, 0);
+  await logger.flush();
+
+  logger.putMetric(metricKey, 1);
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(2);
+  for (let i = 0; i < sink.events.length; i++) {
+    const evt = sink.events[i];
+    // namespace, properties, dimensions should survive flushes
+    expect(evt.namespace).toBe(expectedNamespace);
+    expect(evt.getDimensions()[0][expectedDimensionKey]).toBe(expectedValues);
+    expect(evt.properties[expectedPropertyKey]).toBe(expectedValues);
+    // metric values should not survive flushes
+    // @ts-ignore
+    expect(evt.metrics.get(metricKey).values).toStrictEqual([i]);
+  }
+});
+
 const expectDimension = (key: string, value: string) => {
   expect(sink.events).toHaveLength(1);
   const dimensionSets = sink.events[0].getDimensions();
