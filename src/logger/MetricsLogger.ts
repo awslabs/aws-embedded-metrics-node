@@ -48,7 +48,7 @@ export class MetricsLogger {
 
     // accept and reset the context
     sink.accept(this.context);
-    this.context = MetricsContext.empty();
+    this.context = this.context.createCopyWithContext();
   }
 
   /**
