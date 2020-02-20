@@ -18,18 +18,37 @@ import { DefaultEnvironment } from './DefaultEnvironment';
 import { EC2Environment } from './EC2Environment';
 import { IEnvironment } from './IEnvironment';
 import { LambdaEnvironment } from './LambdaEnvironment';
+import config from '../config/Configuration';
+import Environments from './Environments';
+import { LocalEnvironment } from './LocalEnvironment';
 
 type EnvironmentProvider = () => Promise<IEnvironment>;
 
-const environments = [new LambdaEnvironment(), new EC2Environment()];
+const lambdaEnvironment = new LambdaEnvironment();
+const ec2Environment = new EC2Environment();
 const defaultEnvironment = new DefaultEnvironment();
+const environments = [lambdaEnvironment, ec2Environment];
 
-let environment: IEnvironment | undefined;
-const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
-  if (environment) {
-    return environment;
+let environment : IEnvironment | undefined = defaultEnvironment;
+
+const getEnvironmentFromOverride = (): IEnvironment => {
+  // short-circuit environment detection and use override
+  switch (config.environmentOverride) {
+    case Environments.Agent:
+      return defaultEnvironment;
+    case Environments.EC2:
+      return ec2Environment;
+    case Environments.Lambda:
+      return lambdaEnvironment;
+    case Environments.Local:
+      return new LocalEnvironment();
+    case Environments.Unknown:
+    default:
+      return defaultEnvironment;
   }
+}
 
+const discoverEnvironment = async (): Promise<IEnvironment> => {
   for (const envUnderTest of environments) {
     LOG(`Testing: ${envUnderTest.constructor.name}`);
 
@@ -50,6 +69,18 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
     environment = defaultEnvironment;
   }
 
+  return environment;
+}
+
+const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+  if (environment) {
+    return environment;
+  }
+
+  environment = (config.environmentOverride)
+    ? getEnvironmentFromOverride()
+    : await discoverEnvironment();
+  
   LOG(`Using Environment: ${environment.constructor.name}`);
 
   return environment;

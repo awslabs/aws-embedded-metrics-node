@@ -22,8 +22,8 @@ import { ISink } from './Sink';
  * A sink that flushes log data to stdout.
  * This is the preferred sink for Lambda functions.
  */
-export class LambdaSink implements ISink {
-  public readonly name: string = 'LambdaSink';
+export class ConsoleSink implements ISink {
+  public readonly name: string = 'ConsoleSink';
 
   private serializer: ISerializer;
 

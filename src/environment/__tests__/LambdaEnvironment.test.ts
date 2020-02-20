@@ -51,9 +51,9 @@ test('getLogGroupName() returns function name', () => {
   expect(result).toBe(expectedName);
 });
 
-test('createSink() creates a LambdaSink', () => {
+test('createSink() creates a ConsoleSink', () => {
   // arrange
-  const expectedSink = 'LambdaSink';
+  const expectedSink = 'ConsoleSink';
   const env = new LambdaEnvironment();
 
   // act

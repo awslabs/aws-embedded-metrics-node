@@ -14,7 +14,7 @@
  */
 
 import { MetricsContext } from '../logger/MetricsContext';
-import { LambdaSink } from '../sinks/LambdaSink';
+import { ConsoleSink } from '../sinks/ConsoleSink';
 import { ISink } from '../sinks/Sink';
 import { IEnvironment } from './IEnvironment';
 
@@ -51,7 +51,7 @@ export class LambdaEnvironment implements IEnvironment {
 
   public getSink(): ISink {
     if (!this.sink) {
-      this.sink = new LambdaSink();
+      this.sink = new ConsoleSink();
     }
     return this.sink;
   }
