@@ -31,7 +31,7 @@ const environments = [lambdaEnvironment, ec2Environment];
 
 let environment : IEnvironment | undefined = defaultEnvironment;
 
-const getEnvironmentFromOverride = (): IEnvironment => {
+const getEnvironmentFromOverride = (): IEnvironment | undefined => {
   // short-circuit environment detection and use override
   switch (config.environmentOverride) {
     case Environments.Agent:
@@ -44,7 +44,7 @@ const getEnvironmentFromOverride = (): IEnvironment => {
       return new LocalEnvironment();
     case Environments.Unknown:
     default:
-      return defaultEnvironment;
+      return undefined;
   }
 }
 
@@ -70,8 +70,14 @@ const _resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment>
 
   if (config.environmentOverride) {
     LOG("Environment override supplied", config.environmentOverride);
-    environment = getEnvironmentFromOverride();
-    return environment;
+    // this will be falsy if an invalid configuration value is provided
+    environment = getEnvironmentFromOverride()
+    if (environment) {
+      return environment;
+    }
+    else {
+      LOG('Invalid environment provided. Falling back to auto-discovery.', config.environmentOverride);
+    }
   }
   
   environment = await discoverEnvironment(); // eslint-disable-line require-atomic-updates

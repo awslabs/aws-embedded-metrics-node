@@ -37,3 +37,16 @@ test('resolveEnvironment() honors configured override', async () => {
   // assert
   expect(result.constructor.name).toBe('LocalEnvironment');
 });
+
+test('resolveEnvironment() ignores invalid override and falls back to discovery', async () => {
+  // arrange
+  // @ts-ignore
+  config.environmentOverride = "Invalid";
+  process.env.AWS_LAMBDA_FUNCTION_NAME = faker.random.word();
+
+  // act
+  const result = await cleanResolveEnvironment();
+
+  // assert
+  expect(result.constructor.name).toBe('LambdaEnvironment');
+});
