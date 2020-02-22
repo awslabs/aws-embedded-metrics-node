@@ -64,18 +64,17 @@ const discoverEnvironment = async (): Promise<IEnvironment> => {
 }
 
 const _resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
-  console.log('resolvingenvion')
   if (environment) {
     return environment;
   }
 
-  let detectedEnvironment = undefined;
   if (config.environmentOverride) {
-    detectedEnvironment = getEnvironmentFromOverride();
+    LOG("Environment override supplied", config.environmentOverride);
+    environment = getEnvironmentFromOverride();
+    return environment;
   }
   
-  detectedEnvironment = await discoverEnvironment();
-  environment = detectedEnvironment;  // eslint-disable-line require-atomic-updates
+  environment = await discoverEnvironment(); // eslint-disable-line require-atomic-updates
   return environment;
 };
 
