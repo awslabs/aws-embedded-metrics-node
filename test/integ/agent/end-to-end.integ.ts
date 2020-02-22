@@ -23,6 +23,57 @@ const dimensionValue = 'Integ-Test-Agent';
 const dimensions: Record<string, string> = {};
 dimensions[dimensionKey] = dimensionValue;
 
+test(
+  'end to end integration test with agent over UDP',
+  async () => {
+    // arrange
+    const metricName = 'UDP-SingleFlush';
+    const expectedSamples = 1;
+    Configuration.agentEndpoint = 'udp://0.0.0.0:25888';
+
+    const doWork = metricScope(metrics => () => {
+      metrics.putDimensions(dimensions);
+      metrics.putMetric(metricName, 100, 'Milliseconds');
+    });
+
+    // act
+    doWork();
+
+    // assert
+    await waitForMetricExistence(metricName, expectedSamples);
+  },
+  timeoutMillis,
+);
+
+test(
+  'multiple flushes over TCP connection that cross over idle timeout',
+  async () => {
+    // arrange
+    const idleTimeout = 500;
+    const metricName = 'TCP-MultipleFlushes';
+    const expectedSamples = 3;
+
+    Configuration.agentEndpoint = 'tcp://0.0.0.0:25888';
+
+const doWork = metricScope(metrics => () => {
+  metrics.putDimensions(dimensions);
+  metrics.putMetric(metricName, 100, 'Milliseconds');
+  metrics.setProperty('RequestId', '422b1569-16f6-4a03-b8f0-fe3fd9b100f8');
+});
+
+// act
+doWork();
+doWork();
+await Sleep(idleTimeout);
+doWork();
+
+    // assert
+    await waitForMetricExistence(metricName, expectedSamples);
+  },
+  timeoutMillis,
+);
+
+
 const metricExists = async (metricName: string, expectedSampleCount: number): Promise<boolean> => {
   const request = {
     Namespace: 'aws-embedded-metrics',
@@ -57,53 +108,3 @@ const waitForMetricExistence = async (metricName: string, expectedSampleCount: n
     await Sleep(2000);
   }
 };
-
-test(
-  'end to end integration test with agent over UDP',
-  async () => {
-    // arrange
-    const metricName = 'UDP-SingleFlush';
-    const expectedSamples = 1;
-    Configuration.agentEndpoint = 'udp://0.0.0.0:25888';
-
-    const doWork = metricScope(metrics => () => {
-      metrics.putDimensions(dimensions);
-      metrics.putMetric(metricName, 100, 'Milliseconds');
-    });
-
-    // act
-    doWork();
-
-    // assert
-    await waitForMetricExistence(metricName, expectedSamples);
-  },
-  timeoutMillis,
-);
-
-test(
-  'multiple flushes over TCP connection that cross over idle timeout',
-  async () => {
-    // arrange
-    const idleTimeout = 500;
-    const metricName = 'TCP-MultipleFlushes';
-    const expectedSamples = 2;
-
-    Configuration.agentEndpoint = 'tcp://0.0.0.0:25888';
-
-const doWork = metricScope(metrics => () => {
-  metrics.putDimensions(dimensions);
-  metrics.putMetric(metricName, 100, 'Milliseconds');
-  metrics.setProperty('RequestId', '422b1569-16f6-4a03-b8f0-fe3fd9b100f8');
-});
-
-// act
-doWork();
-doWork();
-await Sleep(idleTimeout);
-doWork();
-
-    // assert
-    await waitForMetricExistence(metricName, expectedSamples);
-  },
-  timeoutMillis,
-);
