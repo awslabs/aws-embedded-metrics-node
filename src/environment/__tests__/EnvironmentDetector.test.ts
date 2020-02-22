@@ -1,10 +1,8 @@
 import * as faker from 'faker';
-import { resetEnvironment, resolveEnvironment } from '../EnvironmentDetector';
+import { cleanResolveEnvironment } from '../EnvironmentDetector';
 
 beforeEach(() => {
   process.env = {};
-  resetEnvironment();
-  jest.resetModules();
 });
 
 test('resolveEnvironment() returns LambdaEnvironment if AWS_LAMBDA_FUNCTION_NAME specified', async () => {
@@ -12,7 +10,7 @@ test('resolveEnvironment() returns LambdaEnvironment if AWS_LAMBDA_FUNCTION_NAME
   process.env.AWS_LAMBDA_FUNCTION_NAME = faker.random.word();
 
   // act
-  const result = await resolveEnvironment();
+  const result = await cleanResolveEnvironment();
 
   // assert
   expect(result.constructor.name).toBe('LambdaEnvironment');
@@ -21,7 +19,7 @@ test('resolveEnvironment() returns LambdaEnvironment if AWS_LAMBDA_FUNCTION_NAME
 test('resolveEnvironment() returns DefaultEnvironment if nothing else was detected', async () => {
   // arrange
   // act
-  const result = await resolveEnvironment();
+  const result = await cleanResolveEnvironment();
 
   // assert
   expect(result.constructor.name).toBe('DefaultEnvironment');

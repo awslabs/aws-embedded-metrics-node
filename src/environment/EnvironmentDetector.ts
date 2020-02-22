@@ -52,46 +52,47 @@ const discoverEnvironment = async (): Promise<IEnvironment> => {
   for (const envUnderTest of environments) {
     LOG(`Testing: ${envUnderTest.constructor.name}`);
 
-    let isEnvironment = false;
     try {
-      isEnvironment = await envUnderTest.probe();
+      if (await envUnderTest.probe()) {
+        return envUnderTest;
+      }
     } catch (e) {
       LOG(`Failed probe: ${envUnderTest.constructor.name}`);
     }
-
-    if (isEnvironment) {
-      environment = envUnderTest;
-      break;
-    }
   }
-
-  if (!environment) {
-    environment = defaultEnvironment;
-  }
-
-  return environment;
+  return defaultEnvironment;
 }
 
-const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+const _resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+  console.log('resolvingenvion')
   if (environment) {
     return environment;
   }
 
-  environment = (config.environmentOverride)
-    ? getEnvironmentFromOverride()
-    : await discoverEnvironment();
+  let detectedEnvironment = undefined;
+  if (config.environmentOverride) {
+    detectedEnvironment = getEnvironmentFromOverride();
+  }
   
-  LOG(`Using Environment: ${environment.constructor.name}`);
-
+  detectedEnvironment = await discoverEnvironment();
+  environment = detectedEnvironment;  // eslint-disable-line require-atomic-updates
   return environment;
 };
 
-const resetEnvironment = (): void => (environment = undefined);
+
 
 // pro-actively begin resolving the environment
 // this will allow us to kick off any async tasks
 // at module load time to reduce any blocking that
 // may occur on the initial flush()
-resolveEnvironment();
+const environmentPromise = _resolveEnvironment();
+const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+  return environmentPromise;
+};
 
-export { EnvironmentProvider, resolveEnvironment, resetEnvironment };
+const cleanResolveEnvironment = async (): Promise<IEnvironment> => {
+  environment = undefined; 
+  return await _resolveEnvironment();
+};
+
+export { EnvironmentProvider, resolveEnvironment, cleanResolveEnvironment };
