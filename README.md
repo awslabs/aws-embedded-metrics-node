@@ -268,6 +268,52 @@ Configuration.logStreamName = "LogStreamName";
 AWS_EMF_LOG_STREAM_NAME=LogStreamName
 ```
 
+**AgentEndpoint**: For agent-based platforms, you may optionally configure the endpoint to reach the agent on.
+
+Example:
+
+```js
+// in process
+const { Configuration } = require("aws-embedded-metrics");
+Configuration.agentEndpoint = "udp://127.0.0.1:1000";
+
+// environment
+AWS_EMF_AGENT_ENDPOINT="udp://127.0.0.1:1000"
+```
+
+**EnvironmentOverride**: Short circuit auto-environment detection by explicitly defining how events should be sent.
+
+Valid values include:
+
+- Local: no decoration and sends over stdout
+- Lambda: decorates logs with Lambda metadata and sends over stdout
+- Agent: no decoration and sends over TCP
+- EC2: decorates logs with EC2 metadata and sends over TCP
+
+Example:
+
+```js
+// in process
+const { Configuration } = require("aws-embedded-metrics");
+Configuration.environmentOverride = "Local";
+
+// environment
+AWS_EMF_AGENT_ENDPOINT=Local
+```
+
+**EnableDebugLogging**: Enable debug logging for the library. If the library is not behaving as expected, you can set this to true to log to console.
+
+Example:
+
+```js
+// in process
+const { Configuration } = require("aws-embedded-metrics");
+Configuration.debuggingLoggingEnabled = true;
+
+// environment
+AWS_EMF_ENABLE_DEBUG_LOGGING=true
+```
+
 ## Examples
 
 Check out the [examples](https://github.com/awslabs/aws-embedded-metrics-node/tree/master/examples) directory to get started.
