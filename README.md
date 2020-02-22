@@ -9,6 +9,7 @@ Generate CloudWatch Metrics embedded within structured log events. The embedded 
 * [Installation](#installation)
 * [Usage](#usage)
 * [API](#api)
+* [Configuration](#configuration)
 * [Examples](#examples)
 * [Development](#development)
 
@@ -193,7 +194,7 @@ setNamespace("MyApplication");
 
 Flushes the current MetricsContext to the configured sink and resets all properties, dimensions and metric values. The namespace and default dimensions will be preserved across flushes.
 
-### Configuration
+## Configuration
 
 All configuration values can be set using environment variables with the prefix (`AWS_EMF_`). Configuration should be performed as close to application start up as possible.
 
