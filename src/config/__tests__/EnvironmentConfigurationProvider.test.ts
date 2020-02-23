@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+import Environments from '../../environment/Environments';
 
 beforeEach(() => {
   jest.resetModules();
@@ -170,4 +171,39 @@ test('can set agent endpoint from environment', () => {
   // assert
   const result = config.agentEndpoint;
   expect(result).toBe(expectedValue);
+});
+
+test('can set environment override from environment', () => {
+  // arrange
+  const expectedValue = "Local"
+  process.env.AWS_EMF_ENVIRONMENT = expectedValue;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.environmentOverride;
+  expect(result).toBe(Environments.Local);
+});
+
+test('if environment override is not set, default to unknown', () => {
+  // arrange
+  process.env.AWS_EMF_ENVIRONMENT = "";
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.environmentOverride;
+  expect(result).toBe(Environments.Unknown);
+});
+
+test('if environment override cannot be parsed, default to unknown', () => {
+  // arrange
+  process.env.AWS_EMF_ENVIRONMENT = faker.random.alphaNumeric();
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.environmentOverride;
+  expect(result).toBe(Environments.Unknown);
 });

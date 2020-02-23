@@ -1,6 +1,6 @@
 import * as faker from 'faker';
 import { MetricsContext } from '../../logger/MetricsContext';
-import { LambdaSink } from '../LambdaSink';
+import { ConsoleSink } from '../ConsoleSink';
 
 beforeEach(() => {
   console.log = jest.fn();
@@ -13,7 +13,7 @@ test('accept serializes and writes result to stdout', () => {
     serialize: jest.fn(() => expected),
   };
 
-  const sink = new LambdaSink(serializer);
+  const sink = new ConsoleSink(serializer);
 
   // act
   sink.accept(MetricsContext.empty());

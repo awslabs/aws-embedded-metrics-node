@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+import Environments from "../environment/Environments";
+
 export interface IConfiguration {
   /**
    * Whether or not internal logging should be enabled.
@@ -45,4 +47,14 @@ export interface IConfiguration {
    * The endpoint to use to connect to the CloudWatch Agent
    */
   agentEndpoint: string | undefined;
+
+  /**
+   * Environment override. This will short circuit auto-environment detection.
+   * Valid values include:
+   * - Local: no decoration and sends over stdout
+   * - Lambda: decorates logs with Lambda metadata and sends over stdout
+   * - Agent: no decoration and sends over TCP 
+   * - EC2: decorates logs with EC2 metadata and sends over TCP
+   */
+  environmentOverride: Environments | undefined;
 }

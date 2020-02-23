@@ -18,49 +18,86 @@ import { DefaultEnvironment } from './DefaultEnvironment';
 import { EC2Environment } from './EC2Environment';
 import { IEnvironment } from './IEnvironment';
 import { LambdaEnvironment } from './LambdaEnvironment';
+import config from '../config/Configuration';
+import Environments from './Environments';
+import { LocalEnvironment } from './LocalEnvironment';
 
 type EnvironmentProvider = () => Promise<IEnvironment>;
 
-const environments = [new LambdaEnvironment(), new EC2Environment()];
+const lambdaEnvironment = new LambdaEnvironment();
+const ec2Environment = new EC2Environment();
 const defaultEnvironment = new DefaultEnvironment();
+const environments = [lambdaEnvironment, ec2Environment];
 
-let environment: IEnvironment | undefined;
-const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+let environment : IEnvironment | undefined = defaultEnvironment;
+
+const getEnvironmentFromOverride = (): IEnvironment | undefined => {
+  // short-circuit environment detection and use override
+  switch (config.environmentOverride) {
+    case Environments.Agent:
+      return defaultEnvironment;
+    case Environments.EC2:
+      return ec2Environment;
+    case Environments.Lambda:
+      return lambdaEnvironment;
+    case Environments.Local:
+      return new LocalEnvironment();
+    case Environments.Unknown:
+    default:
+      return undefined;
+  }
+}
+
+const discoverEnvironment = async (): Promise<IEnvironment> => {
+  for (const envUnderTest of environments) {
+    LOG(`Testing: ${envUnderTest.constructor.name}`);
+
+    try {
+      if (await envUnderTest.probe()) {
+        return envUnderTest;
+      }
+    } catch (e) {
+      LOG(`Failed probe: ${envUnderTest.constructor.name}`);
+    }
+  }
+  return defaultEnvironment;
+}
+
+const _resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
   if (environment) {
     return environment;
   }
 
-  for (const envUnderTest of environments) {
-    LOG(`Testing: ${envUnderTest.constructor.name}`);
-
-    let isEnvironment = false;
-    try {
-      isEnvironment = await envUnderTest.probe();
-    } catch (e) {
-      LOG(`Failed probe: ${envUnderTest.constructor.name}`);
+  if (config.environmentOverride) {
+    LOG("Environment override supplied", config.environmentOverride);
+    // this will be falsy if an invalid configuration value is provided
+    environment = getEnvironmentFromOverride()
+    if (environment) {
+      return environment;
     }
-
-    if (isEnvironment) {
-      environment = envUnderTest;
-      break;
+    else {
+      LOG('Invalid environment provided. Falling back to auto-discovery.', config.environmentOverride);
     }
   }
-
-  if (!environment) {
-    environment = defaultEnvironment;
-  }
-
-  LOG(`Using Environment: ${environment.constructor.name}`);
-
+  
+  environment = await discoverEnvironment(); // eslint-disable-line require-atomic-updates
   return environment;
 };
 
-const resetEnvironment = (): void => (environment = undefined);
+
 
 // pro-actively begin resolving the environment
 // this will allow us to kick off any async tasks
 // at module load time to reduce any blocking that
 // may occur on the initial flush()
-resolveEnvironment();
+const environmentPromise = _resolveEnvironment();
+const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+  return environmentPromise;
+};
 
-export { EnvironmentProvider, resolveEnvironment, resetEnvironment };
+const cleanResolveEnvironment = async (): Promise<IEnvironment> => {
+  environment = undefined; 
+  return await _resolveEnvironment();
+};
+
+export { EnvironmentProvider, resolveEnvironment, cleanResolveEnvironment };
