@@ -2,6 +2,8 @@ import * as faker from 'faker';
 import Configuration from '../../config/Configuration';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { AgentSink } from '../AgentSink';
+import { TcpClient } from '../connections/TcpClient';
+
 
 test('default endpoint is tcp', () => {
   // arrange
@@ -46,4 +48,43 @@ test('handles tcp connection error', async () => {
 
   // assert
   return expect(sink.accept(context)).rejects.toThrowError(/ECONNREFUSED/);
+});
+
+test('LogGroup is stored in metadata', async () => {
+  // arrange
+  const expectedLogGroup = faker.random.alphaNumeric();
+  const context = MetricsContext.empty();
+
+  let receivedMessage: any = {};
+  TcpClient.prototype.sendMessage = (message: Buffer) : Promise<void> => {
+    receivedMessage = JSON.parse(message.toString('utf8'));
+    return Promise.resolve();
+  }
+
+  const sink = new AgentSink(expectedLogGroup);
+
+  // act
+  await sink.accept(context);
+
+  // assert
+  expect(receivedMessage._aws.LogGroupName).toBe(expectedLogGroup);
+});
+
+test('empty LogGroup is not stored in metadata', async () => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  let receivedMessage: any = {};
+  TcpClient.prototype.sendMessage = (message: Buffer) : Promise<void> => {
+    receivedMessage = JSON.parse(message.toString('utf8'));
+    return Promise.resolve();
+  }
+
+  const sink = new AgentSink("");
+
+  // act
+  await sink.accept(context);
+
+  // assert
+  expect(receivedMessage._aws.LogGroupName).toBe(undefined);
 });
