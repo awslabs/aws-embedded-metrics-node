@@ -299,7 +299,7 @@ const { Configuration } = require("aws-embedded-metrics");
 Configuration.environmentOverride = "Local";
 
 // environment
-AWS_EMF_AGENT_ENDPOINT=Local
+AWS_EMF_ENVIRONMENT=Local
 ```
 
 **EnableDebugLogging**: Enable debug logging for the library. If the library is not behaving as expected, you can set this to true to log to console.
