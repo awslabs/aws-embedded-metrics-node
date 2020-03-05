@@ -21,11 +21,11 @@ test('serializes dimensions', () => {
   assertJsonEquality(resultJson, expected);
 });
 
-test('cannot serialize more than 10 dimensions', () => {
+test('cannot serialize more than 9 dimensions', () => {
   // arrange
   const dimensions: any = {};
   const dimensionPointers = [];
-  const allowedDimensions = 10;
+  const allowedDimensions = 9;
   const dimensionsToAdd = 11;
   for (let i = 0; i < dimensionsToAdd; i++) {
     const expectedKey = `${i}`;
