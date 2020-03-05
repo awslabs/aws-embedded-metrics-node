@@ -89,7 +89,10 @@ export class AgentSink implements ISink {
   }
 
   public async accept(context: MetricsContext): Promise<void> {
-    context.meta.LogGroupName = this.logGroupName;
+    if (this.logGroupName) {
+      context.meta.LogGroupName = this.logGroupName;
+    }
+   
     if (this.logStreamName) {
       context.meta.LogStreamName = this.logStreamName;
     }

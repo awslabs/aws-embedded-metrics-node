@@ -88,6 +88,18 @@ test('getLogGroupName() returns <ServiceName>-metrics if not configured', () => 
   expect(result).toBe(`${serviceName}-metrics`);
 });
 
+test('getLogGroupName() returns empty if explicitly set to empty', () => {
+  // arrange
+  config.logGroupName = "";
+  const env = new DefaultEnvironment();
+
+  // act
+  const result = env.getLogGroupName();
+
+  // assert
+  expect(result).toBe(``);
+});
+
 test('getSink() creates an AgentSink', () => {
   // arrange
   const expectedSink = 'AgentSink';
