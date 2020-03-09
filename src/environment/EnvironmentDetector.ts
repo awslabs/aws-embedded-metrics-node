@@ -29,7 +29,7 @@ const ec2Environment = new EC2Environment();
 const defaultEnvironment = new DefaultEnvironment();
 const environments = [lambdaEnvironment, ec2Environment];
 
-let environment : IEnvironment | undefined = defaultEnvironment;
+let environment: IEnvironment | undefined = undefined;
 
 const getEnvironmentFromOverride = (): IEnvironment | undefined => {
   // short-circuit environment detection and use override
@@ -46,9 +46,10 @@ const getEnvironmentFromOverride = (): IEnvironment | undefined => {
     default:
       return undefined;
   }
-}
+};
 
 const discoverEnvironment = async (): Promise<IEnvironment> => {
+  LOG(`Discovering environment`);
   for (const envUnderTest of environments) {
     LOG(`Testing: ${envUnderTest.constructor.name}`);
 
@@ -61,30 +62,28 @@ const discoverEnvironment = async (): Promise<IEnvironment> => {
     }
   }
   return defaultEnvironment;
-}
+};
 
 const _resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> => {
+  LOG('Resolving environment');
   if (environment) {
     return environment;
   }
 
   if (config.environmentOverride) {
-    LOG("Environment override supplied", config.environmentOverride);
+    LOG('Environment override supplied', config.environmentOverride);
     // this will be falsy if an invalid configuration value is provided
-    environment = getEnvironmentFromOverride()
+    environment = getEnvironmentFromOverride();
     if (environment) {
       return environment;
-    }
-    else {
+    } else {
       LOG('Invalid environment provided. Falling back to auto-discovery.', config.environmentOverride);
     }
   }
-  
+
   environment = await discoverEnvironment(); // eslint-disable-line require-atomic-updates
   return environment;
 };
-
-
 
 // pro-actively begin resolving the environment
 // this will allow us to kick off any async tasks
@@ -96,7 +95,7 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
 };
 
 const cleanResolveEnvironment = async (): Promise<IEnvironment> => {
-  environment = undefined; 
+  environment = undefined;
   return await _resolveEnvironment();
 };
 

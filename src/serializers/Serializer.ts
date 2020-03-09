@@ -21,5 +21,5 @@ export interface ISerializer {
    *
    * @param context The MetricsContext
    */
-  serialize(context: MetricsContext): string;
+  serialize(context: MetricsContext): string[];
 }

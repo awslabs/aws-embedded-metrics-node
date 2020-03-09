@@ -43,11 +43,11 @@ export class DefaultEnvironment implements IEnvironment {
   }
 
   public getLogGroupName(): string {
-    // if the caller explicitly overrides logGroupName to 
-    // be empty, we should honor that rather than providing 
+    // if the caller explicitly overrides logGroupName to
+    // be empty, we should honor that rather than providing
     // the default behavior.
-    if (config.logGroupName === "") {
-      return "";
+    if (config.logGroupName === '') {
+      return '';
     }
     return config.logGroupName ? config.logGroupName : `${this.getName()}-metrics`;
   }

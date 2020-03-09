@@ -99,7 +99,7 @@ export class MetricsContext {
 
       // check for duplicate dimensions when putting
       // this is an O(n^2) operation, but since we never expect to have more than
-      // 10 dimensions, this is acceptable for almost all cases. 
+      // 10 dimensions, this is acceptable for almost all cases.
       // This makes re-using loggers much easier.
       const existingDimensionSetKeys = Object.keys(existingDimensionSet);
       const incomingDimensionSetKeys = Object.keys(incomingDimensionSet);

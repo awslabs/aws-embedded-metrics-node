@@ -92,15 +92,18 @@ export class AgentSink implements ISink {
     if (this.logGroupName) {
       context.meta.LogGroupName = this.logGroupName;
     }
-   
+
     if (this.logStreamName) {
       context.meta.LogStreamName = this.logStreamName;
     }
 
-    const message = this.serializer.serialize(context) + '\n';
-    const bytes = Buffer.from(message);
-
-    await this.socketClient.sendMessage(bytes);
+    const events = this.serializer.serialize(context);
+    for (let index = 0; index < events.length; index++) {
+      const event = events[index];
+      const message = event + '\n';
+      const bytes = Buffer.from(message);
+      await this.socketClient.sendMessage(bytes);
+    }
   }
 
   private getSocketClient(endpoint: IEndpoint): ISocketClient {

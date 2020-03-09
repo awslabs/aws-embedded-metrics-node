@@ -15,7 +15,7 @@ test('serializes dimensions', () => {
   const context = getContext();
   context.putDimensions(dimensions);
   // act
-  const resultJson = serializer.serialize(context);
+  const resultJson = serializer.serialize(context)[0];
 
   // assert
   assertJsonEquality(resultJson, expected);
@@ -42,7 +42,7 @@ test('cannot serialize more than 9 dimensions', () => {
   const context = getContext();
   context.putDimensions(dimensions);
   // act
-  const resultJson = serializer.serialize(context);
+  const resultJson = serializer.serialize(context)[0];
 
   // assert
   assertJsonEquality(resultJson, expected);
@@ -60,7 +60,7 @@ test('serializes properties', () => {
   context.setProperty(expectedKey, expectedValue);
 
   // act
-  const resultJson = serializer.serialize(context);
+  const resultJson = serializer.serialize(context)[0];
 
   // assert
   assertJsonEquality(resultJson, expected);
@@ -82,7 +82,7 @@ test('serializes metrics with single datapoint', () => {
   context.putMetric(expectedKey, expectedValue);
 
   // act
-  const resultJson = serializer.serialize(context);
+  const resultJson = serializer.serialize(context)[0];
 
   // assert
   assertJsonEquality(resultJson, expected);
@@ -105,10 +105,41 @@ test('serializes metrics with multiple datapoints', () => {
   context.putMetric(expectedKey, expectedValues[1]);
 
   // act
-  const resultJson = serializer.serialize(context);
+  const resultJson = serializer.serialize(context)[0];
 
   // assert
   assertJsonEquality(resultJson, expected);
+});
+
+test('serializes more than 100 metrics into multiple events', () => {
+  // arrange
+  const expectedValue = 1;
+  const metrics = 275;
+  const expectedBatches = 3;
+
+  const context = getContext();
+  for (let index = 0; index < metrics; index++) {
+    const expectedKey = `Metric-${index}`;
+    context.putMetric(expectedKey, expectedValue);
+  }
+
+  // act
+  const results = serializer.serialize(context);
+
+  // assert
+  expect(results.length).toBe(expectedBatches);
+  let metricIndex = 0;
+  for (let batchIndex = 0; batchIndex < expectedBatches; batchIndex++) {
+    const resultJson = results[batchIndex];
+    const expectedMetricCount = batchIndex === expectedBatches - 1 ? metrics % 100 : 100;
+
+    const resultObj = JSON.parse(resultJson);
+    expect(resultObj._aws.CloudWatchMetrics[0].Metrics.length).toBe(expectedMetricCount);
+    for (let index = 0; index < expectedMetricCount; index++) {
+      expect(resultObj[`Metric-${metricIndex}`]).toBe(expectedValue);
+      metricIndex++;
+    }
+  }
 });
 
 const assertJsonEquality = (resultJson: string, expectedObj: any) => {

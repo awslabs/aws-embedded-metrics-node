@@ -175,7 +175,7 @@ test('can set agent endpoint from environment', () => {
 
 test('can set environment override from environment', () => {
   // arrange
-  const expectedValue = "Local"
+  const expectedValue = 'Local';
   process.env.AWS_EMF_ENVIRONMENT = expectedValue;
 
   // act
@@ -188,7 +188,7 @@ test('can set environment override from environment', () => {
 
 test('if environment override is not set, default to unknown', () => {
   // arrange
-  process.env.AWS_EMF_ENVIRONMENT = "";
+  process.env.AWS_EMF_ENVIRONMENT = '';
   // act
   const config = getConfig();
 
