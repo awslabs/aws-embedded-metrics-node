@@ -4,7 +4,6 @@ import { MetricsContext } from '../../logger/MetricsContext';
 import { AgentSink } from '../AgentSink';
 import { TcpClient } from '../connections/TcpClient';
 
-
 test('default endpoint is tcp', () => {
   // arrange
   const logGroupName = faker.random.word();
@@ -56,10 +55,10 @@ test('LogGroup is stored in metadata', async () => {
   const context = MetricsContext.empty();
 
   let receivedMessage: any = {};
-  TcpClient.prototype.sendMessage = (message: Buffer) : Promise<void> => {
+  TcpClient.prototype.sendMessage = (message: Buffer): Promise<void> => {
     receivedMessage = JSON.parse(message.toString('utf8'));
     return Promise.resolve();
-  }
+  };
 
   const sink = new AgentSink(expectedLogGroup);
 
@@ -75,16 +74,40 @@ test('empty LogGroup is not stored in metadata', async () => {
   const context = MetricsContext.empty();
 
   let receivedMessage: any = {};
-  TcpClient.prototype.sendMessage = (message: Buffer) : Promise<void> => {
+  TcpClient.prototype.sendMessage = (message: Buffer): Promise<void> => {
     receivedMessage = JSON.parse(message.toString('utf8'));
     return Promise.resolve();
-  }
+  };
 
-  const sink = new AgentSink("");
+  const sink = new AgentSink('');
 
   // act
   await sink.accept(context);
 
   // assert
   expect(receivedMessage._aws.LogGroupName).toBe(undefined);
+});
+
+test('more than max number of metrics will send multiple messages', async () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const expectedMetrics = 101;
+  const expectedMessages = 2;
+  for (let index = 0; index < expectedMetrics; index++) {
+    context.putMetric(`${index}`, 1);
+  }
+
+  let sentMessages = 0;
+  TcpClient.prototype.sendMessage = (message: Buffer): Promise<void> => {
+    sentMessages++;
+    return Promise.resolve();
+  };
+
+  const sink = new AgentSink('');
+
+  // act
+  await sink.accept(context);
+
+  // assert
+  expect(sentMessages).toBe(expectedMessages);
 });

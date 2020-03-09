@@ -33,7 +33,8 @@ export class ConsoleSink implements ISink {
 
   public accept(context: MetricsContext): Promise<void> {
     // tslint:disable-next-line
-    console.log(this.serializer.serialize(context));
+    const events = this.serializer.serialize(context);
+    events.forEach(event => console.log(event));
     return Promise.resolve();
   }
 }

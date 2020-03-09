@@ -90,7 +90,7 @@ test('getLogGroupName() returns <ServiceName>-metrics if not configured', () => 
 
 test('getLogGroupName() returns empty if explicitly set to empty', () => {
   // arrange
-  config.logGroupName = "";
+  config.logGroupName = '';
   const env = new DefaultEnvironment();
 
   // act

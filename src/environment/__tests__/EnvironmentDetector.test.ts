@@ -41,7 +41,7 @@ test('resolveEnvironment() honors configured override', async () => {
 test('resolveEnvironment() ignores invalid override and falls back to discovery', async () => {
   // arrange
   // @ts-ignore
-  config.environmentOverride = "Invalid";
+  config.environmentOverride = 'Invalid';
   process.env.AWS_LAMBDA_FUNCTION_NAME = faker.random.word();
 
   // act

@@ -46,7 +46,6 @@ export class TcpClient implements ISocketClient {
     await new Promise((resolve, reject) => {
       const onSendError = (err: Error): void => {
         LOG('Failed to write', err);
-        LOG('Socket', this.socket);
         reject(err);
       };
       const wasFlushedToKernel = this.socket.once('error', onSendError).write(message, (err?: Error) => {

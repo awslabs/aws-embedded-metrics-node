@@ -25,12 +25,12 @@ export class LogSerializer implements ISerializer {
   /**
    * Retrieve the current context as a JSON string
    */
-  public serialize(context: MetricsContext): string {
+  public serialize(context: MetricsContext): string[] {
     const dimensionKeys: string[][] = [];
     let dimensionProperties = {};
 
     context.getDimensions().forEach(d => {
-      // we can only take the first 10 defined dimensions
+      // we can only take the first 9 defined dimensions
       // the reason we do this in the serializer is because
       // it is possible that other sinks or formats can
       // support more dimensions
@@ -42,28 +42,50 @@ export class LogSerializer implements ISerializer {
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const body: any = {
-      ...dimensionProperties,
-      ...context.properties,
-      _aws: {
-        ...context.meta,
-        CloudWatchMetrics: [
-          {
-            Dimensions: dimensionKeys,
-            Metrics: [],
-            Namespace: context.namespace,
-          },
-        ],
-      },
+    const createBody = (): any => {
+      return {
+        ...dimensionProperties,
+        ...context.properties,
+        _aws: {
+          ...context.meta,
+          CloudWatchMetrics: [
+            {
+              Dimensions: dimensionKeys,
+              Metrics: [],
+              Namespace: context.namespace,
+            },
+          ],
+        },
+      };
+    };
+
+    const eventBatches: string[] = [];
+    let currentBody = createBody();
+
+    const currentMetricsInBody = (): number => currentBody._aws.CloudWatchMetrics[0].Metrics.length;
+    const shouldSerialize = (): boolean => currentMetricsInBody() === Constants.MAX_METRICS_PER_EVENT;
+
+    // converts the body to JSON and pushes it into the batches
+    const serializeCurrentBody = (): void => {
+      eventBatches.push(JSON.stringify(currentBody));
+      currentBody = createBody();
     };
 
     for (const [key, metric] of context.metrics) {
       // if there is only one metric value, unwrap it to make querying easier
       const metricValue = metric.values.length === 1 ? metric.values[0] : metric.values;
-      body[key] = metricValue;
-      body._aws.CloudWatchMetrics[0].Metrics.push({ Name: key, Unit: metric.unit });
+      currentBody[key] = metricValue;
+      currentBody._aws.CloudWatchMetrics[0].Metrics.push({ Name: key, Unit: metric.unit });
+
+      if (shouldSerialize()) {
+        serializeCurrentBody();
+      }
     }
 
-    return JSON.stringify(body);
+    if (eventBatches.length === 0 || currentMetricsInBody() > 0) {
+      serializeCurrentBody();
+    }
+
+    return eventBatches;
   }
 }

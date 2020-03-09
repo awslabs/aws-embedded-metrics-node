@@ -14,7 +14,7 @@
  */
 
 import { IConfiguration } from './IConfiguration';
-import Environments from "../environment/Environments";
+import Environments from '../environment/Environments';
 
 const ENV_VAR_PREFIX = 'AWS_EMF';
 
@@ -25,7 +25,7 @@ enum ConfigKeys {
   SERVICE_NAME = 'SERVICE_NAME',
   SERVICE_TYPE = 'SERVICE_TYPE',
   AGENT_ENDPOINT = 'AGENT_ENDPOINT',
-  ENVIRONMENT_OVERRIDE = 'ENVIRONMENT'
+  ENVIRONMENT_OVERRIDE = 'ENVIRONMENT',
 }
 
 export class EnvironmentConfigurationProvider {
@@ -39,7 +39,7 @@ export class EnvironmentConfigurationProvider {
         this.getEnvVariable(ConfigKeys.SERVICE_NAME) || this.getEnvVariableWithoutPrefix(ConfigKeys.SERVICE_NAME),
       serviceType:
         this.getEnvVariable(ConfigKeys.SERVICE_TYPE) || this.getEnvVariableWithoutPrefix(ConfigKeys.SERVICE_TYPE),
-      environmentOverride: this.getEnvironmentOverride()
+      environmentOverride: this.getEnvironmentOverride(),
     };
   }
 
@@ -55,7 +55,7 @@ export class EnvironmentConfigurationProvider {
     const configValue = this.getEnvVariable(configKey);
     return !configValue ? fallback : configValue.toLowerCase() === 'true';
   }
-  
+
   getEnvironmentOverride(): Environments {
     const overrideValue = this.getEnvVariable(ConfigKeys.ENVIRONMENT_OVERRIDE);
     const environment = Environments[overrideValue as keyof typeof Environments];
