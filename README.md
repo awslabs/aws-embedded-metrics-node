@@ -11,6 +11,7 @@ Generate CloudWatch Metrics embedded within structured log events. The embedded 
 * [API](#api)
 * [Configuration](#configuration)
 * [Examples](#examples)
+* [Help Testing](#help-testing)
 * [Development](#development)
 
 ## Use Cases
@@ -318,6 +319,10 @@ AWS_EMF_ENABLE_DEBUG_LOGGING=true
 ## Examples
 
 Check out the [examples](https://github.com/awslabs/aws-embedded-metrics-node/tree/master/examples) directory to get started.
+
+## Testing Examples
+
+Check out the [unit test examples](https://github.com/awslabs/aws-embedded-metrics-node/tree/master/examples/testing) directory to get started. Here we provide a few examples to help you write tests against code that depends on this package.
 
 ## Development
 

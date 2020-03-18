@@ -22,3 +22,5 @@ phases:
       - npm run build
       - npm run test
       - npm run integ
+      # verify the current changes do not break the example tests
+      - npm link && cd examples/testing && npm link aws-embedded-metrics && npm i && npm test
