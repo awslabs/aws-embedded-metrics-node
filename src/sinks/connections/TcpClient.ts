@@ -18,9 +18,14 @@ import { LOG } from '../../utils/Logger';
 import { IEndpoint } from './IEndpoint';
 import { ISocketClient } from './ISocketClient';
 
+interface SocketExtended extends net.Socket {
+  writeable: boolean;
+  readyState: string;
+}
+
 export class TcpClient implements ISocketClient {
   private endpoint: IEndpoint;
-  private socket: net.Socket;
+  private socket: SocketExtended;
 
   constructor(endpoint: IEndpoint) {
     this.endpoint = endpoint;
@@ -30,7 +35,7 @@ export class TcpClient implements ISocketClient {
       .setTimeout(5000) // idle timeout
       .on('timeout', () => this.disconnect('idle timeout'))
       .on('end', () => this.disconnect('end'))
-      .on('data', data => LOG('TcpClient received data.', data));
+      .on('data', data => LOG('TcpClient received data.', data)) as SocketExtended;
   }
 
   public async warmup(): Promise<void> {
@@ -42,13 +47,16 @@ export class TcpClient implements ISocketClient {
   }
 
   public async sendMessage(message: Buffer): Promise<void> {
+    // ensure the socket is open and writable
     await this.waitForOpenConnection();
+
     await new Promise((resolve, reject) => {
       const onSendError = (err: Error): void => {
         LOG('Failed to write', err);
         reject(err);
       };
-      const wasFlushedToKernel = this.socket.once('error', onSendError).write(message, (err?: Error) => {
+
+      const wasFlushedToKernel = this.socket.write(message, (err?: Error) => {
         if (!err) {
           LOG('Write succeeded');
           resolve();
@@ -65,28 +73,53 @@ export class TcpClient implements ISocketClient {
 
   private disconnect(eventName: string): void {
     LOG('TcpClient disconnected due to:', eventName);
+    this.socket.removeAllListeners();
     this.socket.destroy();
     this.socket.unref();
   }
 
   private async waitForOpenConnection(): Promise<void> {
-    if (!this.socket.writable) {
+    if (!this.socket.writeable || this.socket.readyState !== 'open') {
       await this.establishConnection();
     }
   }
 
   private async establishConnection(): Promise<void> {
     await new Promise((resolve, reject) => {
-      this.socket
-        .connect(this.endpoint.port, this.endpoint.host, () => {
-          LOG('TcpClient connected.', this.endpoint);
+      const onError = (e: Error): void => {
+        // socket is already open, no need to connect
+        if (e.message.includes('EISCONN')) {
           resolve();
-        })
-        .once('error', e => {
-          this.disconnect('error');
-          this.socket.removeListener('connection', resolve);
-          reject(e);
-        });
+          return;
+        }
+        LOG('TCP Client received error', e);
+        this.disconnect(e.message);
+        reject(e);
+      };
+
+      const onConnect = (): void => {
+        this.socket.removeListener('error', onError);
+        LOG('TcpClient connected.', this.endpoint);
+        resolve();
+      };
+
+      // TODO: convert this to a proper state machine
+      switch (this.socket.readyState) {
+        case 'open':
+          resolve();
+          break;
+        case 'opening':
+          // the socket is currently opening, we will resolve
+          // or fail the current promise on the connect or
+          // error events
+          this.socket.once('connect', onConnect);
+          this.socket.once('error', onError);
+          break;
+        default:
+          LOG('opening connection with socket in state: ', this.socket.readyState);
+          this.socket.connect(this.endpoint.port, this.endpoint.host, onConnect).once('error', onError);
+          break;
+      }
     });
   }
 }

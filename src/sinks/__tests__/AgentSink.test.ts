@@ -39,14 +39,14 @@ test('can parse udp endpoints', () => {
 
 test('handles tcp connection error', async () => {
   // arrange
-  const noProcessPort = faker.random.number({ min: 1000, max: 9999 });
+  const noProcessPort = 6553;
   Configuration.agentEndpoint = `tcp://127.0.0.1:${noProcessPort}`;
   const context = MetricsContext.empty();
   const logGroupName = faker.random.word();
   const sink = new AgentSink(logGroupName);
 
   // assert
-  return expect(sink.accept(context)).rejects.toThrowError(/ECONNREFUSED/);
+  await expect(sink.accept(context)).rejects.toThrowError(/ECONNREFUSED/);
 });
 
 test('LogGroup is stored in metadata', async () => {
@@ -98,7 +98,7 @@ test('more than max number of metrics will send multiple messages', async () => 
   }
 
   let sentMessages = 0;
-  TcpClient.prototype.sendMessage = (message: Buffer): Promise<void> => {
+  TcpClient.prototype.sendMessage = (): Promise<void> => {
     sentMessages++;
     return Promise.resolve();
   };
