@@ -1,0 +1,17 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: us-west-2
+  parameter-store:
+    NPM_TOKEN: NpmToken
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - npm install
+  build:
+    commands:
+      - npm run build
+      - ./bin/publish-package.sh

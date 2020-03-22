@@ -1,0 +1,12 @@
+{
+  "name": "agent",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "local": "AWS_EMF_ENVIRONMENT=Local node index"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

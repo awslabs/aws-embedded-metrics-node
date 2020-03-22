@@ -1,0 +1,45 @@
+[
+  {
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/emf-node-canary",
+        "awslogs-region": "us-west-2",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
+    "dependsOn": [
+      {
+        "containerName": "cloudwatch-agent",
+        "condition": "START"
+      }
+    ],
+    "environment": [
+      {
+        "name": "AWS_EMF_AGENT_ENDPOINT",
+        "value": "tcp://cloudwatch-agent:25888"
+      }
+    ],
+    "image": "863722843142.dkr.ecr.us-west-2.amazonaws.com/emf-node-canary",
+    "links": ["cloudwatch-agent"],
+    "name": "emf-node-canary"
+  },
+  {
+    "name": "cloudwatch-agent",
+    "image": "amazon/cloudwatch-agent:latest",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/emf-node-canary",
+        "awslogs-region": "us-west-2",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
+    "environment": [
+      {
+        "name": "CW_CONFIG_CONTENT",
+        "value": "{\"agent\":{\"omit_hostname\":true,\"debug\":true},\"logs\":{\"metrics_collected\":{\"emf\":{}}}}"
+      }
+    ]
+  }
+]
