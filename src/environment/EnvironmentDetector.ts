@@ -15,9 +15,10 @@
 
 import { LOG } from '../utils/Logger';
 import { DefaultEnvironment } from './DefaultEnvironment';
+import { ECSEnvironment } from './ECSEnvironment';
 import { EC2Environment } from './EC2Environment';
-import { IEnvironment } from './IEnvironment';
 import { LambdaEnvironment } from './LambdaEnvironment';
+import { IEnvironment } from './IEnvironment';
 import config from '../config/Configuration';
 import Environments from './Environments';
 import { LocalEnvironment } from './LocalEnvironment';
@@ -25,9 +26,15 @@ import { LocalEnvironment } from './LocalEnvironment';
 type EnvironmentProvider = () => Promise<IEnvironment>;
 
 const lambdaEnvironment = new LambdaEnvironment();
+const ecsEnvironment = new ECSEnvironment();
 const ec2Environment = new EC2Environment();
 const defaultEnvironment = new DefaultEnvironment();
-const environments = [lambdaEnvironment, ec2Environment];
+
+// ordering of this array matters
+// both Lambda and ECS can be determined from environment variables
+// making the entire detection process fast an cheap
+// EC2 can only be determined by making a remote HTTP request
+const environments = [lambdaEnvironment, ecsEnvironment, ec2Environment];
 
 let environment: IEnvironment | undefined = undefined;
 
@@ -40,6 +47,8 @@ const getEnvironmentFromOverride = (): IEnvironment | undefined => {
       return ec2Environment;
     case Environments.Lambda:
       return lambdaEnvironment;
+    case Environments.ECS:
+      return ecsEnvironment;
     case Environments.Local:
       return new LocalEnvironment();
     case Environments.Unknown:
@@ -94,7 +103,9 @@ const resolveEnvironment: EnvironmentProvider = async (): Promise<IEnvironment> 
   return environmentPromise;
 };
 
+// this method is used for testing to bypass the cached environmentPromise result
 const cleanResolveEnvironment = async (): Promise<IEnvironment> => {
+  await environmentPromise;
   environment = undefined;
   return await _resolveEnvironment();
 };

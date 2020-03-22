@@ -1,0 +1,31 @@
+[
+  {
+    "name": "example",
+    "image": "<account-id>.dkr.ecr.<region>.amazonaws.com/<image-name>:latest",
+    "portMappings": [{ "containerPort": 3000, "protocol": "tcp" }],
+    "essential": true,
+    "logConfiguration": {
+      "logDriver": "awsfirelens",
+      "options": {
+        "Name": "cloudwatch",
+        "region": "<region>",
+        "log_group_name": "aws-emf-ecs-firelens-example-logs",
+        "auto_create_group": "true",
+        "log_stream_prefix": "from-fluent-bit"
+      }
+    },
+    "links": ["fluent-bit"]
+  },
+  {
+    "name": "fluent-bit",
+    "image": "906394416424.dkr.ecr.<region>.amazonaws.com/aws-for-fluent-bit:latest",
+    "essential": true,
+    "firelensConfiguration": {
+      "type": "fluentbit",
+      "options": {
+        "config-file-type": "s3",
+        "config-file-value": "arn:aws:s3:::<s3-bucket>/fluent-bit.conf"
+      }
+    }
+  }
+]
