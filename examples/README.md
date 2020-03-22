@@ -28,3 +28,57 @@ Run the example:
 ```
 ./examples/agent/run.sh
 ```
+
+## FireLens on ECS
+
+You can deploy the example by running the following:
+
+```sh
+# create an ECR repository for the example image
+aws ecr create-repository --repository-name <image-name> --region <region>
+
+# create an S3 bucket for the Fluent-Bit configuration
+aws s3api create-bucket --bucket <bucket-name> --region <region>
+
+# create ECS cluster
+# create ECS task definition
+# create ECS service
+
+# deploy
+./examples/ecs-firelens/publish.sh \
+  <account-id> \
+  <region> \
+  <image-name> \
+  <s3-bucket> \
+  <ecs-cluster-name> \
+  <ecs-task-family> \
+  <ecs-service-name>
+```
+
+### Example Metrics
+
+```json
+{
+  "_aws": {
+    "Timestamp": 1583902595342,
+    "CloudWatchMetrics": [
+      {
+        "Dimensions": [[ "ServiceName", "ServiceType" ]],
+        "Metrics": [{ "Name": "ProcessingTime", "Unit": "Milliseconds" }],
+        "Namespace": "aws-embedded-metrics"
+      }
+    ]
+  },
+  "ServiceName": "example",
+  "ServiceType": "AWS::ECS::Container",
+  "Method": "GET",
+  "Url": "/test",
+  "containerId": "702e4bcf1345",
+  "createdAt": "2020-03-11T04:54:24.981207801Z",
+  "startedAt": "2020-03-11T04:54:25.594413051Z",
+  "image": "<account-id>.dkr.ecr.<region>.amazonaws.com/emf-examples:latest",
+  "cluster": "emf-example",
+  "taskArn": "arn:aws:ecs:<region>:<account-id>:task/2fe946f6-8a2e-41a4-8fec-c4983bad8f74",
+  "ProcessingTime": 5
+}
+```
