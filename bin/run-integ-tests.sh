@@ -25,7 +25,7 @@ $rootdir/bin/start-agent.sh
 ###################################
 
 echo "Waiting for agent to start."
-tail -f $tempfile | sed '/Output \[cloudwatchlogs\] buffer/ q'
+tail -f $tempfile | sed '/Loaded outputs: cloudwatchlogs/ q'
 containerId=$(docker ps -q)
 echo "Agent started in container: $containerId."
 
@@ -41,6 +41,7 @@ status_code=$?
 # Cleanup
 ###################################
 
+cat $tempfile
 docker stop $containerId
 rm -rf $tempfile
 rm -rf ./.aws/credentials

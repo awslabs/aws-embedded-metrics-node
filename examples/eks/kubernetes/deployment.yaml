@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eks-demo
+  labels:
+    app: eks-demo
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eks-demo
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: eks-demo
+    spec:
+      containers:
+      - image: jaredcnance/eks-demo:latest
+        imagePullPolicy: Always
+        name: eks-demo
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        env:
+          - name: AWS_EMF_AGENT_ENDPOINT
+            value: "tcp://127.0.0.1:25888"
+          - name: AWS_EMF_ENABLE_DEBUG_LOGGING
+            value: "true"
+      - image: amazon/cloudwatch-agent:latest
+        name: cloudwatch-agent
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 200m
+            memory: 100Mi
+          requests:
+            cpu: 200m
+            memory: 100Mi
+        volumeMounts:
+          - name: cwagentconfig
+            mountPath: /etc/cwagentconfig
+        ports:
+          - protocol: TCP
+            hostPort: 25888
+            containerPort: 25888
+      volumes:
+        - name: cwagentconfig
+          configMap:
+            name: cw-agent-config
+    
