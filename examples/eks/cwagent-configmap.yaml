@@ -1,0 +1,18 @@
+apiVersion: v1
+data:
+  # Any changes here must not break the JSON format
+  cwagentconfig.json: |
+    {
+      "agent": {
+        "omit_hostname": true
+      },
+      "logs": {
+        "metrics_collected": {
+          "emf": { }
+        }
+      }
+    }
+kind: ConfigMap
+metadata:
+  name: cw-agent-config
+  namespace: default

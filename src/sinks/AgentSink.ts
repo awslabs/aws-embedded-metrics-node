@@ -98,6 +98,9 @@ export class AgentSink implements ISink {
     }
 
     const events = this.serializer.serialize(context);
+    
+    LOG(`Sending {} events to socket.`, events.length);
+
     for (let index = 0; index < events.length; index++) {
       const event = events[index];
       const message = event + '\n';
