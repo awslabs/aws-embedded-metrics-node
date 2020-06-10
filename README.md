@@ -283,7 +283,7 @@ Configuration.agentEndpoint = "udp://127.0.0.1:1000";
 AWS_EMF_AGENT_ENDPOINT="udp://127.0.0.1:1000"
 ```
 
-**EnvironmentOverride**: Short circuit auto-environment detection by explicitly defining how events should be sent.
+**EnvironmentOverride**: Short circuit auto-environment detection by explicitly defining how events should be sent. This is not supported through programatic access due to [#43](https://github.com/awslabs/aws-embedded-metrics-node/issues/43).
 
 Valid values include:
 
@@ -295,11 +295,6 @@ Valid values include:
 Example:
 
 ```js
-// in process
-const { Configuration } = require("aws-embedded-metrics");
-Configuration.environmentOverride = "Local";
-
-// environment
 AWS_EMF_ENVIRONMENT=Local
 ```
 
