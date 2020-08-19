@@ -297,6 +297,36 @@ test('context is preserved across flush() calls', async () => {
   }
 });
 
+test('putMetricWithDimensions example', async () => {
+  // this metric will use the default namespace and dimensions
+  logger.putMetricWithDimensions({
+    metrics: { "MyMetric": 100 }
+  });
+
+  // this metric will use the default dimensions
+  logger.putMetricWithDimensions({
+    metrics: { "MyMetric": 100 },
+    namespace: "My Namespace"
+  });
+
+  // publish multiple metrics along multiple dimensions
+  const client = 'client';
+  const pageType = 'pageType';
+  logger.putMetricWithDimensions({
+    metrics: { 
+      Metric1: 100,
+      Metric2: 200,
+    },
+    namespace: "My Namespace",
+    dimensions: [
+      { client },
+      { pageType },
+      { client, pageType },
+    ]
+  });
+});
+
+
 const expectDimension = (key: string, value: string) => {
   expect(sink.events).toHaveLength(1);
   const dimensionSets = sink.events[0].getDimensions();

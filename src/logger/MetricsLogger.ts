@@ -19,6 +19,13 @@ import { IEnvironment } from '../environment/IEnvironment';
 import { MetricsContext } from './MetricsContext';
 import { Unit } from './Unit';
 
+type Metrics = { [key: string]: number | number[]; };
+type MetricWithDimensions = {
+  metrics: Metrics,
+  namespace?: string | undefined,
+  dimensions?: Array<Record<string, string>> | undefined,
+};
+
 /**
  * An async metrics logger.
  * Use this interface to publish logs to CloudWatch Logs
@@ -111,6 +118,10 @@ export class MetricsLogger {
    */
   public setNamespace(value: string): MetricsLogger {
     this.context.setNamespace(value);
+    return this;
+  }
+
+  public putMetricWithDimensions(metricWithDimensions: MetricWithDimensions): MetricsLogger {
     return this;
   }
 
