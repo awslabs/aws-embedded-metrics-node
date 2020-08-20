@@ -297,25 +297,40 @@ test('context is preserved across flush() calls', async () => {
   }
 });
 
-test('putMetricWithDimensions example', async () => {
+test('putMetricWithDimensions metric only', async () => {
   // this metric will use the default namespace and dimensions
   logger.putMetricWithDimensions({
     metrics: { "MyMetric": 100 }
   });
+});
 
+test('putMetricWithDimensions single metric with namespace', async () => {
   // this metric will use the default dimensions
   logger.putMetricWithDimensions({
     metrics: { "MyMetric": 100 },
     namespace: "My Namespace"
   });
+});
 
-  // publish multiple metrics along multiple dimensions
+
+test('putMetricWithDimensions with single dimensions and default namespace', async () => {
+  const client = 'client';
+  logger.putMetricWithDimensions({
+    metrics: { 
+      Metric1: 100
+    },
+    dimensions: [
+      { client }
+    ]
+  });
+});
+
+test('putMetricWithDimensions along multiple dimensions', async () => {
   const client = 'client';
   const pageType = 'pageType';
   logger.putMetricWithDimensions({
     metrics: { 
       Metric1: 100,
-      Metric2: 200,
     },
     namespace: "My Namespace",
     dimensions: [
@@ -326,6 +341,39 @@ test('putMetricWithDimensions example', async () => {
   });
 });
 
+test('putMetricWithDimensions without default dimensions', async () => {
+  const client = 'client';
+  const pageType = 'pageType';
+  logger.putMetricWithDimensions({
+    metrics: { 
+      Metric1: 100
+    },
+    namespace: "My Namespace",
+    dimensions: [
+      { client },
+      { pageType },
+      { client, pageType },
+    ],
+    stripDefaultDimensions: true
+  });
+});
+
+test('putMetricWithDimensions with multiple metrics along multiple dimensions', async () => {
+  const client = 'client';
+  const pageType = 'pageType';
+  logger.putMetricWithDimensions({
+    metrics: { 
+      Metric1: 100,
+      Metric2: [100, 200],
+    },
+    namespace: "My Namespace",
+    dimensions: [
+      { client },
+      { pageType },
+      { client, pageType },
+    ]
+  });
+});
 
 const expectDimension = (key: string, value: string) => {
   expect(sink.events).toHaveLength(1);

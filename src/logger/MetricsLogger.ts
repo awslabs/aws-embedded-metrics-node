@@ -24,6 +24,7 @@ type MetricWithDimensions = {
   metrics: Metrics,
   namespace?: string | undefined,
   dimensions?: Array<Record<string, string>> | undefined,
+  stripDefaultDimensions?: boolean | undefined;
 };
 
 /**
