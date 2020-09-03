@@ -311,6 +311,24 @@ Configuration.debuggingLoggingEnabled = true;
 AWS_EMF_ENABLE_DEBUG_LOGGING=true
 ```
 
+**Namespace**: Sets the CloudWatch [namespace](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Namespace) that extracted metrics should be published to. If not set, a default value of aws-embedded-metrics will be used.
+
+Requirements:
+
+- Name Length 1-255 characters
+- Name must be ASCII characters only
+
+Example:
+
+```js
+// in process
+const { Configuration } = require("aws-embedded-metrics");
+Configuration.namespace = "Namespace";
+
+// environment
+AWS_EMF_NAMESPACE=Namespace
+```
+
 ## Examples
 
 Check out the [examples](https://github.com/awslabs/aws-embedded-metrics-node/tree/master/examples) directory to get started.

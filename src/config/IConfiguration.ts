@@ -57,4 +57,9 @@ export interface IConfiguration {
    * - EC2: decorates logs with EC2 metadata and sends over TCP
    */
   environmentOverride: Environments | undefined;
+
+  /**
+   * Sets the CloudWatch namespace that extracted metrics should be published to.
+   */
+  namespace: string;
 }

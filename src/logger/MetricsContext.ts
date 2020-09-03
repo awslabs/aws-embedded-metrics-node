@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { Constants } from '../Constants';
+import Configuration from '../config/Configuration';
 import { LOG } from '../utils/Logger';
 import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
@@ -57,7 +57,7 @@ export class MetricsContext {
     dimensions?: Array<Record<string, string>>,
     defaultDimensions?: Record<string, string>,
   ) {
-    this.namespace = namespace || Constants.DEFAULT_NAMESPACE;
+    this.namespace = namespace || Configuration.namespace
     this.properties = properties || {};
     this.dimensions = dimensions || [];
     this.meta.Timestamp = new Date().getTime();

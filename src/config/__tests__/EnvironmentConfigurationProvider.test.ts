@@ -207,3 +207,39 @@ test('if environment override cannot be parsed, default to unknown', () => {
   const result = config.environmentOverride;
   expect(result).toBe(Environments.Unknown);
 });
+
+test('namespace defaults to aws-embedded-metrics', () => {
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.namespace;
+  expect(result).toBe('aws-embedded-metrics');
+});
+
+test('can set namespace from environment', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_NAMESPACE = expectedValue;
+
+  // act
+  const config = getConfig();
+
+  // assert
+  const result = config.namespace;
+  expect(result).toBe(expectedValue);
+});
+
+test('can manually set namespace', () => {
+  // arrange
+  const expectedValue = faker.random.word();
+  process.env.AWS_EMF_NAMESPACE = faker.random.word();
+  const config = getConfig();
+
+  // act
+  config.namespace = expectedValue;
+
+  // assert
+  const result = config.namespace;
+  expect(result).toBe(expectedValue);
+});
