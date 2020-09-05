@@ -14,6 +14,7 @@
  */
 
 import { IConfiguration } from './IConfiguration';
+import { Constants } from '../Constants';
 import Environments from '../environment/Environments';
 
 const ENV_VAR_PREFIX = 'AWS_EMF';
@@ -26,6 +27,7 @@ enum ConfigKeys {
   SERVICE_TYPE = 'SERVICE_TYPE',
   AGENT_ENDPOINT = 'AGENT_ENDPOINT',
   ENVIRONMENT_OVERRIDE = 'ENVIRONMENT',
+  NAMESPACE = 'NAMESPACE',
 }
 
 export class EnvironmentConfigurationProvider {
@@ -40,6 +42,7 @@ export class EnvironmentConfigurationProvider {
       serviceType:
         this.getEnvVariable(ConfigKeys.SERVICE_TYPE) || this.getEnvVariableWithoutPrefix(ConfigKeys.SERVICE_TYPE),
       environmentOverride: this.getEnvironmentOverride(),
+      namespace: this.getEnvVariable(ConfigKeys.NAMESPACE) || Constants.DEFAULT_NAMESPACE,
     };
   }
 
