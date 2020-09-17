@@ -291,6 +291,7 @@ Valid values include:
 - Lambda: decorates logs with Lambda metadata and sends over stdout
 - Agent: no decoration and sends over TCP
 - EC2: decorates logs with EC2 metadata and sends over TCP
+- ECS: decorates logs with ECS metadata and enables support for Firelens
 
 Example:
 
