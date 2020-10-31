@@ -29,7 +29,7 @@ export class TcpClient implements ISocketClient {
 
   constructor(endpoint: IEndpoint) {
     this.endpoint = endpoint;
-    this.socket = new net.Socket({ allowHalfOpen: true, writable: false })
+    this.socket = new net.Socket({ allowHalfOpen: true })
       .setEncoding('utf8')
       .setKeepAlive(true)
       .setTimeout(5000) // idle timeout
