@@ -19,11 +19,16 @@ import { IEnvironment } from '../environment/IEnvironment';
 import { MetricsContext } from './MetricsContext';
 import { Unit } from './Unit';
 
-type Metrics = { [key: string]: number | number[]; };
-type MetricWithDimensions = {
-  metrics: Metrics,
+type Metrics = { name: string, value: number, unit?: Unit };
+type MetricsWithDimensions = {
+  metrics: Metrics[],
   namespace?: string | undefined,
   dimensions?: Array<Record<string, string>> | undefined,
+
+  /**
+   * Do not apply default dimensions such as ServiceName and ServiceType.
+   * The default behavior is to include the default dimensions.
+   */
   stripDefaultDimensions?: boolean | undefined;
 };
 
@@ -122,7 +127,13 @@ export class MetricsLogger {
     return this;
   }
 
-  public putMetricWithDimensions(metricWithDimensions: MetricWithDimensions): MetricsLogger {
+  /**
+   * Add a collection of metrics to be aggregated on a different set of dimensions
+   * than the default dimension set.
+   * 
+   * @param metricWithDimensions 
+   */
+  public putMetricWithDimensions(metricWithDimensions: MetricsWithDimensions): MetricsLogger {
     return this;
   }
 

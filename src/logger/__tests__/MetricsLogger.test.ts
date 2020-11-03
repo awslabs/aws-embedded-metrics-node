@@ -314,7 +314,7 @@ test('putMetricWithDimensions metric only', async () => {
 
   // act
   logger.putMetricWithDimensions({
-    metrics: { "MyMetric": 100 }
+    metrics: [{ name: "MyMetric", value: 100 }]
   });
 
   await logger.flush();
@@ -329,13 +329,36 @@ test('putMetricWithDimensions metric only', async () => {
   expect(evt.getDimensions()[0]).toBe(DEFAULT_DIMENSIONS);
 });
 
+test('putMetricWithDimensions metric and unit', async () => {
+  // arrange
+  const logger = createLoggerWithDefaultDimensions();
+
+  // act
+  logger.putMetricWithDimensions({
+    metrics: [{ name: "MyMetric", value: 100, unit: Unit.Bytes }]
+  });
+
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const evt = sink.events[0];
+  expect(evt.metrics.size).toBe(1);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
+  expect(resultMetric.unit).toBe('Bytes');
+  // everything else should be defaults
+  expect(evt.namespace).toBe(Constants.DEFAULT_NAMESPACE);
+  expect(evt.getDimensions()[0]).toBe(DEFAULT_DIMENSIONS);
+});
+
 test('putMetricWithDimensions single metric with namespace', async () => {
   // arrange
   const logger = createLoggerWithDefaultDimensions();
 
   // act
   logger.putMetricWithDimensions({
-    metrics: { "MyMetric": 100 },
+    metrics: [{ name: "MyMetric", value: 100 }],
     namespace: "My-Namespace"
   });
 
@@ -346,7 +369,8 @@ test('putMetricWithDimensions single metric with namespace', async () => {
   expect(sink.events).toHaveLength(1);
   const evt = sink.events[0];
   expect(evt.metrics.size).toBe(1);
-  expect(evt.metrics.get("MyMetric")).toBe(100);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
   expect(evt.namespace).toBe("My-Namespace");
   expect(evt.getDimensions()[0]).toBe(DEFAULT_DIMENSIONS);
 });
@@ -359,7 +383,7 @@ test('putMetricWithDimensions with single dimensions and default namespace', asy
 
   // act
   logger.putMetricWithDimensions({
-    metrics: { Metric1: 100 },
+    metrics: [{ name: "MyMetric", value: 100 }],
     dimensions: [{ client }]
   });
 
@@ -369,7 +393,8 @@ test('putMetricWithDimensions with single dimensions and default namespace', asy
   expect(sink.events).toHaveLength(1);
   const evt = sink.events[0];
   expect(evt.metrics.size).toBe(1);
-  expect(evt.metrics.get("MyMetric")).toBe(100);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
   expect(evt.namespace).toBe(Constants.DEFAULT_NAMESPACE);
   expect(evt.getDimensions()).toBe([{ ...DEFAULT_DIMENSIONS, client }]);
 });
@@ -382,9 +407,7 @@ test('putMetricWithDimensions along multiple dimensions', async () => {
 
   // act
   logger.putMetricWithDimensions({
-    metrics: {
-      Metric1: 100,
-    },
+    metrics: [{ name: "MyMetric", value: 100 }],
     namespace: "My Namespace",
     dimensions: [
       { client },
@@ -399,7 +422,8 @@ test('putMetricWithDimensions along multiple dimensions', async () => {
   expect(sink.events).toHaveLength(1);
   const evt = sink.events[0];
   expect(evt.metrics.size).toBe(1);
-  expect(evt.metrics.get("MyMetric")).toBe(100);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
   expect(evt.namespace).toBe("My-Namespace");
   expect(evt.getDimensions()[0]).toBe([
     { ...DEFAULT_DIMENSIONS, client },
@@ -416,9 +440,7 @@ test('putMetricWithDimensions without default dimensions', async () => {
 
   // act
   logger.putMetricWithDimensions({
-    metrics: {
-      Metric1: 100
-    },
+    metrics: [{ name: "MyMetric", value: 100 }],
     namespace: "My-Namespace",
     dimensions: [
       { client },
@@ -434,7 +456,8 @@ test('putMetricWithDimensions without default dimensions', async () => {
   expect(sink.events).toHaveLength(1);
   const evt = sink.events[0];
   expect(evt.metrics.size).toBe(1);
-  expect(evt.metrics.get("MyMetric")).toBe(100);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
   expect(evt.namespace).toBe("My-Namespace");
   expect(evt.getDimensions()[0]).toBe([
     { client },
