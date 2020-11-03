@@ -23,6 +23,12 @@ interface IProperties {
 }
 
 type Metrics = Map<string, MetricValues>;
+type DimensionSet = Record<string, string>;
+type MetricsDirective = {
+  namespace: string;
+  dimensions: DimensionSet[]
+  metrics: Metrics
+}
 
 export class MetricsContext {
   /**
@@ -32,11 +38,10 @@ export class MetricsContext {
     return new MetricsContext();
   }
 
-  public namespace: string;
   public properties: IProperties;
-  public metrics: Metrics = new Map<string, MetricValues>();
   public meta: Record<string, string | number> = {};
-  private dimensions: Array<Record<string, string>>;
+  private defaultMetricsDirective: MetricsDirective;
+  private metricDirectives: MetricsDirective[];
   private defaultDimensions: Record<string, string>;
   private shouldUseDefaultDimensions = true;
 
@@ -57,15 +62,19 @@ export class MetricsContext {
     dimensions?: Array<Record<string, string>>,
     defaultDimensions?: Record<string, string>,
   ) {
-    this.namespace = namespace || Configuration.namespace
     this.properties = properties || {};
-    this.dimensions = dimensions || [];
     this.meta.Timestamp = new Date().getTime();
     this.defaultDimensions = defaultDimensions || {};
+    this.defaultMetricsDirective = {
+      namespace: namespace || Configuration.namespace,
+      metrics: new Map<string, MetricValues>(),
+      dimensions: dimensions || []
+    };
+    this.metricDirectives = [ this.defaultMetricsDirective ];
   }
 
   public setNamespace(value: string): void {
-    this.namespace = value;
+    this.defaultMetricsDirective.namespace = value;
   }
 
   public setProperty(key: string, value: unknown): void {
@@ -89,13 +98,13 @@ export class MetricsContext {
    * @param dimensions
    */
   public putDimensions(incomingDimensionSet: Record<string, string>): void {
-    if (this.dimensions.length === 0) {
-      this.dimensions.push(incomingDimensionSet);
+    if (this.defaultMetricsDirective.dimensions.length === 0) {
+      this.defaultMetricsDirective.dimensions.push(incomingDimensionSet);
       return;
     }
 
-    for (let i = 0; i < this.dimensions.length; i++) {
-      const existingDimensionSet = this.dimensions[i];
+    for (let i = 0; i < this.defaultMetricsDirective.dimensions.length; i++) {
+      const existingDimensionSet = this.defaultMetricsDirective.dimensions[i];
 
       // check for duplicate dimensions when putting
       // this is an O(n^2) operation, but since we never expect to have more than
@@ -104,18 +113,26 @@ export class MetricsContext {
       const existingDimensionSetKeys = Object.keys(existingDimensionSet);
       const incomingDimensionSetKeys = Object.keys(incomingDimensionSet);
       if (existingDimensionSetKeys.length !== incomingDimensionSetKeys.length) {
-        this.dimensions.push(incomingDimensionSet);
+        this.defaultMetricsDirective.dimensions.push(incomingDimensionSet);
         return;
       }
 
       for (let j = 0; j < existingDimensionSetKeys.length; j++) {
         if (!incomingDimensionSetKeys.includes(existingDimensionSetKeys[j])) {
           // we're done now because we know that the dimensions keys are not identical
-          this.dimensions.push(incomingDimensionSet);
+          this.defaultMetricsDirective.dimensions.push(incomingDimensionSet);
           return;
         }
       }
     }
+  }
+
+  public putMetricDirective(metrics: Metrics, dimensions: DimensionSet[], namespace?: string): void {
+    this.metricDirectives.push({
+      namespace: namespace || Configuration.namespace,
+      metrics,
+      dimensions
+    });
   }
 
   /**
@@ -125,42 +142,49 @@ export class MetricsContext {
    */
   public setDimensions(dimensionSets: Array<Record<string, string>>): void {
     this.shouldUseDefaultDimensions = false;
-    this.dimensions = dimensionSets;
+    this.defaultMetricsDirective.dimensions = dimensionSets;
   }
 
   /**
-   * Get the current dimensions.
+   * Get the current dimensions on the default metric directive.
    */
   public getDimensions(): Array<Record<string, string>> {
     // caller has explicitly called setDimensions
     if (this.shouldUseDefaultDimensions === false) {
-      return this.dimensions;
+      return this.defaultMetricsDirective.dimensions;
     }
 
     // if there are no default dimensions, return the custom dimensions
     if (Object.keys(this.defaultDimensions).length === 0) {
-      return this.dimensions;
+      return this.defaultMetricsDirective.dimensions;
     }
 
     // if default dimensions have been provided, but no custom dimensions, use the defaults
-    if (this.dimensions.length === 0) {
+    if (this.defaultMetricsDirective.dimensions.length === 0) {
       return [this.defaultDimensions];
     }
 
     // otherwise, merge the dimensions
     // we do this on the read path because default dimensions
     // may get updated asynchronously by environment detection
-    return this.dimensions.map(custom => {
+    return this.defaultMetricsDirective.dimensions.map(custom => {
       return { ...this.defaultDimensions, ...custom };
     });
   }
 
+  /**
+   * Add a metric to the default metric directive.
+   * 
+   * @param key The name of the metric
+   * @param value The metric value. Note that percentiles are only supported on positive vales.
+   * @param unit The metric unit. Must be a valid CloudWatch metric.
+   */
   public putMetric(key: string, value: number, unit?: Unit | string): void {
-    const currentMetric = this.metrics.get(key);
+    const currentMetric = this.defaultMetricsDirective.metrics.get(key);
     if (currentMetric) {
       currentMetric.addValue(value);
     } else {
-      this.metrics.set(key, new MetricValues(value, unit));
+      this.defaultMetricsDirective.metrics.set(key, new MetricValues(value, unit));
     }
   }
 
@@ -169,9 +193,9 @@ export class MetricsContext {
    */
   public createCopyWithContext(): MetricsContext {
     return new MetricsContext(
-      this.namespace,
+      this.defaultMetricsDirective.namespace,
       Object.assign({}, this.properties),
-      Object.assign([], this.dimensions),
+      Object.assign([], this.defaultMetricsDirective.dimensions),
       this.defaultDimensions,
     );
   }

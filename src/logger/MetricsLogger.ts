@@ -17,9 +17,10 @@ import Configuration from '../config/Configuration';
 import { EnvironmentProvider } from '../environment/EnvironmentDetector';
 import { IEnvironment } from '../environment/IEnvironment';
 import { MetricsContext } from './MetricsContext';
+import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
 
-type Metrics = { name: string, value: number, unit?: Unit };
+type Metrics = { name: string, value: number | number[], unit?: Unit };
 type MetricsWithDimensions = {
   metrics: Metrics[],
   namespace?: string | undefined,
@@ -134,6 +135,10 @@ export class MetricsLogger {
    * @param metricWithDimensions 
    */
   public putMetricWithDimensions(metricWithDimensions: MetricsWithDimensions): MetricsLogger {
+    this.context.putMetricDirective(
+      new Map<string, MetricValues>(metricWithDimensions.metrics.map(m => [m.name, new MetricValues(m.value, m.unit)])),
+      metricWithDimensions.dimensions || [],
+      metricWithDimensions.namespace);
     return this;
   }
 

@@ -16,11 +16,11 @@ import { Unit } from '..';
  */
 
 export class MetricValues {
-  public values: number[];
+  public values: number[] = [];
   public unit: string;
 
-  constructor(value: number, unit?: Unit | string) {
-    this.values = [value];
+  constructor(value: number | number[], unit?: Unit | string) {
+    this.values = this.values.concat(value);
     this.unit = unit || 'None';
   }
 
