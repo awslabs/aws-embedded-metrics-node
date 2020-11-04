@@ -7,6 +7,7 @@ import { IEnvironment } from '../../environment/IEnvironment';
 import { ISink } from '../../sinks/Sink';
 import { MetricsContext } from '../MetricsContext';
 import { MetricsLogger } from '../MetricsLogger';
+import { Constants } from '../../Constants';
 
 const createSink = () => new TestSink();
 const createEnvironment = (sink: ISink) => {
@@ -20,6 +21,16 @@ const createEnvironment = (sink: ISink) => {
   };
 };
 const createLogger = (env: EnvironmentProvider) => new MetricsLogger(env);
+
+const DEFAULT_DIMENSIONS = { Foo: 'Bar' };
+const createLoggerWithDefaultDimensions = (): MetricsLogger => {
+  const context = MetricsContext.empty();
+  context.setDefaultDimensions(DEFAULT_DIMENSIONS);
+
+  const sink = createSink();
+  const env = createEnvironment(sink);
+  return new MetricsLogger(() => Promise.resolve(env), context);
+}
 
 let sink: TestSink;
 let environment: IEnvironment;
@@ -295,6 +306,164 @@ test('context is preserved across flush() calls', async () => {
     // @ts-ignore
     expect(evt.metrics.get(metricKey).values).toStrictEqual([i]);
   }
+});
+
+test('putMetricWithDimensions metric only', async () => {
+  // arrange
+  const logger = createLoggerWithDefaultDimensions();
+
+  // act
+  logger.putMetricWithDimensions({
+    metrics: [{ name: "MyMetric", value: 100 }]
+  });
+
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const evt = sink.events[0];
+  expect(evt.metrics.size).toBe(1);
+  expect(evt.metrics.get("MyMetric")).toBe(100);
+  // everything else should be defaults
+  expect(evt.namespace).toBe(Constants.DEFAULT_NAMESPACE);
+  expect(evt.getDimensions()[0]).toBe(DEFAULT_DIMENSIONS);
+});
+
+test('putMetricWithDimensions metric and unit', async () => {
+  // arrange
+  const logger = createLoggerWithDefaultDimensions();
+
+  // act
+  logger.putMetricWithDimensions({
+    metrics: [{ name: "MyMetric", value: 100, unit: Unit.Bytes }]
+  });
+
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const evt = sink.events[0];
+  expect(evt.metrics.size).toBe(1);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
+  expect(resultMetric.unit).toBe('Bytes');
+  // everything else should be defaults
+  expect(evt.namespace).toBe(Constants.DEFAULT_NAMESPACE);
+  expect(evt.getDimensions()[0]).toBe(DEFAULT_DIMENSIONS);
+});
+
+test('putMetricWithDimensions single metric with namespace', async () => {
+  // arrange
+  const logger = createLoggerWithDefaultDimensions();
+
+  // act
+  logger.putMetricWithDimensions({
+    metrics: [{ name: "MyMetric", value: 100 }],
+    namespace: "My-Namespace"
+  });
+
+  // act
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const evt = sink.events[0];
+  expect(evt.metrics.size).toBe(1);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
+  expect(evt.namespace).toBe("My-Namespace");
+  expect(evt.getDimensions()[0]).toBe(DEFAULT_DIMENSIONS);
+});
+
+
+test('putMetricWithDimensions with single dimensions and default namespace', async () => {
+  // arrange
+  const logger = createLoggerWithDefaultDimensions();
+  const client = 'client';
+
+  // act
+  logger.putMetricWithDimensions({
+    metrics: [{ name: "MyMetric", value: 100 }],
+    dimensions: [{ client }]
+  });
+
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const evt = sink.events[0];
+  expect(evt.metrics.size).toBe(1);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
+  expect(evt.namespace).toBe(Constants.DEFAULT_NAMESPACE);
+  expect(evt.getDimensions()).toBe([{ ...DEFAULT_DIMENSIONS, client }]);
+});
+
+test('putMetricWithDimensions along multiple dimensions', async () => {
+  // arrange
+  const logger = createLoggerWithDefaultDimensions();
+  const client = 'client';
+  const pageType = 'pageType';
+
+  // act
+  logger.putMetricWithDimensions({
+    metrics: [{ name: "MyMetric", value: 100 }],
+    namespace: "My Namespace",
+    dimensions: [
+      { client },
+      { pageType },
+      { client, pageType },
+    ]
+  });
+
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const evt = sink.events[0];
+  expect(evt.metrics.size).toBe(1);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
+  expect(evt.namespace).toBe("My-Namespace");
+  expect(evt.getDimensions()[0]).toBe([
+    { ...DEFAULT_DIMENSIONS, client },
+    { ...DEFAULT_DIMENSIONS, pageType },
+    { ...DEFAULT_DIMENSIONS, client, pageType },
+  ]);
+});
+
+test('putMetricWithDimensions without default dimensions', async () => {
+  // arrange
+  const logger = createLoggerWithDefaultDimensions();
+  const client = 'client';
+  const pageType = 'pageType';
+
+  // act
+  logger.putMetricWithDimensions({
+    metrics: [{ name: "MyMetric", value: 100 }],
+    namespace: "My-Namespace",
+    dimensions: [
+      { client },
+      { pageType },
+      { client, pageType },
+    ],
+    stripDefaultDimensions: true
+  });
+
+  await logger.flush();
+
+  // assert
+  expect(sink.events).toHaveLength(1);
+  const evt = sink.events[0];
+  expect(evt.metrics.size).toBe(1);
+  const resultMetric = evt.metrics.get("MyMetric");
+  expect(resultMetric.values).toBe([100]);
+  expect(evt.namespace).toBe("My-Namespace");
+  expect(evt.getDimensions()[0]).toBe([
+    { client },
+    { pageType },
+    { client, pageType },
+  ]);
 });
 
 const expectDimension = (key: string, value: string) => {
