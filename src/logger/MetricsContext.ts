@@ -39,6 +39,7 @@ export class MetricsContext {
   private dimensions: Array<Record<string, string>>;
   private defaultDimensions: Record<string, string>;
   private shouldUseDefaultDimensions = true;
+  private timestamp: Date | number | undefined;
 
   /**
    * Constructor used to create child instances.
@@ -56,12 +57,24 @@ export class MetricsContext {
     properties?: IProperties,
     dimensions?: Array<Record<string, string>>,
     defaultDimensions?: Record<string, string>,
+    timestamp?: Date | number,
   ) {
     this.namespace = namespace || Configuration.namespace
     this.properties = properties || {};
     this.dimensions = dimensions || [];
-    this.meta.Timestamp = new Date().getTime();
+    this.timestamp = timestamp;
+    this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
     this.defaultDimensions = defaultDimensions || {};
+  }
+
+  private static resolveMetaTimestamp(timestamp?: Date | number): number {
+    if (timestamp instanceof Date) {
+      return timestamp.getTime()
+    } else if (timestamp) {
+      return timestamp;
+    } else {
+      return new Date().getTime();
+    }
   }
 
   public setNamespace(value: string): void {
@@ -70,6 +83,11 @@ export class MetricsContext {
 
   public setProperty(key: string, value: unknown): void {
     this.properties[key] = value;
+  }
+
+  public setTimestamp(timestamp: Date | number) {
+    this.timestamp = timestamp;
+    this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
   }
 
   /**
@@ -173,6 +191,7 @@ export class MetricsContext {
       Object.assign({}, this.properties),
       Object.assign([], this.dimensions),
       this.defaultDimensions,
+      this.timestamp
     );
   }
 }

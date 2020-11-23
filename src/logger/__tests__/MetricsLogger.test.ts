@@ -199,6 +199,76 @@ test('can set namespace', async () => {
   expect(actualValue).toBe(expectedValue);
 });
 
+test('defaults timestamp to now', async () => {
+  // arrange
+  const before = new Date();
+  // recreate logger to regenerate meta.Timestamp set to now
+  sink = createSink();
+  environment = createEnvironment(sink);
+  logger = createLogger(() => Promise.resolve(environment));
+
+  // act
+  logger.putMetric(faker.random.word(), faker.random.number());
+  await logger.flush();
+
+  //assert
+  const after = new Date();
+  const lastEvent = sink.events.slice(-1)[0];
+  expectTimestampWithin(lastEvent, [before, after]);
+});
+
+test('can set timestamp', async () => {
+  // arrange
+  const timestamp = faker.date.recent();
+  logger.setTimestamp(timestamp)
+
+  // act
+  logger.putMetric(faker.random.word(), faker.random.number());
+  await logger.flush();
+
+  //assert
+  expect(sink.events.length).toEqual(1);
+  expect(sink.events[0].meta.Timestamp).toEqual(timestamp.getTime());
+});
+
+test('flush() preserves timestamp if set explicitly', async () => {
+  // arrange
+  const timestamp = faker.date.recent();
+  logger.setTimestamp(timestamp)
+
+  // act
+  logger.putMetric(faker.random.word(), faker.random.number());
+  await logger.flush();
+  logger.putMetric(faker.random.word(), faker.random.number());
+  await logger.flush();
+
+  //assert
+  expect(sink.events.length).toEqual(2);
+  expect(sink.events[1].meta.Timestamp).toEqual(timestamp.getTime());
+});
+
+test('flush() resets timestamp to now if not set explicitly', async () => {
+  // arrange
+  const before = new Date();
+  // recreate logger to regenerate meta.Timestamp set to now
+  sink = createSink();
+  environment = createEnvironment(sink);
+  logger = createLogger(() => Promise.resolve(environment));
+  // act
+  logger.putMetric(faker.random.word(), faker.random.number());
+  await logger.flush();
+  const afterFirstFlush = new Date();
+  logger.putMetric(faker.random.word(), faker.random.number());
+  await logger.flush();
+  const afterSecondFlush = new Date();
+
+  //assert
+  expect(sink.events.length).toEqual(2);
+
+  expectTimestampWithin(sink.events[0], [before, afterFirstFlush]);
+  expectTimestampWithin(sink.events[1], [afterFirstFlush, afterSecondFlush]);
+});
+
 test('flush() uses configured serviceName for default dimension if provided', async () => {
   // arrange
   const expected = faker.random.word();
@@ -268,6 +338,7 @@ test('context is preserved across flush() calls', async () => {
   const expectedDimensionKey = 'Dim';
   const expectedPropertyKey = 'Prop';
   const expectedValues = 'Value';
+  const expectedTimestamp = faker.date.recent();
 
   const dimensions: Record<string, string> = {};
   dimensions[expectedDimensionKey] = expectedValues;
@@ -275,6 +346,7 @@ test('context is preserved across flush() calls', async () => {
   logger.setNamespace(expectedNamespace);
   logger.setProperty(expectedPropertyKey, expectedValues);
   logger.setDimensions(dimensions);
+  logger.setTimestamp(expectedTimestamp);
 
   // act
   logger.putMetric(metricKey, 0);
@@ -287,10 +359,11 @@ test('context is preserved across flush() calls', async () => {
   expect(sink.events).toHaveLength(2);
   for (let i = 0; i < sink.events.length; i++) {
     const evt = sink.events[i];
-    // namespace, properties, dimensions should survive flushes
+    // namespace, properties, dimensions, timestamp should survive flushes
     expect(evt.namespace).toBe(expectedNamespace);
     expect(evt.getDimensions()[0][expectedDimensionKey]).toBe(expectedValues);
     expect(evt.properties[expectedPropertyKey]).toBe(expectedValues);
+    expect(evt.meta.Timestamp).toEqual(expectedTimestamp.getTime());
     // metric values should not survive flushes
     // @ts-ignore
     expect(evt.metrics.get(metricKey).values).toStrictEqual([i]);
@@ -306,3 +379,8 @@ const expectDimension = (key: string, value: string) => {
   const actualValue = dimension[key];
   expect(actualValue).toBe(value);
 };
+
+const expectTimestampWithin = (context: MetricsContext, range: [Date, Date]) => {
+  expect(context.meta.Timestamp).toBeGreaterThanOrEqual(range[0].getTime());
+  expect(context.meta.Timestamp).toBeLessThanOrEqual(range[1].getTime());
+}
