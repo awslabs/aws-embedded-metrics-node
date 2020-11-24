@@ -56,12 +56,16 @@ export class MetricsContext {
     properties?: IProperties,
     dimensions?: Array<Record<string, string>>,
     defaultDimensions?: Record<string, string>,
+    shouldUseDefaultDimensions?: boolean,
   ) {
     this.namespace = namespace || Configuration.namespace
     this.properties = properties || {};
     this.dimensions = dimensions || [];
     this.meta.Timestamp = new Date().getTime();
     this.defaultDimensions = defaultDimensions || {};
+    if (shouldUseDefaultDimensions != undefined) {
+      this.shouldUseDefaultDimensions = shouldUseDefaultDimensions
+    }
   }
 
   public setNamespace(value: string): void {
@@ -173,6 +177,7 @@ export class MetricsContext {
       Object.assign({}, this.properties),
       Object.assign([], this.dimensions),
       this.defaultDimensions,
+      this.shouldUseDefaultDimensions
     );
   }
 }
