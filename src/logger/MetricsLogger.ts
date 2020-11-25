@@ -115,6 +115,21 @@ export class MetricsLogger {
   }
 
   /**
+   * Set the timestamp of metrics emitted in this context.
+   *
+   * If not set, the timestamp will default to new Date() at the point
+   * the context is constructed.
+   *
+   * If set, timestamp will preserved across calls to flush().
+   *
+   * @param timestamp
+   */
+  public setTimestamp(timestamp: Date | number): MetricsLogger {
+    this.context.setTimestamp(timestamp);
+    return this;
+  }
+
+  /**
    * Creates a new logger using the same contextual data as
    * the previous logger. This allows you to flush the instances
    * independently.
