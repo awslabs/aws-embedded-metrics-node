@@ -187,13 +187,29 @@ Requirements:
 
 Examples:
 
-```py
+```js
 setNamespace("MyApplication");
+```
+
+- **setTimestamp**(Date | number timestamp)
+
+Sets the CloudWatch [timestamp](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp) that extracted metrics are associated with. If not set a default value of `new Date()` will be used.
+
+If set for a given `MetricsLogger`, timestamp will be preserved across calls to flush().
+
+Requirements: 
+ * Date or Unix epoch millis, up to two weeks in the past and up to two hours in the future, as enforced by [CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp). 
+
+Examples:
+
+```js
+setTimestamp(new Date())
+setTimestamp(new Date().getTime())
 ```
 
 - **flush**()
 
-Flushes the current MetricsContext to the configured sink and resets all properties, dimensions and metric values. The namespace and default dimensions will be preserved across flushes.
+Flushes the current MetricsContext to the configured sink and resets all properties, dimensions and metric values. The namespace and default dimensions will be preserved across flushes. Timestamp will be preserved if set explicitly via `setTimestamp()`.
 
 ## Configuration
 
