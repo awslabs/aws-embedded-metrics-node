@@ -187,7 +187,7 @@ Requirements:
 
 Examples:
 
-```py
+```js
 setNamespace("MyApplication");
 ```
 
@@ -202,7 +202,7 @@ Requirements:
 
 Examples:
 
-```py
+```js
 setTimestamp(new Date())
 setTimestamp(new Date().getTime())
 ```
