@@ -189,3 +189,17 @@ test('createCopyWithContext copies properties and dimensions', () => {
   expect(newContext).not.toBe(context);
   expect(newContext).toStrictEqual(context);
 });
+
+test('createCopyWithContext copies shouldUseDefaultDimensions', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  context.setDimensions([]);
+  context.setDefaultDimensions({ Key: 'Value' });
+
+  // act
+  const newContext = context.createCopyWithContext();
+
+  // assert
+  expect(newContext).not.toBe(context);
+  expect(newContext.getDimensions()).toEqual([])
+});
