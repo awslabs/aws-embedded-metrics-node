@@ -45,7 +45,7 @@ aws ecs update-service \
                         --execution-role-arn "arn:aws:iam::$ACCOUNT_ID:role/ecsTaskExecutionRole" \
                         --region $REGION \
                         --memory 256 \
-                        --cpu '1 vcpu' \
+                        --cpu '.25 vcpu' \
                         --family $ECS_TASK_FAMILY \
                         --container-definitions "$(cat container-definitions.json)" \
                     | jq --raw-output '.taskDefinition.taskDefinitionArn' | awk -F '/' '{ print $2 }')
