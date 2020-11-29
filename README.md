@@ -96,7 +96,7 @@ const myFunc = metricScope(metrics =>
     // ...
   });
 
-exports.handler = myFunc();
+exports.handler = myFunc;
 ```
 
 ## API
