@@ -57,7 +57,8 @@ export class MetricsContext {
     properties?: IProperties,
     dimensions?: Array<Record<string, string>>,
     defaultDimensions?: Record<string, string>,
-    timestamp?: Date | number,
+    shouldUseDefaultDimensions?: boolean,
+    timestamp?: Date | number
   ) {
     this.namespace = namespace || Configuration.namespace
     this.properties = properties || {};
@@ -65,6 +66,9 @@ export class MetricsContext {
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
     this.defaultDimensions = defaultDimensions || {};
+    if (shouldUseDefaultDimensions != undefined) {
+      this.shouldUseDefaultDimensions = shouldUseDefaultDimensions
+    }
   }
 
   private static resolveMetaTimestamp(timestamp?: Date | number): number {
@@ -191,6 +195,7 @@ export class MetricsContext {
       Object.assign({}, this.properties),
       Object.assign([], this.dimensions),
       this.defaultDimensions,
+      this.shouldUseDefaultDimensions,
       this.timestamp
     );
   }
