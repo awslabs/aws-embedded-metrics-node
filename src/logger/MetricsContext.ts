@@ -77,7 +77,7 @@ export class MetricsContext {
     } else if (timestamp) {
       return timestamp;
     } else {
-      return new Date().getTime();
+      return Date.now();
     }
   }
 
