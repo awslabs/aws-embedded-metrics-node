@@ -22,14 +22,11 @@ import { createMetricsLogger } from './MetricsLoggerFactory';
  */
 const metricScope = <T, U extends readonly unknown[]>(
   handler: (m: MetricsLogger) => (...args: U) => T | Promise<T>,
-): ((...args: U) => Promise<T | undefined>) => {
-  const wrappedHandler = async (...args: U): Promise<T | undefined> => {
+): ((...args: U) => Promise<T>) => {
+  const wrappedHandler = async (...args: U): Promise<T> => {
     const metrics = createMetricsLogger();
-    let exception;
     try {
       return await handler(metrics)(...args);
-    } catch (e) {
-      exception = e;
     } finally {
       try {
         await metrics.flush();
@@ -37,12 +34,6 @@ const metricScope = <T, U extends readonly unknown[]>(
         LOG('Failed to flush metrics', e);
       }
     }
-
-    if (exception) {
-      throw exception;
-    }
-
-    return;
   };
   return wrappedHandler;
 };

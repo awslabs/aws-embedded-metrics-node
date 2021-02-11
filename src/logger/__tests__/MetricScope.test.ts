@@ -2,9 +2,10 @@ import sleep from '../../../test/utils/Sleep';
 import { metricScope } from '../MetricScope';
 import { MetricsLogger } from '../MetricsLogger';
 
+const mockEnvironment = jest.fn();
 jest.mock('../../logger/MetricsLoggerFactory', () => {
   return {
-    createMetricsLogger: () => new MetricsLogger(jest.fn()),
+    createMetricsLogger: () => new MetricsLogger(mockEnvironment),
   };
 });
 
@@ -114,4 +115,74 @@ test('sync scope returns child function return value', async () => {
 
   // assert
   expect(result).toBe(expected);
+});
+
+test('async scope rejects with child function reject value', async () => {
+  // arrange
+  const expected = true;
+
+  const handler = metricScope(() => async () => {
+    return await Promise.reject(expected);
+  });
+
+  // act
+  const result = handler();
+
+  // assert
+  await expect(result).rejects.toBe(expected);
+});
+
+test('sync scope rejects with child function error', async () => {
+  // arrange
+  const expected = true;
+
+  const handler = metricScope(() => () => {
+    throw expected;
+  });
+
+  // act
+  // the customer can pass in a synchronous function, but we will still return
+  // an async function back to the Lambda caller
+  const result = handler();
+
+  // assert
+  await expect(result).rejects.toBe(expected);
+});
+
+test('async scope flush is still called when child function rejects', async () => {
+  // arrange
+  mockEnvironment.mockReset();
+  const handler = metricScope(() => async () => {
+    return await Promise.reject('error');
+  });
+
+  // act
+  try {
+    await handler();
+  } catch (e) {
+    // ignored
+  }
+
+  // assert
+  expect(mockEnvironment).toHaveBeenCalled();
+});
+
+test('sync scope flush is still called when child function throws', async () => {
+  // arrange
+  mockEnvironment.mockReset();
+  const handler = metricScope(() => () => {
+    throw 'error';
+  });
+
+  // act
+  // the customer can pass in a synchronous function, but we will still return
+  // an async function back to the Lambda caller
+  try {
+    await handler();
+  } catch (e) {
+    // ignored
+  }
+
+  // assert
+  expect(mockEnvironment).toHaveBeenCalled();
 });
