@@ -25,8 +25,14 @@ export class TestSink implements ISink {
 
   public events: MetricsContext[] = [];
 
+  public forceAcceptRejects: boolean;
+
+  constructor(forceAcceptRejects: boolean) {
+    this.forceAcceptRejects = forceAcceptRejects;
+  }
+
   public accept(context: MetricsContext): Promise<void> {
     this.events.push(context);
-    return Promise.resolve();
+    return this.forceAcceptRejects ? Promise.reject(): Promise.resolve();
   }
 }
