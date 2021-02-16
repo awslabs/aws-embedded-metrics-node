@@ -8,7 +8,7 @@ import { ISink } from '../../sinks/Sink';
 import { MetricsContext } from '../MetricsContext';
 import { MetricsLogger } from '../MetricsLogger';
 
-const createSink = (forceAcceptRejects: boolean = false) => new TestSink(forceAcceptRejects);
+const createSink = (forceAcceptRejects = false) => new TestSink(forceAcceptRejects);
 const createEnvironment = (sink: ISink) => {
   return {
     probe: () => Promise.resolve(true),
