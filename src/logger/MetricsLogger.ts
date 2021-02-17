@@ -47,7 +47,7 @@ export class MetricsLogger {
     const sink = environment.getSink();
 
     // accept and reset the context
-    sink.accept(this.context);
+    await sink.accept(this.context);
     this.context = this.context.createCopyWithContext();
   }
 
