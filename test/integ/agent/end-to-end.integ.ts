@@ -30,7 +30,20 @@ test(
   'check caller identity',
   async () => {
     console.log(`getCallerIdentity`);
+    console.log(process.env);
+    console.log(`credentialProvider`, stsClient.config.credentialProvider);
+    stsClient.config.getCredentials((e) => { console.log(`getCredentials`, e) });
+    
+    console.log(`credentials`, stsClient.config.getCredentials);
+
     try {
+      console.log(`credentials promise`, await stsClient.config.credentialProvider.resolvePromise());
+    }
+    catch (e) {
+      console.error(`Failed to get credentials`, e);
+    }
+
+    try {  
       const result = await stsClient.getCallerIdentity().promise();
       console.log(`getCallerIdentity`, result);
     }
