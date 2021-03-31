@@ -3,7 +3,9 @@ import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
 import os = require('os');
 import CloudWatch = require('aws-sdk/clients/cloudwatch');
+import STS = require('aws-sdk/clients/sts');
 const cwmClient = new CloudWatch();
+const stsClient = new STS();
 
 const now = () => new Date().getTime();
 const startTime = new Date();
@@ -22,6 +24,21 @@ const dimensionKey = 'Operation';
 const dimensionValue = 'Integ-Test-Agent';
 const dimensions: Record<string, string> = {};
 dimensions[dimensionKey] = dimensionValue;
+
+
+test(
+  'check caller identity',
+  async () => {
+    console.log(`getCallerIdentity`);
+    try {
+      const result = await stsClient.getCallerIdentity().promise();
+      console.log(`getCallerIdentity`, result);
+    }
+    catch (e) {
+      console.log(`getCallerIdentity failed`, e);
+    }
+  }
+);
 
 test(
   'end to end integration test with agent over UDP',
@@ -55,17 +72,17 @@ test(
 
     Configuration.agentEndpoint = 'tcp://0.0.0.0:25888';
 
-const doWork = metricScope(metrics => () => {
-  metrics.putDimensions(dimensions);
-  metrics.putMetric(metricName, 100, 'Milliseconds');
-  metrics.setProperty('RequestId', '422b1569-16f6-4a03-b8f0-fe3fd9b100f8');
-});
+    const doWork = metricScope(metrics => () => {
+      metrics.putDimensions(dimensions);
+      metrics.putMetric(metricName, 100, 'Milliseconds');
+      metrics.setProperty('RequestId', '422b1569-16f6-4a03-b8f0-fe3fd9b100f8');
+    });
 
-// act
-doWork();
-doWork();
-await Sleep(idleTimeout);
-doWork();
+    // act
+    doWork();
+    doWork();
+    await Sleep(idleTimeout);
+    doWork();
 
     // assert
     await waitForMetricExistence(metricName, expectedSamples);
@@ -90,12 +107,19 @@ const metricExists = async (metricName: string, expectedSampleCount: number): Pr
     Statistics: ['SampleCount'],
   };
 
-  const result = await cwmClient.getMetricStatistics(request).promise();
+  console.log(`Checking for metric statistics`);
 
-  if (result && result.Datapoints && result.Datapoints.length > 0) {
-    const samples = result.Datapoints.map(dataPoint => dataPoint.SampleCount || 0).reduce((total, i) => total + i);
-    console.log(`Received ${samples} samples.`);
-    return samples === expectedSampleCount;
+  try {
+    const result = await cwmClient.getMetricStatistics(request).promise();
+
+    if (result && result.Datapoints && result.Datapoints.length > 0) {
+      const samples = result.Datapoints.map(dataPoint => dataPoint.SampleCount || 0).reduce((total, i) => total + i);
+      console.log(`Received ${samples} samples.`);
+      return samples === expectedSampleCount;
+    }
+  }
+  catch (e) {
+    console.error(`Failed to get metric statistics`, e);
   }
 
   return false;
