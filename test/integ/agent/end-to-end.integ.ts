@@ -37,7 +37,9 @@ test(
     console.log(`credentials`, stsClient.config.getCredentials);
 
     try {
-      console.log(`credentials promise`, await stsClient.config.credentialProvider.resolvePromise());
+      if (stsClient.config.credentialProvider) {
+        console.log(`credentials promise`, await stsClient.config.credentialProvider.resolvePromise());
+      }
     }
     catch (e) {
       console.error(`Failed to get credentials`, e);
