@@ -81,7 +81,6 @@ const metricExists = async (metricName: string, expectedSampleCount: number): Pr
     Dimensions: [
       { Name: 'ServiceName', Value: serviceName },
       { Name: 'ServiceType', Value: serviceType },
-      { Name: 'LogGroup', Value: logGroupName },
       { Name: dimensionKey, Value: dimensionValue },
     ],
     Period: 60,
