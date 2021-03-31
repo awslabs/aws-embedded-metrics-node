@@ -47,7 +47,8 @@
     "npm-pack-zip": "^1.2.7",
     "prettier": "^1.19.1",
     "ts-jest": "^26.5.4",
-    "typescript": "^3.8.0"
+    "typescript": "^3.8.0",
+    "y18n": ">=4.0.1"
   },
   "files": [
     "lib/**/*"
