@@ -17,11 +17,10 @@
     "environment": [
       {
         "name": "AWS_EMF_AGENT_ENDPOINT",
-        "value": "tcp://cloudwatch-agent:25888"
+        "value": "tcp://127.0.0.1:25888"
       }
     ],
     "image": "863722843142.dkr.ecr.us-west-2.amazonaws.com/emf-node-canary",
-    "links": ["cloudwatch-agent"],
     "name": "emf-node-canary"
   },
   {
