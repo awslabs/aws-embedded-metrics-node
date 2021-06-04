@@ -140,9 +140,6 @@ export class MetricsLogger {
 
   private configureContextForEnvironment = (context: MetricsContext, environment: IEnvironment): void => {
     const defaultDimensions = {
-      // LogGroup name will entirely depend on the environment since there
-      // are some cases where the LogGroup cannot be configured (e.g. Lambda)
-      LogGroup: environment.getLogGroupName(),
       ServiceName: Configuration.serviceName || environment.getName(),
       ServiceType: Configuration.serviceType || environment.getType(),
     };
