@@ -186,7 +186,7 @@ describe('successful', () => {
     expect(actualValue).toBe(expectedValue);
   });
 
-  test('logs a warning when setting a property with the same name as an existing dimension', async () => {
+  test('logs a warning when setting a property with the same name as an existing dimension', () => {
     // arrange
     const consoleWarnSpy = jest.spyOn(global.console, 'warn');
     const property1Name = '1';
@@ -204,7 +204,7 @@ describe('successful', () => {
     consoleWarnSpy.mockClear();
   });
 
-  test('logs a warning when creating a dimension with the same name as an existing property that does not belong to an existing dimension', async () => {
+  test('logs a warning when creating a dimension with the same name as an existing property that does not belong to an existing dimension', () => {
     // arrange
     const consoleWarnSpy = jest.spyOn(global.console, 'warn');
     const property1Name = '1';
