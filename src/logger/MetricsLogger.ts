@@ -34,6 +34,71 @@ export class MetricsLogger {
   }
 
   /**
+   * Checks if every value of the given dimension is a string
+   * 
+   * @param {Array} the array of dimensions sets ([{dimensionName: 'dimensionValue'}])
+   * @returns {boolean}
+   */
+  private static checkDimensionValueTypes(dimensionSets : Array<Record<string, string>>) : boolean {
+    return dimensionSets.every((dimensionSet : Record<string, string>) => {
+      const dimensionNames : Array<string> = Object.keys(dimensionSet);
+      return dimensionNames.every((dimensionName : string) => {
+        return typeof dimensionSet[dimensionName] === "string";
+      });
+    });
+  }
+
+  /**
+   * Returns an array of all the existing dimension keys
+   * 
+   * @returns {Array}
+   */
+  private getExistingDimensionNames() : Array<string> {
+    let existingDimensionNames : Array<string> = [];
+    this.context.getDimensions().forEach((existingDimensionSet : Record<string, string>) => {
+      const dimensionNames : Array<string> = Object.keys(existingDimensionSet);
+      existingDimensionNames = existingDimensionNames.concat(dimensionNames); 
+    });
+    return existingDimensionNames;
+  }
+
+  /**
+   * Check if the given dimension already contains a property that is not representing the value of an existing dimension
+   * 
+   * @param {Array} the array of dimensions sets ([{dimensionName: 'dimensionValue'}])
+   * @returns {boolean}
+   */
+  private checkDimensionPropertyConflicts(dimensionSets : Array<Record<string, string>>) : boolean {
+    let dimensionNames : Array<string> = [];
+    dimensionSets.forEach((dimensionSet : Record<string, string>) => {
+      dimensionNames = dimensionNames.concat(Object.keys(dimensionSet));
+    });
+    //Make sure to exclude the existing dimensions from the validator
+    const existingDimensionNames : Array<string> = this.getExistingDimensionNames();
+    return dimensionNames.filter((dimensionName : string) => {
+      return !existingDimensionNames.includes(dimensionName);
+    }).every((dimensionName : string) => {
+      return !Object.keys(this.context.properties).includes(dimensionName);
+    });
+  }
+
+  /**
+   * Checks if the provided dimension sets are valid. Logs warnings if something isn't right
+   * 
+   * @param {Array} the array of dimensions sets ([{dimensionName: 'dimensionValue'}])
+   **/
+  private validateDimensionSets(dimensionSets : Array<Record<string, string>>) : void {
+    //Make sure that all the dimensions' values are strings
+    if (!MetricsLogger.checkDimensionValueTypes(dimensionSets)){
+      console.warn('One of the provided dimensions contains a value that is not a string' + JSON.stringify(dimensionSets));
+    }
+    //Give a warning when the given dimension is new AND there is a property that has the same name
+    if (!this.checkDimensionPropertyConflicts(dimensionSets)){
+      console.warn('One of the provided dimensions already has a corresponding property in the root node. You might observe undefined behaviour depending on the property: ' + JSON.stringify(dimensionSets));
+    }
+  }
+
+  /**
    * Flushes the current context state to the configured sink.
    */
   public async flush(): Promise<void> {
@@ -63,6 +128,10 @@ export class MetricsLogger {
    * @param value Property value
    */
   public setProperty(key: string, value: unknown): MetricsLogger {
+    const existingDimensionNames : Array<string> = this.getExistingDimensionNames();
+    if (existingDimensionNames.includes(key)){
+      console.warn('You are trying to set a property that overwrites the value of an existing dimension: ' + key);
+    }
     this.context.setProperty(key, value);
     return this;
   }
@@ -77,6 +146,7 @@ export class MetricsLogger {
    * @see [CloudWatch Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension)
    */
   public putDimensions(dimensions: Record<string, string>): MetricsLogger {
+    this.validateDimensionSets([dimensions]);
     this.context.putDimensions(dimensions);
     return this;
   }
@@ -88,6 +158,7 @@ export class MetricsLogger {
    * @see [CloudWatch Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension)
    */
   public setDimensions(...dimensionSets: Array<Record<string, string>>): MetricsLogger {
+    this.validateDimensionSets(dimensionSets);
     this.context.setDimensions(dimensionSets);
     return this;
   }

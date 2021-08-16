@@ -186,6 +186,46 @@ describe('successful', () => {
     expect(actualValue).toBe(expectedValue);
   });
 
+  test('logs a warning when setting a property with the same name as an existing dimension', async () => {
+    // arrange
+    const consoleWarnSpy = jest.spyOn(global.console, 'warn');
+    const property1Name = '1';
+    const property1Value = '1';
+    const dimension1: Record<string, string> = {'1': '1'};
+
+    // act
+    logger.setDimensions(dimension1);
+    logger.setProperty(property1Name, property1Value);
+
+    // assert
+    expect(console.warn).toHaveBeenCalledTimes(1);
+
+    // clear
+    consoleWarnSpy.mockClear();
+  });
+
+  test('logs a warning when creating a dimension with the same name as an existing property that does not belong to an existing dimension', async () => {
+    // arrange
+    const consoleWarnSpy = jest.spyOn(global.console, 'warn');
+    const property1Name = '1';
+    const property1Value = '1';
+    const property2Name = '2';
+    const property2Value = '2';
+    const dimension1: Record<string, string> = {'1': '1'};
+    const dimension2: Record<string, string> = {'2': '2'};
+
+    // act
+    logger.setProperty(property1Name, property1Value);
+    logger.setDimensions(dimension1);
+    logger.setProperty(property2Name, property2Value);
+    logger.putDimensions(dimension2);
+    // assert
+    expect(console.warn).toHaveBeenCalledTimes(2);
+
+    // clear
+    consoleWarnSpy.mockClear();
+  });
+
   test('can set namespace', async () => {
     // arrange
     const expectedValue = faker.random.word();
