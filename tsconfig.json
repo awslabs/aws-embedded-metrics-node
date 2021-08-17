@@ -4,7 +4,10 @@
     "module": "commonjs",
     "declaration": true,
     "outDir": "./lib",
-    "strict": true
+    "strict": true,
+	"lib": [
+      "es2019"
+    ]
   },
   "include": ["src"],
   "exclude": ["node_modules", "test", "**/__tests__/*"]

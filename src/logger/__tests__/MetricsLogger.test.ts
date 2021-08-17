@@ -219,6 +219,7 @@ describe('successful', () => {
     logger.setDimensions(dimension1);
     logger.setProperty(property2Name, property2Value);
     logger.putDimensions(dimension2);
+
     // assert
     expect(console.warn).toHaveBeenCalledTimes(2);
 

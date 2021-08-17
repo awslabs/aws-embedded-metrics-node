@@ -54,25 +54,17 @@ export class MetricsLogger {
    * @returns {Array}
    */
   private getExistingDimensionNames() : Array<string> {
-    let existingDimensionNames : Array<string> = [];
-    this.context.getDimensions().forEach((existingDimensionSet : Record<string, string>) => {
-      const dimensionNames : Array<string> = Object.keys(existingDimensionSet);
-      existingDimensionNames = existingDimensionNames.concat(dimensionNames); 
-    });
-    return existingDimensionNames;
+    return this.context.getDimensions().flatMap((existingDimensionSet : Record<string, string>) =>  Object.keys(existingDimensionSet));
   }
 
   /**
-   * Check if the given dimension already contains a property that is not representing the value of an existing dimension
+   * Checks if the given dimension already contains a property that is not representing the value of an existing dimension
    * 
    * @param {Array} the array of dimensions sets ([{dimensionName: 'dimensionValue'}])
    * @returns {boolean}
    */
   private checkDimensionPropertyConflicts(dimensionSets : Array<Record<string, string>>) : boolean {
-    let dimensionNames : Array<string> = [];
-    dimensionSets.forEach((dimensionSet : Record<string, string>) => {
-      dimensionNames = dimensionNames.concat(Object.keys(dimensionSet));
-    });
+    const dimensionNames : Array<string> = dimensionSets.flatMap((dimensionSet : Record<string, string>) =>  Object.keys(dimensionSet));
     //Make sure to exclude the existing dimensions from the validator
     const existingDimensionNames : Array<string> = this.getExistingDimensionNames();
     return dimensionNames.filter((dimensionName : string) => {
@@ -90,7 +82,7 @@ export class MetricsLogger {
   private validateDimensionSets(dimensionSets : Array<Record<string, string>>) : void {
     //Make sure that all the dimensions' values are strings
     if (!MetricsLogger.checkDimensionValueTypes(dimensionSets)){
-      console.warn('One of the provided dimensions contains a value that is not a string' + JSON.stringify(dimensionSets));
+      console.warn('One of the provided dimensions contains a value that is not a string: ' + JSON.stringify(dimensionSets));
     }
     //Give a warning when the given dimension is new AND there is a property that has the same name
     if (!this.checkDimensionPropertyConflicts(dimensionSets)){
