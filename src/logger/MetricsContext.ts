@@ -111,22 +111,19 @@ export class MetricsContext {
    * @param dimensions
    */
   public putDimensions(incomingDimensionSet: Record<string, string>): void {
-    const incomingDimensionSetKeys = Object.keys(incomingDimensionSet);
-
+    // Duplicate dimensions sets are removed before being added to the end of the collection.
+    // This ensures the latest dimension key-value is used as a target member on the root EMF node.
     // This operation is O(n^2), but acceptable given sets are capped at 10 dimensions
-    const doesDimensionSetExist = this.dimensions.some(existingDimensionSet => {
+    const incomingDimensionSetKeys = Object.keys(incomingDimensionSet);
+    this.dimensions = this.dimensions.filter(existingDimensionSet => {
       const existingDimensionSetKeys = Object.keys(existingDimensionSet);
       if (existingDimensionSetKeys.length !== incomingDimensionSetKeys.length) {
-        return false;
+        return true;
       }
-      return existingDimensionSetKeys.every(existingDimensionSetKey =>
+      return !existingDimensionSetKeys.every(existingDimensionSetKey =>
         incomingDimensionSetKeys.includes(existingDimensionSetKey),
       );
     });
-
-    if (doesDimensionSetExist) {
-      return;
-    }
 
     this.dimensions.push(incomingDimensionSet);
   }
