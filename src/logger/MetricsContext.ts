@@ -58,22 +58,22 @@ export class MetricsContext {
     dimensions?: Array<Record<string, string>>,
     defaultDimensions?: Record<string, string>,
     shouldUseDefaultDimensions?: boolean,
-    timestamp?: Date | number
+    timestamp?: Date | number,
   ) {
-    this.namespace = namespace || Configuration.namespace
+    this.namespace = namespace || Configuration.namespace;
     this.properties = properties || {};
     this.dimensions = dimensions || [];
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
     this.defaultDimensions = defaultDimensions || {};
     if (shouldUseDefaultDimensions != undefined) {
-      this.shouldUseDefaultDimensions = shouldUseDefaultDimensions
+      this.shouldUseDefaultDimensions = shouldUseDefaultDimensions;
     }
   }
 
   private static resolveMetaTimestamp(timestamp?: Date | number): number {
     if (timestamp instanceof Date) {
-      return timestamp.getTime()
+      return timestamp.getTime();
     } else if (timestamp) {
       return timestamp;
     } else {
@@ -111,33 +111,24 @@ export class MetricsContext {
    * @param dimensions
    */
   public putDimensions(incomingDimensionSet: Record<string, string>): void {
-    if (this.dimensions.length === 0) {
-      this.dimensions.push(incomingDimensionSet);
+    const incomingDimensionSetKeys = Object.keys(incomingDimensionSet);
+
+    // This operation is O(n^2), but acceptable given sets are capped at 10 dimensions
+    const doesDimensionSetExist = this.dimensions.some(existingDimensionSet => {
+      const existingDimensionSetKeys = Object.keys(existingDimensionSet);
+      if (existingDimensionSetKeys.length !== incomingDimensionSetKeys.length) {
+        return false;
+      }
+      return existingDimensionSetKeys.every(existingDimensionSetKey =>
+        incomingDimensionSetKeys.includes(existingDimensionSetKey),
+      );
+    });
+
+    if (doesDimensionSetExist) {
       return;
     }
 
-    for (let i = 0; i < this.dimensions.length; i++) {
-      const existingDimensionSet = this.dimensions[i];
-
-      // check for duplicate dimensions when putting
-      // this is an O(n^2) operation, but since we never expect to have more than
-      // 10 dimensions, this is acceptable for almost all cases.
-      // This makes re-using loggers much easier.
-      const existingDimensionSetKeys = Object.keys(existingDimensionSet);
-      const incomingDimensionSetKeys = Object.keys(incomingDimensionSet);
-      if (existingDimensionSetKeys.length !== incomingDimensionSetKeys.length) {
-        this.dimensions.push(incomingDimensionSet);
-        return;
-      }
-
-      for (let j = 0; j < existingDimensionSetKeys.length; j++) {
-        if (!incomingDimensionSetKeys.includes(existingDimensionSetKeys[j])) {
-          // we're done now because we know that the dimensions keys are not identical
-          this.dimensions.push(incomingDimensionSet);
-          return;
-        }
-      }
-    }
+    this.dimensions.push(incomingDimensionSet);
   }
 
   /**
@@ -196,7 +187,7 @@ export class MetricsContext {
       Object.assign([], this.dimensions),
       this.defaultDimensions,
       this.shouldUseDefaultDimensions,
-      this.timestamp
+      this.timestamp,
     );
   }
 }
