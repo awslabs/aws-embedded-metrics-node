@@ -58,22 +58,22 @@ export class MetricsContext {
     dimensions?: Array<Record<string, string>>,
     defaultDimensions?: Record<string, string>,
     shouldUseDefaultDimensions?: boolean,
-    timestamp?: Date | number
+    timestamp?: Date | number,
   ) {
-    this.namespace = namespace || Configuration.namespace
+    this.namespace = namespace || Configuration.namespace;
     this.properties = properties || {};
     this.dimensions = dimensions || [];
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
     this.defaultDimensions = defaultDimensions || {};
     if (shouldUseDefaultDimensions != undefined) {
-      this.shouldUseDefaultDimensions = shouldUseDefaultDimensions
+      this.shouldUseDefaultDimensions = shouldUseDefaultDimensions;
     }
   }
 
   private static resolveMetaTimestamp(timestamp?: Date | number): number {
     if (timestamp instanceof Date) {
-      return timestamp.getTime()
+      return timestamp.getTime();
     } else if (timestamp) {
       return timestamp;
     } else {
@@ -89,7 +89,7 @@ export class MetricsContext {
     this.properties[key] = value;
   }
 
-  public setTimestamp(timestamp: Date | number) {
+  public setTimestamp(timestamp: Date | number): void {
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
   }
@@ -196,7 +196,7 @@ export class MetricsContext {
       Object.assign([], this.dimensions),
       this.defaultDimensions,
       this.shouldUseDefaultDimensions,
-      this.timestamp
+      this.timestamp,
     );
   }
 }

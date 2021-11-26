@@ -2,8 +2,8 @@ import { metricScope } from '../../../src/logger/MetricScope';
 import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
 import os = require('os');
-import CloudWatch = require('aws-sdk/clients/cloudwatch');
-const cwmClient = new CloudWatch();
+import CloudWatch = require('@aws-sdk/client-cloudwatch');
+const cwmClient = new CloudWatch.CloudWatchClient({});
 
 const now = () => new Date().getTime();
 const startTime = new Date();
@@ -75,7 +75,7 @@ doWork();
 
 
 const metricExists = async (metricName: string, expectedSampleCount: number): Promise<boolean> => {
-  const request = {
+  const request: CloudWatch.GetMetricStatisticsCommandInput = {
     Namespace: 'aws-embedded-metrics',
     MetricName: metricName,
     Dimensions: [
@@ -90,7 +90,7 @@ const metricExists = async (metricName: string, expectedSampleCount: number): Pr
     Statistics: ['SampleCount'],
   };
 
-  const result = await cwmClient.getMetricStatistics(request).promise();
+  const result = await cwmClient.send(new CloudWatch.GetMetricStatisticsCommand(request));
 
   if (result && result.Datapoints && result.Datapoints.length > 0) {
     const samples = result.Datapoints.map(dataPoint => dataPoint.SampleCount || 0).reduce((total, i) => total + i);
