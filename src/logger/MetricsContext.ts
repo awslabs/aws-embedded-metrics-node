@@ -180,9 +180,9 @@ export class MetricsContext {
   public putMetric(key: string, value: number, unit?: Unit | string): void {
     const currentMetric = this.metrics.get(key);
     if (currentMetric) {
-      currentMetric.addValue(value);
+      currentMetric.addValue(Number(value));
     } else {
-      this.metrics.set(key, new MetricValues(value, unit));
+      this.metrics.set(key, new MetricValues(Number(value), unit));
     }
   }
 

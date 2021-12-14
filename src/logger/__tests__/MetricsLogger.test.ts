@@ -83,6 +83,25 @@ describe('successful', () => {
     expect(actualMetric!.unit).toBe('None');
   });
 
+  test('put metric with string corerces to Numeric', async () => {
+    // arrange
+    const expectedKey = faker.random.word();
+    const expectedValues = [faker.random.number(), faker.random.number()];
+
+    // act
+    logger.putMetric(expectedKey, `${expectedValues[0]}` as any);
+    logger.putMetric(expectedKey, `${expectedValues[1]}` as any);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(1);
+    const actualMetric = sink.events[0].metrics.get(expectedKey);
+    expect(actualMetric).toBeTruthy();
+    expect(actualMetric!.values).toStrictEqual(expectedValues);
+    expect(actualMetric!.unit).toBe('None');
+  });
+
+
   test('can put metric with enum unit', async () => {
     // arrange
     const expectedKey = faker.random.word();
