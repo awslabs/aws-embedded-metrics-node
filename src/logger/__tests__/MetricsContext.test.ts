@@ -201,5 +201,5 @@ test('createCopyWithContext copies shouldUseDefaultDimensions', () => {
 
   // assert
   expect(newContext).not.toBe(context);
-  expect(newContext.getDimensions()).toEqual([])
+  expect(newContext.getDimensions()).toEqual([]);
 });

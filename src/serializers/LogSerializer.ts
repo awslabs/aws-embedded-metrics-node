@@ -12,10 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { MaxHeap } from '@datastructures-js/heap';
 
 import { Constants } from '../Constants';
 import { MetricsContext } from '../logger/MetricsContext';
 import { ISerializer } from './Serializer';
+
+interface MetricProgress {
+  // Name of the metric
+  name: string;
+  // Number of metric values remained to be processed
+  numLeft: number;
+}
 
 /**
  * Serializes the provided context to the CWL Structured
@@ -63,7 +71,7 @@ export class LogSerializer implements ISerializer {
     let currentBody = createBody();
 
     const currentMetricsInBody = (): number => currentBody._aws.CloudWatchMetrics[0].Metrics.length;
-    const shouldSerialize = (): boolean => currentMetricsInBody() === Constants.MAX_METRICS_PER_EVENT;
+    const hasMaxMetrics = (): boolean => currentMetricsInBody() === Constants.MAX_METRICS_PER_EVENT;
 
     // converts the body to JSON and pushes it into the batches
     const serializeCurrentBody = (): void => {
@@ -71,14 +79,40 @@ export class LogSerializer implements ISerializer {
       currentBody = createBody();
     };
 
-    for (const [key, metric] of context.metrics) {
-      // if there is only one metric value, unwrap it to make querying easier
-      const metricValue = metric.values.length === 1 ? metric.values[0] : metric.values;
-      currentBody[key] = metricValue;
-      currentBody._aws.CloudWatchMetrics[0].Metrics.push({ Name: key, Unit: metric.unit });
+    const remainingMetrics = MaxHeap.heapify<MetricProgress>(
+      Array.from(context.metrics, ([key, value]) => {
+        return { name: key, numLeft: value.values.length };
+      }),
+      metric => metric.numLeft,
+    );
+    let processedMetrics: MetricProgress[] = [];
 
-      if (shouldSerialize()) {
-        serializeCurrentBody();
+    // Batches the metrics with the most number of values first, such that each metric has no more
+    // than 100 values, and each batch has no more than 100 metric definitions.
+    while (!remainingMetrics.isEmpty()) {
+      const metricProgress = remainingMetrics.extractRoot();
+      const metric = context.metrics.get(metricProgress.name);
+      if (metric) {
+        const startIndex = metric.values.length - metricProgress.numLeft;
+        // if there is only one metric value, unwrap it to make querying easier
+        const metricValue =
+          metricProgress.numLeft === 1
+            ? metric.values[startIndex]
+            : metric.values.slice(startIndex, startIndex + Constants.MAX_VALUES_PER_METRIC);
+        currentBody[metricProgress.name] = metricValue;
+        currentBody._aws.CloudWatchMetrics[0].Metrics.push({ Name: metricProgress.name, Unit: metric.unit });
+
+        metricProgress.numLeft -= Constants.MAX_VALUES_PER_METRIC;
+        if (metricProgress.numLeft > 0) {
+          processedMetrics.push(metricProgress);
+        }
+
+        if (hasMaxMetrics() || remainingMetrics.isEmpty()) {
+          serializeCurrentBody();
+          // inserts these metrics back in the heap to be processed in the next iteration.
+          processedMetrics.forEach(processingMetric => remainingMetrics.insert(processingMetric));
+          processedMetrics = [];
+        }
       }
     }
 

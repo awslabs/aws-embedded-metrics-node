@@ -1,4 +1,5 @@
 import * as faker from 'faker';
+import { Constants } from '../../Constants';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { LogSerializer } from '../LogSerializer';
 
@@ -127,18 +128,62 @@ test('serializes more than 100 metrics into multiple events', () => {
   const results = serializer.serialize(context);
 
   // assert
-  expect(results.length).toBe(expectedBatches);
-  let metricIndex = 0;
+  const resultObjs = results.map(resultJson => JSON.parse(resultJson));
+  expect(resultObjs.length).toBe(expectedBatches);
   for (let batchIndex = 0; batchIndex < expectedBatches; batchIndex++) {
-    const resultJson = results[batchIndex];
     const expectedMetricCount = batchIndex === expectedBatches - 1 ? metrics % 100 : 100;
 
-    const resultObj = JSON.parse(resultJson);
+    const resultObj = resultObjs[batchIndex];
     expect(resultObj._aws.CloudWatchMetrics[0].Metrics.length).toBe(expectedMetricCount);
-    for (let index = 0; index < expectedMetricCount; index++) {
-      expect(resultObj[`Metric-${metricIndex}`]).toBe(expectedValue);
-      metricIndex++;
+  }
+
+  const mergedResult = Object.assign({}, ...resultObjs);
+  for (let index = 0; index < metrics; index++) {
+    expect(mergedResult[`Metric-${index}`]).toBe(expectedValue);
+  }
+});
+
+test('serializes metrics with more than 100 values each into multiple events', () => {
+  // arrange
+  const metrics = 128;
+  const valuesMultiplier = 3;
+  const expectedBatches = Math.max(
+    Math.ceil(metrics / Constants.MAX_METRICS_PER_EVENT),
+    Math.ceil((metrics * valuesMultiplier) / Constants.MAX_VALUES_PER_METRIC),
+  );
+
+  const context = getContext();
+  for (let i = 1; i <= metrics; i++) {
+    const expectedKey = `Metric-${i}`;
+    for (let j = 0; j < i * valuesMultiplier; j++) {
+      context.putMetric(expectedKey, j);
     }
+  }
+
+  // act
+  const results = serializer.serialize(context);
+
+  // assert
+  const resultObjs = results.map(resultJson => JSON.parse(resultJson));
+  expect(resultObjs.length).toBe(expectedBatches);
+  for (const resultObj of resultObjs) {
+    expect(resultObj._aws.CloudWatchMetrics[0].Metrics.length).toBeLessThanOrEqual(Constants.MAX_METRICS_PER_EVENT);
+  }
+
+  for (let index = 1; index <= metrics; index++) {
+    let metricValues: number[] = [];
+    for (const resultObj of resultObjs) {
+      const metricValue = resultObj[`Metric-${index}`];
+      if (metricValue) {
+        if (Array.isArray(metricValue)) {
+          expect(metricValue.length).toBeLessThanOrEqual(Constants.MAX_VALUES_PER_METRIC);
+          metricValues = metricValues.concat(metricValue);
+        } else {
+          metricValues.push(metricValue);
+        }
+      }
+    }
+    expect(metricValues.sort()).toEqual(Array.from({ length: index * valuesMultiplier }, (v, i) => i).sort());
   }
 });
 
