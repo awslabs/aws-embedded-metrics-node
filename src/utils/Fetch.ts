@@ -14,23 +14,21 @@
  */
 
 import * as http from 'http';
+import { RequestOptions } from 'http';
 
 const SOCKET_TIMEOUT = 1000;
 
 /**
- * Fetch JSON data from an remote HTTP endpoint and de-serialize to the provided type.
- * There are no guarantees the response will conform to the contract defined by T.
- * It is up to the consumer to ensure the provided T captures all possible response types
- * from the provided endpoint.
+ * Fetch a string from a remote HTTP endpoint with the provided headers.
  *
- * @param url - currently only supports HTTP
+ * @param options - HTTP request options
  */
-const fetch = <T>(url: string): Promise<T> => {
-  return new Promise<T>((resolve, reject) => {
+const fetchStringWithOptions = (options: RequestOptions): Promise<string> => {
+  return new Promise<string>((resolve, reject) => {
     const request = http
-      .get(url, { timeout: 2000 }, (response: http.IncomingMessage) => {
+      .request(options, (response: http.IncomingMessage) => {
         if (!response.statusCode) {
-          reject(`Received undefined response status code from '${url}'`);
+          reject(`Received undefined response status code from '${options.host}${options.path}'`);
           return;
         }
 
@@ -49,15 +47,9 @@ const fetch = <T>(url: string): Promise<T> => {
         });
 
         response.on('end', () => {
-          let responseString;
-          try {
-            const buffer: Buffer = Buffer.concat(body, bodyBytes);
-            responseString = buffer.toString();
-            const parsedJson = JSON.parse(responseString);
-            resolve(parsedJson as T);
-          } catch (e) {
-            reject(`Failed to parse response from '${url}' as JSON. Received: ${responseString}`);
-          }
+          const buffer: Buffer = Buffer.concat(body, bodyBytes);
+          const responseString = buffer.toString();
+          resolve(responseString)
         });
       })
       .on('error', (err: unknown) => {
@@ -67,11 +59,40 @@ const fetch = <T>(url: string): Promise<T> => {
     request.on('socket', socket => {
       socket.on('timeout', () => {
         request.abort();
-        reject(`Socket timeout while connecting to '${url}'`);
+        reject(`Socket timeout while connecting to '${options.host}${options.path}'`);
       });
       socket.setTimeout(SOCKET_TIMEOUT);
     });
-  });
+
+    request.end();
+  })
+}
+
+/**
+ * Fetch JSON data from a remote HTTP endpoint and de-serialize to the provided type.
+ * There are no guarantees the response will conform to the contract defined by T.
+ * It is up to the consumer to ensure the provided T captures all possible response types
+ * from the provided endpoint.
+ *
+ * @param url - currently only supports HTTP
+ */
+const fetch = async <T>(url: string): Promise<T> => {
+  const options = new URL(url);
+  const responseString = await fetchStringWithOptions(options);
+  return JSON.parse(responseString);
 };
 
-export { fetch };
+/**
+ * Fetch JSON data from a remote HTTP endpoint with the provided headers and de-serialize to the provided type.
+ * There are no guarantees the response will conform to the contract defined by T.
+ * It is up to the consumer to ensure the provided T captures all possible response types
+ * from the provided endpoint.
+ *
+ * @param options - HTTP request options
+ */
+const fetchWithOptions = async <T>(options: RequestOptions): Promise<T> => {
+  const responseString = await fetchStringWithOptions(options);
+  return JSON.parse(responseString);
+}
+
+export { fetch, fetchWithOptions, fetchStringWithOptions };

@@ -17,11 +17,17 @@ import config from '../config/Configuration';
 import { MetricsContext } from '../logger/MetricsContext';
 import { AgentSink } from '../sinks/AgentSink';
 import { ISink } from '../sinks/Sink';
-import { fetch } from '../utils/Fetch';
+import { fetchWithOptions, fetchStringWithOptions } from '../utils/Fetch';
 import { LOG } from '../utils/Logger';
 import { IEnvironment } from './IEnvironment';
+import { RequestOptions } from 'http';
 
-const endpoint = 'http://169.254.169.254/latest/dynamic/instance-identity/document';
+const host = '169.254.169.254';
+const tokenPath = '/latest/api/token';
+const tokenRequestHeaderKey = 'X-aws-ec2-metadata-token-ttl-seconds';
+const tokenRequestHeaderValue = '21600';
+const metadataPath = '/latest/dynamic/instance-identity/document';
+const metadataRequestTokenHeaderKey = 'X-aws-ec2-metadata-token';
 
 interface IEC2MetadataResponse {
   imageId: string;
@@ -34,14 +40,31 @@ interface IEC2MetadataResponse {
 export class EC2Environment implements IEnvironment {
   private metadata: IEC2MetadataResponse | undefined;
   private sink: ISink | undefined;
+  private token: string | undefined;
 
   public async probe(): Promise<boolean> {
     try {
-      this.metadata = await fetch<IEC2MetadataResponse>(endpoint);
-      if (this.metadata) {
-        return true;
+      const options: RequestOptions = {
+        host,
+        path: tokenPath,
+        method: "PUT",
+        headers: {[tokenRequestHeaderKey]: tokenRequestHeaderValue}
       }
+      this.token = await fetchStringWithOptions(options);
+    } catch (e) {
+      LOG(e);
       return false;
+    }
+
+    try {
+      const metadataOptions: RequestOptions = {
+        host,
+        path: metadataPath,
+        method: "GET",
+        headers: {[metadataRequestTokenHeaderKey]: this.token}
+      }
+      this.metadata = await fetchWithOptions<IEC2MetadataResponse>(metadataOptions);
+      return !!this.metadata;
     } catch (e) {
       LOG(e);
       return false;
