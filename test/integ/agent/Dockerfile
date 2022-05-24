@@ -2,7 +2,7 @@
 FROM public.ecr.aws/lts/ubuntu:20.04
 
 RUN apt-get update &&  \
-    apt-get install -y ca-certificates curl debian-keyring debian-archive-keyring && \
+    apt-get install -y ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
 RUN curl -O https://amazon-cloud-watch-agent.s3.amazonaws.com/debian/amd64/1.237768.0/amazon-cloudwatch-agent.deb && \
