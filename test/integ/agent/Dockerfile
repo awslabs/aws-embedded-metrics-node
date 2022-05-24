@@ -1,7 +1,7 @@
 FROM public.ecr.aws/lts/ubuntu:latest
 
 RUN apt-get update &&  \
-    apt-get install -y ca-certificates curl && \
+    apt-get install -y ca-certificates curl debian-keyring debian-archive-keyring && \
     rm -rf /var/lib/apt/lists/*
 
 RUN curl -O https://amazon-cloud-watch-agent.s3.amazonaws.com/debian/amd64/1.237768.0/amazon-cloudwatch-agent.deb && \
