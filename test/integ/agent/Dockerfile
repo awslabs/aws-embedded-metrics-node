@@ -1,4 +1,5 @@
-FROM public.ecr.aws/lts/ubuntu:latest
+# TODO: Fix the NO_PUBKEY error for jammy and update to use the :latest tag
+FROM public.ecr.aws/lts/ubuntu:20.04
 
 RUN apt-get update &&  \
     apt-get install -y ca-certificates curl debian-keyring debian-archive-keyring && \
