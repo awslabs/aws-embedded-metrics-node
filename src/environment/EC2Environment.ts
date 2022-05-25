@@ -22,6 +22,8 @@ import { LOG } from '../utils/Logger';
 import { IEnvironment } from './IEnvironment';
 import { RequestOptions } from 'http';
 
+// Documentation for configuring instance metadata can be found here:
+// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html
 const host = '169.254.169.254';
 const tokenPath = '/latest/api/token';
 const tokenRequestHeaderKey = 'X-aws-ec2-metadata-token-ttl-seconds';
