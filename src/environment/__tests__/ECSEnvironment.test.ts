@@ -15,7 +15,7 @@ beforeEach(() => {
   config.serviceName = undefined;
   config.logGroupName = undefined;
   process.env = {
-    ECS_CONTAINER_METADATA_URI: faker.internet.ip(),
+    ECS_CONTAINER_METADATA_URI: faker.internet.url(),
   };
 });
 
