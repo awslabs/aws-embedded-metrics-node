@@ -18,7 +18,7 @@ import { MetricsContext } from '../logger/MetricsContext';
 import { AgentSink } from '../sinks/AgentSink';
 import { ISink } from '../sinks/Sink';
 import { IEnvironment } from './IEnvironment';
-import { fetch } from '../utils/Fetch';
+import { fetchJSON } from '../utils/Fetch';
 import { LOG } from '../utils/Logger';
 import * as os from 'os';
 import { Constants } from '../Constants';
@@ -78,7 +78,7 @@ export class ECSEnvironment implements IEnvironment {
 
     try {
       const options = new URL(process.env.ECS_CONTAINER_METADATA_URI);
-      this.metadata = await fetch<IECSMetadataResponse>(options);
+      this.metadata = await fetchJSON<IECSMetadataResponse>(options);
       if (this.metadata) {
         this.metadata.FormattedImageName = formatImageName(this.metadata.Image);
         LOG(`Successfully collected ECS Container metadata.`);

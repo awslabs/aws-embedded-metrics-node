@@ -17,7 +17,7 @@ import config from '../config/Configuration';
 import { MetricsContext } from '../logger/MetricsContext';
 import { AgentSink } from '../sinks/AgentSink';
 import { ISink } from '../sinks/Sink';
-import { fetch, fetchString } from '../utils/Fetch';
+import { fetchJSON, fetchString } from '../utils/Fetch';
 import { LOG } from '../utils/Logger';
 import { IEnvironment } from './IEnvironment';
 import { RequestOptions } from 'http';
@@ -65,7 +65,7 @@ export class EC2Environment implements IEnvironment {
         method: "GET",
         headers: {[metadataRequestTokenHeaderKey]: this.token}
       }
-      this.metadata = await fetch<IEC2MetadataResponse>(metadataOptions);
+      this.metadata = await fetchJSON<IEC2MetadataResponse>(metadataOptions);
       return !!this.metadata;
     } catch (e) {
       LOG(e);

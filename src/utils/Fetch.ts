@@ -13,17 +13,17 @@
  * limitations under the License.
  */
 
-import { IncomingMessage, RequestOptions, request as httpRequest} from 'http';
+import { IncomingMessage, RequestOptions, request as httpRequest } from 'http';
 
 const SOCKET_TIMEOUT = 1000;
 
 /**
- * Fetch a string from a remote HTTP endpoint with the provided headers.
+ * Fetch data from a remote HTTP endpoint with the provided headers.
  *
  * @param options - HTTP request options
  */
-const fetchString = (options: RequestOptions): Promise<string> => {
-  return new Promise<string>((resolve, reject) => {
+const fetch = (options: RequestOptions): Promise<Buffer> => {
+  return new Promise<Buffer>((resolve, reject) => {
     const request = httpRequest(options, (response: IncomingMessage) => {
         if (!response.statusCode) {
           reject(`Received undefined response status code from '${options.host}${options.path}'`);
@@ -46,8 +46,7 @@ const fetchString = (options: RequestOptions): Promise<string> => {
 
         response.on('end', () => {
           const buffer: Buffer = Buffer.concat(body, bodyBytes);
-          const responseString = buffer.toString();
-          resolve(responseString)
+          resolve(buffer)
         });
       })
       .on('error', (err: unknown) => {
@@ -67,6 +66,16 @@ const fetchString = (options: RequestOptions): Promise<string> => {
 }
 
 /**
+ * Fetch a string from a remote HTTP endpoint with the provided headers.
+ *
+ * @param options - HTTP request options
+ */
+const fetchString = async (options: RequestOptions): Promise<string> => {
+  const buffer = await fetch(options);
+  return buffer.toString();
+}
+
+/**
  * Fetch JSON data from a remote HTTP endpoint with the provided headers and de-serialize to the provided type.
  * There are no guarantees the response will conform to the contract defined by T.
  * It is up to the consumer to ensure the provided T captures all possible response types
@@ -74,9 +83,9 @@ const fetchString = (options: RequestOptions): Promise<string> => {
  *
  * @param options - HTTP request options
  */
-const fetch = async <T>(options: RequestOptions): Promise<T> => {
-  const responseString = await fetchString(options);
+const fetchJSON = async <T>(options: RequestOptions): Promise<T> => {
+  const responseString = await fetchString(options)
   return JSON.parse(responseString);
 }
 
-export { fetch, fetchString };
+export { fetch, fetchJSON, fetchString };
