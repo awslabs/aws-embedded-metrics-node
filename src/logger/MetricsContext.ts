@@ -89,7 +89,7 @@ export class MetricsContext {
     this.properties[key] = value;
   }
 
-  public setTimestamp(timestamp: Date | number) {
+  public setTimestamp(timestamp: Date | number): void {
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
   }
