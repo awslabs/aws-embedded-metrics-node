@@ -1,5 +1,6 @@
 import * as faker from 'faker';
 import { MetricsContext } from '../MetricsContext';
+import { Constants } from '../../Constants';
 
 test('can set property', () => {
   // arrange
@@ -202,4 +203,39 @@ test('createCopyWithContext copies shouldUseDefaultDimensions', () => {
   // assert
   expect(newContext).not.toBe(context);
   expect(newContext.getDimensions()).toEqual([]);
+});
+
+describe('Throw exception when more than 30 dimensions are added', () => {
+
+  const generateExcessDimensions = () => {
+    const numOfDimensions = 33
+    const dimensionSet:Record<string, string> = {}
+
+    for (let i = 0; i < numOfDimensions; i++) {
+      const expectedKey = `${i}`;
+      dimensionSet[expectedKey] = faker.random.word();
+    }
+
+    return dimensionSet;
+  }
+
+  test('putDimensions checks the dimension set length', () => {
+    // arrange
+    const context = MetricsContext.empty();
+    const errMsg = `Maximum number of dimensions allowed are ${Constants.MAX_DIMENSIONS}`
+
+    expect(() => {
+      context.putDimensions(generateExcessDimensions())
+    }).toThrow(errMsg);
+  });
+
+  test('setDimensions checks all the dimension sets have less than 30 dimensions', () => {
+    // arrange
+    const context = MetricsContext.empty();
+    const errMsg = `Maximum number of dimensions allowed are ${Constants.MAX_DIMENSIONS}`
+
+    expect(() => {
+      context.setDimensions([generateExcessDimensions()])
+    }).toThrow(errMsg);
+  });
 });

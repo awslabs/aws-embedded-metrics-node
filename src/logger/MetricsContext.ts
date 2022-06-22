@@ -17,6 +17,8 @@ import Configuration from '../config/Configuration';
 import { LOG } from '../utils/Logger';
 import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
+import { Constants } from '../Constants';
+import { DimensionsExceededError } from '../exceptions/DimensionsExceededError';
 
 interface IProperties {
   [s: string]: unknown;
@@ -111,6 +113,10 @@ export class MetricsContext {
    * @param dimensions
    */
   public putDimensions(incomingDimensionSet: Record<string, string>): void {
+    if (Object.keys(incomingDimensionSet).length > Constants.MAX_DIMENSIONS) {
+      throw new DimensionsExceededError(`Maximum number of dimensions allowed are ${Constants.MAX_DIMENSIONS}`)
+    }
+
     if (this.dimensions.length === 0) {
       this.dimensions.push(incomingDimensionSet);
       return;
@@ -147,6 +153,13 @@ export class MetricsContext {
    */
   public setDimensions(dimensionSets: Array<Record<string, string>>): void {
     this.shouldUseDefaultDimensions = false;
+
+    dimensionSets.forEach(dimensionSet => {
+      if (Object.keys(dimensionSet).length > Constants.MAX_DIMENSIONS) {
+        throw new DimensionsExceededError(`Maximum number of dimensions allowed are ${Constants.MAX_DIMENSIONS}`)
+      }
+    })
+
     this.dimensions = dimensionSets;
   }
 

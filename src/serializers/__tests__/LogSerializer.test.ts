@@ -22,33 +22,6 @@ test('serializes dimensions', () => {
   assertJsonEquality(resultJson, expected);
 });
 
-test('cannot serialize more than 9 dimensions', () => {
-  // arrange
-  const dimensions: any = {};
-  const dimensionPointers = [];
-  const allowedDimensions = 9;
-  const dimensionsToAdd = 11;
-  for (let i = 0; i < dimensionsToAdd; i++) {
-    const expectedKey = `${i}`;
-    const expectedValue = faker.random.word();
-    dimensions[expectedKey] = expectedValue;
-    dimensionPointers.push(expectedKey);
-  }
-
-  const expectedDimensionPointers = dimensionPointers.slice(0, allowedDimensions);
-
-  const expected: any = { ...getEmptyPayload(), ...dimensions };
-  expected._aws.CloudWatchMetrics[0].Dimensions.push(expectedDimensionPointers);
-
-  const context = getContext();
-  context.putDimensions(dimensions);
-  // act
-  const resultJson = serializer.serialize(context)[0];
-
-  // assert
-  assertJsonEquality(resultJson, expected);
-});
-
 test('serializes properties', () => {
   // arrange
   const expectedKey = faker.random.word();
