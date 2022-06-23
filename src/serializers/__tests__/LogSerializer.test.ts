@@ -2,6 +2,7 @@ import * as faker from 'faker';
 import { Constants } from '../../Constants';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { LogSerializer } from '../LogSerializer';
+import { DimensionSetExceededError } from '../../exceptions/DimensionSetExceededError';
 
 test('serializes dimensions', () => {
   // arrange
@@ -158,6 +159,29 @@ test('serializes metrics with more than 100 values each into multiple events', (
     }
     expect(metricValues.sort()).toEqual(Array.from({ length: index * valuesMultiplier }, (v, i) => i).sort());
   }
+});
+
+test('cannot serialize more than 30 dimensions', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const defaultDimensionKey = faker.random.word();
+  const defaultDimensionValue = faker.random.word();
+  const numOfCustomDimensions = 30;
+  const dimensionSet: Record<string, string> = {};
+
+  for (let i = 0; i < numOfCustomDimensions; i++) {
+    const expectedKey = `${i}`;
+    dimensionSet[expectedKey] = faker.random.word();
+  }
+
+  // act
+  context.setDefaultDimensions({ [defaultDimensionKey]: defaultDimensionValue });
+  context.putDimensions(dimensionSet);
+
+  // assert
+  expect(() => {
+    serializer.serialize(context)
+  }).toThrow(DimensionSetExceededError);
 });
 
 const assertJsonEquality = (resultJson: string, expectedObj: any) => {

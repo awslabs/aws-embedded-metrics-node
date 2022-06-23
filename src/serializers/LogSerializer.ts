@@ -15,7 +15,7 @@
 import { MaxHeap } from '@datastructures-js/heap';
 
 import { Constants } from '../Constants';
-import { DimensionsExceededError } from '../exceptions/DimensionsExceededError';
+import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
 import { MetricsContext } from '../logger/MetricsContext';
 import { ISerializer } from './Serializer';
 
@@ -46,10 +46,10 @@ export class LogSerializer implements ISerializer {
       // in the future it may make sense to introduce a higher-order
       // representation for sink-specific validations
       const keys = Object.keys(d);
-      if (keys.length > Constants.MAX_DIMENSIONS) {
-        const errMsg = `Maximum number of dimensions allowed are ${Constants.MAX_DIMENSIONS}.` +
+      if (keys.length > Constants.MAX_DIMENSION_SET_SIZE) {
+        const errMsg = `Maximum number of dimensions allowed are ${Constants.MAX_DIMENSION_SET_SIZE}.` +
         `Account for default dimensions if not using set_dimensions.`;
-        throw new DimensionsExceededError(errMsg)
+        throw new DimensionSetExceededError(errMsg)
       }
       dimensionKeys.push(keys);
       dimensionProperties = { ...dimensionProperties, ...d };

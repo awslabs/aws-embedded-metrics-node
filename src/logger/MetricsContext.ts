@@ -18,7 +18,7 @@ import { LOG } from '../utils/Logger';
 import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
 import { Constants } from '../Constants';
-import { DimensionsExceededError } from '../exceptions/DimensionsExceededError';
+import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
 
 interface IProperties {
   [s: string]: unknown;
@@ -113,8 +113,9 @@ export class MetricsContext {
    * @param dimensions
    */
   public putDimensions(incomingDimensionSet: Record<string, string>): void {
-    if (Object.keys(incomingDimensionSet).length > Constants.MAX_DIMENSIONS) {
-      throw new DimensionsExceededError(`Maximum number of dimensions allowed are ${Constants.MAX_DIMENSIONS}`)
+    if (Object.keys(incomingDimensionSet).length > Constants.MAX_DIMENSION_SET_SIZE) {
+      throw new DimensionSetExceededError(
+        `Maximum number of dimensions per dimension set allowed are ${Constants.MAX_DIMENSION_SET_SIZE}`)
     }
 
     if (this.dimensions.length === 0) {
@@ -155,8 +156,9 @@ export class MetricsContext {
     this.shouldUseDefaultDimensions = false;
 
     dimensionSets.forEach(dimensionSet => {
-      if (Object.keys(dimensionSet).length > Constants.MAX_DIMENSIONS) {
-        throw new DimensionsExceededError(`Maximum number of dimensions allowed are ${Constants.MAX_DIMENSIONS}`)
+      if (Object.keys(dimensionSet).length > Constants.MAX_DIMENSION_SET_SIZE) {
+        throw new DimensionSetExceededError(
+          `Maximum number of dimensions per dimension set allowed are ${Constants.MAX_DIMENSION_SET_SIZE}`)
       }
     })
 
