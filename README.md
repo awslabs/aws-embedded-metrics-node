@@ -147,7 +147,7 @@ If the cardinality of a particular value is expected to be high, you should cons
 using `setProperty` instead.
 
 Requirements:
-- Length 1-250 characters
+- Name length 1-250 characters
 - ASCII characters only
 
 Examples:
@@ -165,7 +165,7 @@ If the cardinality of a particular value is expected to be high, you should cons
 using `setProperty` instead.
 
 Requirements:
-- Length 1-250 characters
+- Name length 1-250 characters
 - ASCII characters only
 
 Examples:
