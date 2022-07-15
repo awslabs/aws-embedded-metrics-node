@@ -19,7 +19,6 @@ import { IEndpoint } from './IEndpoint';
 import { ISocketClient } from './ISocketClient';
 
 interface SocketExtended extends net.Socket {
-  writeable: boolean;
   readyState: string;
 }
 
@@ -79,7 +78,7 @@ export class TcpClient implements ISocketClient {
   }
 
   private async waitForOpenConnection(): Promise<void> {
-    if (!this.socket.writeable || this.socket.readyState !== 'open') {
+    if (!this.socket.writable || this.socket.readyState !== 'open') {
       await this.establishConnection();
     }
   }
