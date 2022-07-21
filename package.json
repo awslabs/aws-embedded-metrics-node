@@ -28,7 +28,8 @@
   "keywords": [],
   "author": "Amazon Web Services",
   "contributors": [
-    "Jared Nance <jarnance@amazon.com>"
+    "Jared Nance <jarnance@amazon.com>",
+    "Mark Kuhn <kuhnmar@amazon.com>"
   ],
   "license": "Apache-2.0",
   "dependencies": {
