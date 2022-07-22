@@ -1,6 +1,6 @@
 {
   "name": "aws-embedded-metrics",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "AWS Embedded Metrics Client Library",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -58,6 +58,6 @@
     "lib/**/*"
   ],
   "volta": {
-    "node": "10.16.0"
+    "node": "16.16.0"
   }
 }
