@@ -31,10 +31,12 @@ export class TcpClient implements ISocketClient {
       .on('timeout', () => this.disconnect('idle timeout'))
       .on('end', () => this.disconnect('end'))
       .on('data', data => LOG('TcpClient received data.', data));
-    this.init.apply(this);
+
+    // Used to create an initial connection on the socket right after creation to avoid socket failures.    
+    this.initialConnect.apply(this);
   }
 
-  public async init(): Promise<void> {
+  public async initialConnect(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       this.socket.connect(this.endpoint.port, this.endpoint.host, (err?: Error) => {
         if (err) reject(err);
