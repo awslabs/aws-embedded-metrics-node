@@ -24,13 +24,25 @@ export class TcpClient implements ISocketClient {
 
   constructor(endpoint: IEndpoint) {
     this.endpoint = endpoint;
-    this.socket = new net.Socket({ allowHalfOpen: true, writable: false })
+    this.socket = new net.Socket({ allowHalfOpen: true })
       .setEncoding('utf8')
       .setKeepAlive(true)
       .setTimeout(5000) // idle timeout
       .on('timeout', () => this.disconnect('idle timeout'))
       .on('end', () => this.disconnect('end'))
       .on('data', data => LOG('TcpClient received data.', data));
+
+    // Used to create an initial connection on the socket right after creation to avoid socket failures.    
+    this.initialConnect.apply(this);
+  }
+
+  public async initialConnect(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.socket.connect(this.endpoint.port, this.endpoint.host, (err?: Error) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
   }
 
   public async warmup(): Promise<void> {
