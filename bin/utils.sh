@@ -10,14 +10,3 @@ function check_exit() {
         exit $last_exit_code; 
     fi
 }
-
-function confirm() {
-    echo "Confirm [Yy]?"
-    read REPLY""
-    if [[ $REPLY =~ ^[Yy]$ ]]
-    then
-        # do dangerous stuff
-    else
-        exit 1
-    fi
-}
