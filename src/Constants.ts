@@ -14,7 +14,7 @@
  */
 
 export enum Constants {
-  MAX_DIMENSIONS = 9,
+  MAX_DIMENSION_SET_SIZE = 30,
   DEFAULT_NAMESPACE = 'aws-embedded-metrics',
   MAX_METRICS_PER_EVENT = 100,
   MAX_VALUES_PER_METRIC = 100,
