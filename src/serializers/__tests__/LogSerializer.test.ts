@@ -2,6 +2,7 @@ import * as faker from 'faker';
 import { Constants } from '../../Constants';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { LogSerializer } from '../LogSerializer';
+import { DimensionSetExceededError } from '../../exceptions/DimensionSetExceededError';
 
 test('serializes dimensions', () => {
   // arrange
@@ -12,33 +13,6 @@ test('serializes dimensions', () => {
 
   const expected: any = { ...getEmptyPayload(), ...dimensions };
   expected._aws.CloudWatchMetrics[0].Dimensions.push([expectedKey]);
-
-  const context = getContext();
-  context.putDimensions(dimensions);
-  // act
-  const resultJson = serializer.serialize(context)[0];
-
-  // assert
-  assertJsonEquality(resultJson, expected);
-});
-
-test('cannot serialize more than 9 dimensions', () => {
-  // arrange
-  const dimensions: any = {};
-  const dimensionPointers = [];
-  const allowedDimensions = 9;
-  const dimensionsToAdd = 11;
-  for (let i = 0; i < dimensionsToAdd; i++) {
-    const expectedKey = `${i}`;
-    const expectedValue = faker.random.word();
-    dimensions[expectedKey] = expectedValue;
-    dimensionPointers.push(expectedKey);
-  }
-
-  const expectedDimensionPointers = dimensionPointers.slice(0, allowedDimensions);
-
-  const expected: any = { ...getEmptyPayload(), ...dimensions };
-  expected._aws.CloudWatchMetrics[0].Dimensions.push(expectedDimensionPointers);
 
   const context = getContext();
   context.putDimensions(dimensions);
@@ -185,6 +159,29 @@ test('serializes metrics with more than 100 values each into multiple events', (
     }
     expect(metricValues.sort()).toEqual(Array.from({ length: index * valuesMultiplier }, (v, i) => i).sort());
   }
+});
+
+test('cannot serialize more than 30 dimensions', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const defaultDimensionKey = faker.random.word();
+  const defaultDimensionValue = faker.random.word();
+  const numOfCustomDimensions = 30;
+  const dimensionSet: Record<string, string> = {};
+
+  for (let i = 0; i < numOfCustomDimensions; i++) {
+    const expectedKey = `${i}`;
+    dimensionSet[expectedKey] = faker.random.word();
+  }
+
+  // act
+  context.setDefaultDimensions({ [defaultDimensionKey]: defaultDimensionValue });
+  context.putDimensions(dimensionSet);
+
+  // assert
+  expect(() => {
+    serializer.serialize(context)
+  }).toThrow(DimensionSetExceededError);
 });
 
 const assertJsonEquality = (resultJson: string, expectedObj: any) => {

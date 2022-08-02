@@ -17,6 +17,8 @@ import Configuration from '../config/Configuration';
 import { LOG } from '../utils/Logger';
 import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
+import { Constants } from '../Constants';
+import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
 
 interface IProperties {
   [s: string]: unknown;
@@ -105,12 +107,25 @@ export class MetricsContext {
   }
 
   /**
+   * Validates dimension set length is not more than Constants.MAX_DIMENSION_SET_SIZE
+   *
+   * @param dimensionSet
+   */
+  public static validateDimensionSet(dimensionSet: Record<string, string>): void {
+    if (Object.keys(dimensionSet).length > Constants.MAX_DIMENSION_SET_SIZE)
+      throw new DimensionSetExceededError(
+        `Maximum number of dimensions per dimension set allowed are ${Constants.MAX_DIMENSION_SET_SIZE}`)
+  }
+
+  /**
    * Adds a new set of dimensions. Any time a new dimensions set
    * is added, the set is first prepended by the default dimensions.
    *
    * @param dimensions
    */
   public putDimensions(incomingDimensionSet: Record<string, string>): void {
+    MetricsContext.validateDimensionSet(incomingDimensionSet)
+
     if (this.dimensions.length === 0) {
       this.dimensions.push(incomingDimensionSet);
       return;
@@ -147,6 +162,9 @@ export class MetricsContext {
    */
   public setDimensions(dimensionSets: Array<Record<string, string>>): void {
     this.shouldUseDefaultDimensions = false;
+
+    dimensionSets.forEach(dimensionSet => MetricsContext.validateDimensionSet(dimensionSet))
+
     this.dimensions = dimensionSets;
   }
 

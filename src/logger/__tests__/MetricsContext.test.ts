@@ -1,5 +1,6 @@
 import * as faker from 'faker';
 import { MetricsContext } from '../MetricsContext';
+import { DimensionSetExceededError } from '../../exceptions/DimensionSetExceededError';
 
 test('can set property', () => {
   // arrange
@@ -14,6 +15,19 @@ test('can set property', () => {
   const actualValue = context.properties[expectedKey];
   expect(actualValue).toBeTruthy();
   expect(actualValue).toBe(expectedValue);
+});
+
+test('setDimensions allows 30 dimensions', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const numOfDimensions = 30
+  const expectedDimensionSet = getDimensionSet(numOfDimensions);
+
+  // act
+  context.setDimensions([expectedDimensionSet]);
+
+  // assert
+  expect(context.getDimensions()[0]).toStrictEqual(expectedDimensionSet);
 });
 
 test('putDimension adds key to dimension and sets the dimension as a property', () => {
@@ -203,3 +217,34 @@ test('createCopyWithContext copies shouldUseDefaultDimensions', () => {
   expect(newContext).not.toBe(context);
   expect(newContext.getDimensions()).toEqual([]);
 });
+
+test('putDimensions checks the dimension set length', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const numOfDimensions = 33
+
+  expect(() => {
+    context.putDimensions(getDimensionSet(numOfDimensions))
+  }).toThrow(DimensionSetExceededError);
+});
+
+test('setDimensions checks all the dimension sets have less than 30 dimensions', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const numOfDimensions = 33
+
+  expect(() => {
+    context.setDimensions([getDimensionSet(numOfDimensions)])
+  }).toThrow(DimensionSetExceededError);
+});
+
+const getDimensionSet = (numOfDimensions: number) => {
+  const dimensionSet:Record<string, string> = {}
+
+  for (let i = 0; i < numOfDimensions; i++) {
+    const expectedKey = `${i}`;
+    dimensionSet[expectedKey] = faker.random.word();
+  }
+
+  return dimensionSet;
+}
