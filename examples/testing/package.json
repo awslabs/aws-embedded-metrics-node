@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-embedded-metrics": "^2.0.6"
+    "aws-embedded-metrics": "^3.0.0"
   },
   "devDependencies": {
     "jest": "^28.1.3",

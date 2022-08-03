@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-embedded-metrics": "^2.0.6"
+    "aws-embedded-metrics": "^3.0.0"
   },
   "volta": {
     "node": "16.16.0"
