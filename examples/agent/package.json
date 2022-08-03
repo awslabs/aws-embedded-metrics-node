@@ -1,6 +1,6 @@
 {
   "name": "aws-embedded-metrics-agent-demo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,9 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-embedded-metrics": "0.1.0-beta.1572886364"
+    "aws-embedded-metrics": "^3.0.0"
   },
   "volta": {
-    "node": "10.16.0"
+    "node": "16.16.0"
   }
 }
