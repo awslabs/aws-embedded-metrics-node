@@ -221,7 +221,7 @@ describe('successful', () => {
   test('can set timestamp', async () => {
     // arrange
     const timestamp = faker.date.recent();
-    logger.setTimestamp(timestamp)
+    logger.setTimestamp(timestamp);
 
     // act
     logger.putMetric(faker.random.word(), faker.random.number());
@@ -235,7 +235,7 @@ describe('successful', () => {
   test('flush() preserves timestamp if set explicitly', async () => {
     // arrange
     const timestamp = faker.date.recent();
-    logger.setTimestamp(timestamp)
+    logger.setTimestamp(timestamp);
 
     // act
     logger.putMetric(faker.random.word(), faker.random.number());
@@ -384,7 +384,7 @@ describe('successful', () => {
   const expectTimestampWithin = (context: MetricsContext, range: [Date, Date]) => {
     expect(context.meta.Timestamp).toBeGreaterThanOrEqual(range[0].getTime());
     expect(context.meta.Timestamp).toBeLessThanOrEqual(range[1].getTime());
-  }
+  };
 });
 
 describe('failure', () => {

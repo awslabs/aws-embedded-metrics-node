@@ -2,12 +2,12 @@ import * as faker from 'faker';
 import config from '../../config/Configuration';
 import { ECSEnvironment } from '../ECSEnvironment';
 import { MetricsContext } from '../../logger/MetricsContext';
-import { fetch } from '../../utils/Fetch';
+import { fetchJSON } from '../../utils/Fetch';
 
 import * as os from 'os';
 import { Constants } from '../../Constants';
 jest.mock('../../utils/Fetch', () => ({
-  fetch: jest.fn(),
+  fetchJSON: jest.fn(),
 }));
 
 beforeEach(() => {
@@ -15,7 +15,7 @@ beforeEach(() => {
   config.serviceName = undefined;
   config.logGroupName = undefined;
   process.env = {
-    ECS_CONTAINER_METADATA_URI: faker.internet.ip(),
+    ECS_CONTAINER_METADATA_URI: faker.internet.url(),
   };
 });
 
@@ -79,7 +79,7 @@ describe('configureContext()', () => {
     const expected = getRandomECSMetadata();
 
     // @ts-ignore
-    fetch.mockImplementation(() => expected);
+    fetchJSON.mockImplementation(() => expected);
     const env = new ECSEnvironment();
     await env.probe();
 
@@ -101,7 +101,7 @@ describe('configureContext()', () => {
     const expected = getRandomECSMetadata();
 
     // @ts-ignore
-    fetch.mockImplementation(() => expected);
+    fetchJSON.mockImplementation(() => expected);
     const env = new ECSEnvironment();
     await env.probe();
 
@@ -119,7 +119,7 @@ describe('configureContext()', () => {
     const expected = getRandomECSMetadata();
 
     // @ts-ignore
-    fetch.mockImplementation(() => expected);
+    fetchJSON.mockImplementation(() => expected);
     const env = new ECSEnvironment();
     await env.probe();
 
@@ -209,7 +209,7 @@ describe('getName()', () => {
     };
 
     // @ts-ignore
-    fetch.mockImplementation(() => metadata);
+    fetchJSON.mockImplementation(() => metadata);
     const env = new ECSEnvironment();
     await env.probe();
 
@@ -229,7 +229,7 @@ describe('getName()', () => {
     };
 
     // @ts-ignore
-    fetch.mockImplementation(() => metadata);
+    fetchJSON.mockImplementation(() => metadata);
     const env = new ECSEnvironment();
     await env.probe();
 
@@ -243,7 +243,7 @@ describe('getName()', () => {
   test('returns Unknown if image not available', async () => {
     // arrange
     // @ts-ignore
-    fetch.mockImplementation(() => {
+    fetchJSON.mockImplementation(() => {
       return {};
     });
     const env = new ECSEnvironment();

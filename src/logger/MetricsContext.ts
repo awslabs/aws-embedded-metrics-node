@@ -17,6 +17,8 @@ import Configuration from '../config/Configuration';
 import { LOG } from '../utils/Logger';
 import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
+import { Constants } from '../Constants';
+import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
 
 interface IProperties {
   [s: string]: unknown;
@@ -89,7 +91,7 @@ export class MetricsContext {
     this.properties[key] = value;
   }
 
-  public setTimestamp(timestamp: Date | number) {
+  public setTimestamp(timestamp: Date | number): void {
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
   }
@@ -105,12 +107,25 @@ export class MetricsContext {
   }
 
   /**
+   * Validates dimension set length is not more than Constants.MAX_DIMENSION_SET_SIZE
+   *
+   * @param dimensionSet
+   */
+  public static validateDimensionSet(dimensionSet: Record<string, string>): void {
+    if (Object.keys(dimensionSet).length > Constants.MAX_DIMENSION_SET_SIZE)
+      throw new DimensionSetExceededError(
+        `Maximum number of dimensions per dimension set allowed are ${Constants.MAX_DIMENSION_SET_SIZE}`)
+  }
+
+  /**
    * Adds a new set of dimensions. Any time a new dimensions set
    * is added, the set is first prepended by the default dimensions.
    *
    * @param dimensions
    */
   public putDimensions(incomingDimensionSet: Record<string, string>): void {
+    MetricsContext.validateDimensionSet(incomingDimensionSet);
+
     // Duplicate dimensions sets are removed before being added to the end of the collection.
     // This ensures the latest dimension key-value is used as a target member on the root EMF node.
     // This operation is O(n^2), but acceptable given sets are capped at 10 dimensions
@@ -135,6 +150,9 @@ export class MetricsContext {
    */
   public setDimensions(dimensionSets: Array<Record<string, string>>): void {
     this.shouldUseDefaultDimensions = false;
+
+    dimensionSets.forEach(dimensionSet => MetricsContext.validateDimensionSet(dimensionSet))
+
     this.dimensions = dimensionSets;
   }
 

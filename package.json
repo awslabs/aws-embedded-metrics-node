@@ -1,6 +1,6 @@
 {
   "name": "aws-embedded-metrics",
-  "version": "2.0.4",
+  "version": "3.0.0",
   "description": "AWS Embedded Metrics Client Library",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -28,9 +28,13 @@
   "keywords": [],
   "author": "Amazon Web Services",
   "contributors": [
-    "Jared Nance <jarnance@amazon.com>"
+    "Jared Nance <jarnance@amazon.com>",
+    "Mark Kuhn <kuhnmar@amazon.com>"
   ],
   "license": "Apache-2.0",
+  "dependencies": {
+    "@datastructures-js/heap": "^4.0.2"
+  },
   "devDependencies": {
     "@types/faker": "^4.1.5",
     "@types/jest": "^26.0.22",
@@ -54,6 +58,6 @@
     "lib/**/*"
   ],
   "volta": {
-    "node": "10.16.0"
+    "node": "16.16.0"
   }
 }

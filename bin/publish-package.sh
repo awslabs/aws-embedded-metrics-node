@@ -9,11 +9,11 @@ source $rootdir/bin/utils.sh
 new_version=$(cat package.json | jq '.version' --raw-output)
 echo "Deploying $new_version to NPM"
 
-rm -rf node_modules/
 # we need to do this so that eslint doesn't try to stat the directory
 # and blow up on too many symlinks
 rm -rf examples/agent/node_modules/
 rm -rf examples/ecs-firelens/node_modules/
+rm -rf examples/eks/node_modules/
 rm -rf examples/lambda/src/node_modules/
 rm -rf examples/testing/node_modules/
 
