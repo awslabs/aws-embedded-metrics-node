@@ -31,6 +31,7 @@ test('setDimensions allows 30 dimensions', () => {
 });
 
 test('putDimension adds key to dimension and sets the dimension as a property', () => {
+
   // arrange
   const context = MetricsContext.empty();
   const dimension = faker.random.word();
@@ -43,38 +44,7 @@ test('putDimension adds key to dimension and sets the dimension as a property', 
   expect(context.getDimensions()[0]).toStrictEqual(expectedDimension);
 });
 
-test('putDimension will not duplicate dimensions', () => {
-  // arrange
-  const context = MetricsContext.empty();
-  const dimension = faker.random.word();
-  const expectedDimension = { dimension };
-
-  // act
-  context.putDimensions({ dimension });
-  context.putDimensions({ dimension });
-
-  // assert
-  expect(context.getDimensions().length).toBe(1);
-  expect(context.getDimensions()[0]).toStrictEqual(expectedDimension);
-});
-
-test('putDimension will not duplicate dimensions, multiple in different order', () => {
-  // arrange
-  const context = MetricsContext.empty();
-  const dimension1 = faker.random.word();
-  const dimension2 = faker.random.word();
-  const expectedDimension = { dimension1, dimension2 };
-
-  // act
-  context.putDimensions({ dimension1, dimension2 });
-  context.putDimensions({ dimension2, dimension1 });
-
-  // assert
-  expect(context.getDimensions().length).toBe(1);
-  expect(context.getDimensions()[0]).toStrictEqual(expectedDimension);
-});
-
-test('putDimension accepts multiple unique dimension sets', () => {
+test('putDimensions accepts multiple unique dimension sets', () => {
   // arrange
   const context = MetricsContext.empty();
   const expectedDimension1 = { d1: faker.random.word(), d2: faker.random.word() };
@@ -88,6 +58,66 @@ test('putDimension accepts multiple unique dimension sets', () => {
   expect(context.getDimensions().length).toBe(2);
   expect(context.getDimensions()[0]).toStrictEqual(expectedDimension1);
   expect(context.getDimensions()[1]).toStrictEqual(expectedDimension2);
+});
+
+test('putDimensions will not duplicate dimensions', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const dimension1 = faker.random.word();
+  const dimension2 = faker.random.word();
+  const expectedDimension1 = {};
+  const expectedDimension2 = { dimension1 };
+  const expectedDimension3 = { dimension2, dimension1 };
+  const expectedDimension4 = { dimension2 };
+
+  // act
+  context.putDimensions({});
+  context.putDimensions({ dimension1 });
+  context.putDimensions({ dimension1, dimension2 });
+  context.putDimensions({ dimension2, dimension1 });
+  context.putDimensions({ dimension2 });
+  context.putDimensions({});
+  context.putDimensions({ dimension1 });
+  context.putDimensions({ dimension1, dimension2 });
+  context.putDimensions({ dimension2, dimension1 });
+  context.putDimensions({ dimension2 });
+
+  // assert
+  expect(context.getDimensions().length).toBe(4);
+  expect(context.getDimensions()[0]).toStrictEqual(expectedDimension1);
+  expect(context.getDimensions()[1]).toStrictEqual(expectedDimension2);
+  expect(context.getDimensions()[2]).toStrictEqual(expectedDimension3);
+  expect(context.getDimensions()[3]).toStrictEqual(expectedDimension4);
+});
+
+test('putDimensions will sort dimensions correctly', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const dimension1 = faker.random.word();
+  const dimension2 = faker.random.word();
+  const expectedDimension1 = { dimension2, dimension1 };
+  const expectedDimension2 = { dimension2 };
+  const expectedDimension3 = { dimension1 };
+  const expectedDimension4 = {};
+
+  // act
+  context.putDimensions({});
+  context.putDimensions({ dimension1 });
+  context.putDimensions({ dimension1, dimension2 });
+  context.putDimensions({ dimension2, dimension1 });
+  context.putDimensions({ dimension2 });
+  context.putDimensions({ dimension1, dimension2 });
+  context.putDimensions({ dimension2, dimension1 });
+  context.putDimensions({ dimension2 });
+  context.putDimensions({ dimension1 });
+  context.putDimensions({});
+
+  // assert
+  expect(context.getDimensions().length).toBe(4);
+  expect(context.getDimensions()[0]).toStrictEqual(expectedDimension1);
+  expect(context.getDimensions()[1]).toStrictEqual(expectedDimension2);
+  expect(context.getDimensions()[2]).toStrictEqual(expectedDimension3);
+  expect(context.getDimensions()[3]).toStrictEqual(expectedDimension4);
 });
 
 test('getDimensions returns default dimensions if custom dimensions not set', () => {
