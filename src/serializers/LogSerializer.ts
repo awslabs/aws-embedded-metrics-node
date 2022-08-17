@@ -38,21 +38,21 @@ export class LogSerializer implements ISerializer {
     const dimensionKeys: string[][] = [];
     let dimensionProperties = {};
 
-    context.getDimensions().forEach(d => {
-      // we can only take the first 9 defined dimensions
-      // the reason we do this in the serializer is because
-      // it is possible that other sinks or formats can
-      // support more dimensions
-      // in the future it may make sense to introduce a higher-order
-      // representation for sink-specific validations
-      const keys = Object.keys(d);
+    context.getDimensions().forEach(dimensionSet => {
+      const keys = Object.keys(dimensionSet);
+
       if (keys.length > Constants.MAX_DIMENSION_SET_SIZE) {
-        const errMsg = `Maximum number of dimensions allowed are ${Constants.MAX_DIMENSION_SET_SIZE}.` +
-        `Account for default dimensions if not using set_dimensions.`;
-        throw new DimensionSetExceededError(errMsg)
+        const errMsg =
+          `Maximum number of dimensions allowed are ${Constants.MAX_DIMENSION_SET_SIZE}.` +
+          `Account for default dimensions if not using set_dimensions.`;
+        throw new DimensionSetExceededError(errMsg);
       }
+
+      // Stringify and remove non-ascii characeters (allow only 0x20-0x7E)
+      keys.forEach(key => (dimensionSet[key] = String(dimensionSet[key]).replace(/[^\x20-\x7F]/g, '')));
+
       dimensionKeys.push(keys);
-      dimensionProperties = { ...dimensionProperties, ...d };
+      dimensionProperties = { ...dimensionProperties, ...dimensionSet };
     });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
