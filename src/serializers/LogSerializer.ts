@@ -48,8 +48,6 @@ export class LogSerializer implements ISerializer {
         throw new DimensionSetExceededError(errMsg);
       }
 
-      // Stringify and remove non-ascii characeters (allow only 0x20-0x7E)
-      keys.forEach(key => (dimensionSet[key] = String(dimensionSet[key]).replace(/[^\x20-\x7F]/g, '')));
 
       dimensionKeys.push(keys);
       dimensionProperties = { ...dimensionProperties, ...dimensionSet };

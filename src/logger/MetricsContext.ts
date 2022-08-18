@@ -19,6 +19,7 @@ import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
 import { Constants } from '../Constants';
 import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
+import { InvalidDimensionError } from '../exceptions/InvalidDimensionError';
 
 interface IProperties {
   [s: string]: unknown;
@@ -107,14 +108,46 @@ export class MetricsContext {
   }
 
   /**
-   * Validates dimension set length is not more than Constants.MAX_DIMENSION_SET_SIZE
+   * Validates dimension set.
+   * @see [CloudWatch Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Dimension.html)
    *
    * @param dimensionSet
    */
   public static validateDimensionSet(dimensionSet: Record<string, string>): void {
     if (Object.keys(dimensionSet).length > Constants.MAX_DIMENSION_SET_SIZE)
       throw new DimensionSetExceededError(
-        `Maximum number of dimensions per dimension set allowed are ${Constants.MAX_DIMENSION_SET_SIZE}`)
+        `Maximum number of dimensions per dimension set allowed are ${Constants.MAX_DIMENSION_SET_SIZE}`,
+      );
+
+    // Validate dimension key and value are valid strings
+    Object.entries(dimensionSet).forEach(([key, value]) => {
+      dimensionSet[key] = String(value);
+
+      if (
+        !MetricsContext.isAscii(key) ||
+        key.trim().length == 0 ||
+        key.charAt(0) == ':' ||
+        key.length > Constants.MAX_DIMENSION_NAME_LENGTH
+      ) {
+        throw new InvalidDimensionError(`Dimension value ${value} is invalid`);
+      }
+
+      if (
+        !MetricsContext.isAscii(value) ||
+        value.trim().length == 0 ||
+        value.length > Constants.MAX_DIMENSION_VALUE_LENGTH
+      ) {
+        throw new InvalidDimensionError(`Dimension value ${value} is invalid`);
+      }
+    });
+  }
+
+  /**
+   * Check if the string contains only ascii characters
+   * @param str string to check
+   */
+  public static isAscii(str: string): boolean {
+    return /^[\x20-\x7F]*$/.test(str);
   }
 
   /**
@@ -151,7 +184,7 @@ export class MetricsContext {
   public setDimensions(dimensionSets: Array<Record<string, string>>): void {
     this.shouldUseDefaultDimensions = false;
 
-    dimensionSets.forEach(dimensionSet => MetricsContext.validateDimensionSet(dimensionSet))
+    dimensionSets.forEach(dimensionSet => MetricsContext.validateDimensionSet(dimensionSet));
 
     this.dimensions = dimensionSets;
   }

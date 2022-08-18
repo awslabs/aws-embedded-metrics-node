@@ -189,47 +189,6 @@ const assertJsonEquality = (resultJson: string, expectedObj: any) => {
   expect(actual).toStrictEqual(expectedObj);
 };
 
-test('remove non-ascii characters from dimension values', () => {
-  // arrange
-  const key = faker.random.word();
-  const value = '¡éè©µascii🚀♞∑';
-  const expectedValue = 'ascii';
-  const dimensions: any = {};
-  const expectedDimensions: any = {};
-  expectedDimensions[key] = expectedValue;
-  dimensions[key] = value;
-
-  const expected: any = { ...getEmptyPayload(), ...expectedDimensions };
-  expected._aws.CloudWatchMetrics[0].Dimensions.push([key]);
-
-  const context = getContext();
-  context.putDimensions(dimensions);
-
-  // act
-  const resultJson = serializer.serialize(context)[0];
-
-  // assert
-  assertJsonEquality(resultJson, expected);
-});
-
-test('convert dimension values to strings', () => {
-  // arrange
-  const key = faker.random.word();
-  const value = faker.random.number();
-  const expectedValue = String(value);
-  const dimensions: any = {};
-  dimensions[key] = value;
-
-  const context = getContext();
-  context.putDimensions(dimensions);
-
-  // act
-  const resultJson = serializer.serialize(context)[0];
-
-  // assert
-  expect(JSON.parse(resultJson)[key]).toStrictEqual(expectedValue);
-});
-
 const getEmptyPayload = () => {
   return Object.assign(
     {},
