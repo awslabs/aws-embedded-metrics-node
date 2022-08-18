@@ -143,7 +143,7 @@ export class MetricsContext {
   }
 
   /**
-   * Check if the string contains only ascii characters
+   * Check if the string contains only ASCII characters.
    * @param str string to check
    */
   public static isAscii(str: string): boolean {
