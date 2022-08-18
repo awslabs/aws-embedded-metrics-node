@@ -126,7 +126,7 @@ export class MetricsContext {
       if (
         !MetricsContext.isAscii(key) ||
         key.trim().length == 0 ||
-        key.charAt(0) == ':' ||
+        key.startsWith(':') ||
         key.length > Constants.MAX_DIMENSION_NAME_LENGTH
       ) {
         throw new InvalidDimensionError(`Dimension value ${value} is invalid`);
