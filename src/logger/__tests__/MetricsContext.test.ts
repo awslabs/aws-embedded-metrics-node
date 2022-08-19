@@ -268,8 +268,9 @@ test('setDimensions checks all the dimension sets have less than 30 dimensions',
   }).toThrow(DimensionSetExceededError);
 });
 
-test('validateDimensionSet validates dimension set', () => {
+test('adding dimensions validates them', () => {
   // arrange
+  const context = MetricsContext.empty();
   const dimensionNameWithInvalidAscii = { '🚀': 'value' };
   const dimensionValueWithInvalidAscii = { d1: 'مارك' };
   const dimensionWithLongName = { ['a'.repeat(251)]: 'value' };
@@ -280,25 +281,25 @@ test('validateDimensionSet validates dimension set', () => {
 
   // act
   expect(() => {
-    MetricsContext.validateDimensionSet(dimensionNameWithInvalidAscii);
+    context.putDimensions(dimensionNameWithInvalidAscii);
   }).toThrow(InvalidDimensionError);
   expect(() => {
-    MetricsContext.validateDimensionSet(dimensionValueWithInvalidAscii);
+    context.setDimensions([dimensionValueWithInvalidAscii]);
   }).toThrow(InvalidDimensionError);
   expect(() => {
-    MetricsContext.validateDimensionSet(dimensionWithLongName);
+    context.putDimensions(dimensionWithLongName);
   }).toThrow(InvalidDimensionError);
   expect(() => {
-    MetricsContext.validateDimensionSet(dimensionWithLongValue);
+    context.setDimensions([dimensionWithLongValue]);
   }).toThrow(InvalidDimensionError);
   expect(() => {
-    MetricsContext.validateDimensionSet(dimensionWithEmptyName);
+    context.putDimensions(dimensionWithEmptyName);
   }).toThrow(InvalidDimensionError);
   expect(() => {
-    MetricsContext.validateDimensionSet(dimensionWithEmptyValue);
+    context.setDimensions([dimensionWithEmptyValue]);
   }).toThrow(InvalidDimensionError);
   expect(() => {
-    MetricsContext.validateDimensionSet(dimensionNameStartWithColon);
+    context.putDimensions(dimensionNameStartWithColon);
   }).toThrow(InvalidDimensionError);
 });
 
