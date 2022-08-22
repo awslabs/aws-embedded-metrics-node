@@ -49,9 +49,9 @@ export class EC2Environment implements IEnvironment {
       const options: RequestOptions = {
         host,
         path: tokenPath,
-        method: "PUT",
-        headers: {[tokenRequestHeaderKey]: tokenRequestHeaderValue}
-      }
+        method: 'PUT',
+        headers: { [tokenRequestHeaderKey]: tokenRequestHeaderValue },
+      };
       this.token = await fetchString(options);
     } catch (e) {
       LOG(e);
@@ -62,9 +62,9 @@ export class EC2Environment implements IEnvironment {
       const metadataOptions: RequestOptions = {
         host,
         path: metadataPath,
-        method: "GET",
-        headers: {[metadataRequestTokenHeaderKey]: this.token}
-      }
+        method: 'GET',
+        headers: { [metadataRequestTokenHeaderKey]: this.token },
+      };
       this.metadata = await fetchJSON<IEC2MetadataResponse>(metadataOptions);
       return !!this.metadata;
     } catch (e) {

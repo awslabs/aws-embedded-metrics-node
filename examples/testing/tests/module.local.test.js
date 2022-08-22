@@ -6,7 +6,7 @@
 
 // set the environment override to Local which just logs to stdout
 // this needs to be done prior to importing any modules
-// because environment detection starts as soon as the 
+// because environment detection starts as soon as the
 // aws-embedded-metrics module is loaded
 process.env.AWS_EMF_ENVIRONMENT = 'Local';
 

@@ -20,7 +20,7 @@ test('can set property', () => {
 test('setDimensions allows 30 dimensions', () => {
   // arrange
   const context = MetricsContext.empty();
-  const numOfDimensions = 30
+  const numOfDimensions = 30;
   const expectedDimensionSet = getDimensionSet(numOfDimensions);
 
   // act
@@ -31,7 +31,6 @@ test('setDimensions allows 30 dimensions', () => {
 });
 
 test('putDimension adds key to dimension and sets the dimension as a property', () => {
-
   // arrange
   const context = MetricsContext.empty();
   const dimension = faker.random.word();
@@ -251,25 +250,25 @@ test('createCopyWithContext copies shouldUseDefaultDimensions', () => {
 test('putDimensions checks the dimension set length', () => {
   // arrange
   const context = MetricsContext.empty();
-  const numOfDimensions = 33
+  const numOfDimensions = 33;
 
   expect(() => {
-    context.putDimensions(getDimensionSet(numOfDimensions))
+    context.putDimensions(getDimensionSet(numOfDimensions));
   }).toThrow(DimensionSetExceededError);
 });
 
 test('setDimensions checks all the dimension sets have less than 30 dimensions', () => {
   // arrange
   const context = MetricsContext.empty();
-  const numOfDimensions = 33
+  const numOfDimensions = 33;
 
   expect(() => {
-    context.setDimensions([getDimensionSet(numOfDimensions)])
+    context.setDimensions([getDimensionSet(numOfDimensions)]);
   }).toThrow(DimensionSetExceededError);
 });
 
 const getDimensionSet = (numOfDimensions: number) => {
-  const dimensionSet:Record<string, string> = {}
+  const dimensionSet: Record<string, string> = {};
 
   for (let i = 0; i < numOfDimensions; i++) {
     const expectedKey = `${i}`;
@@ -277,4 +276,4 @@ const getDimensionSet = (numOfDimensions: number) => {
   }
 
   return dimensionSet;
-}
+};

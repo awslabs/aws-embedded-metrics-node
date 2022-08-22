@@ -114,7 +114,8 @@ export class MetricsContext {
   public static validateDimensionSet(dimensionSet: Record<string, string>): void {
     if (Object.keys(dimensionSet).length > Constants.MAX_DIMENSION_SET_SIZE)
       throw new DimensionSetExceededError(
-        `Maximum number of dimensions per dimension set allowed are ${Constants.MAX_DIMENSION_SET_SIZE}`)
+        `Maximum number of dimensions per dimension set allowed are ${Constants.MAX_DIMENSION_SET_SIZE}`,
+      );
   }
 
   /**
@@ -151,7 +152,7 @@ export class MetricsContext {
   public setDimensions(dimensionSets: Array<Record<string, string>>): void {
     this.shouldUseDefaultDimensions = false;
 
-    dimensionSets.forEach(dimensionSet => MetricsContext.validateDimensionSet(dimensionSet))
+    dimensionSets.forEach(dimensionSet => MetricsContext.validateDimensionSet(dimensionSet));
 
     this.dimensions = dimensionSets;
   }

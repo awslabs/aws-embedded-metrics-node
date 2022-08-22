@@ -180,7 +180,7 @@ test('cannot serialize more than 30 dimensions', () => {
 
   // assert
   expect(() => {
-    serializer.serialize(context)
+    serializer.serialize(context);
   }).toThrow(DimensionSetExceededError);
 });
 

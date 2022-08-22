@@ -55,24 +55,23 @@ test(
 
     Configuration.agentEndpoint = 'tcp://0.0.0.0:25888';
 
-const doWork = metricScope(metrics => () => {
-  metrics.putDimensions(dimensions);
-  metrics.putMetric(metricName, 100, 'Milliseconds');
-  metrics.setProperty('RequestId', '422b1569-16f6-4a03-b8f0-fe3fd9b100f8');
-});
+    const doWork = metricScope(metrics => () => {
+      metrics.putDimensions(dimensions);
+      metrics.putMetric(metricName, 100, 'Milliseconds');
+      metrics.setProperty('RequestId', '422b1569-16f6-4a03-b8f0-fe3fd9b100f8');
+    });
 
-// act
-doWork();
-doWork();
-await Sleep(idleTimeout);
-doWork();
+    // act
+    doWork();
+    doWork();
+    await Sleep(idleTimeout);
+    doWork();
 
     // assert
     await waitForMetricExistence(metricName, expectedSamples);
   },
   timeoutMillis,
 );
-
 
 const metricExists = async (metricName: string, expectedSampleCount: number): Promise<boolean> => {
   const request = {

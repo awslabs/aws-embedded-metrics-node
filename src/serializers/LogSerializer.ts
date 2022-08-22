@@ -47,9 +47,10 @@ export class LogSerializer implements ISerializer {
       // representation for sink-specific validations
       const keys = Object.keys(d);
       if (keys.length > Constants.MAX_DIMENSION_SET_SIZE) {
-        const errMsg = `Maximum number of dimensions allowed are ${Constants.MAX_DIMENSION_SET_SIZE}.` +
-        `Account for default dimensions if not using set_dimensions.`;
-        throw new DimensionSetExceededError(errMsg)
+        const errMsg =
+          `Maximum number of dimensions allowed are ${Constants.MAX_DIMENSION_SET_SIZE}.` +
+          `Account for default dimensions if not using set_dimensions.`;
+        throw new DimensionSetExceededError(errMsg);
       }
       dimensionKeys.push(keys);
       dimensionProperties = { ...dimensionProperties, ...d };
