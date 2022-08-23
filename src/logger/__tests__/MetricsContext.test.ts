@@ -271,11 +271,11 @@ test('setDimensions checks all the dimension sets have less than 30 dimensions',
 test('adding dimensions validates them', () => {
   // arrange
   const context = MetricsContext.empty();
-  const dimensionNameWithInvalidAscii = { '🚀': 'value' };
+  const dimensionNameWithInvalidAscii = { '🚀': faker.random.word() };
   const dimensionValueWithInvalidAscii = { d1: 'مارك' };
-  const dimensionWithLongName = { ['a'.repeat(251)]: 'value' };
+  const dimensionWithLongName = { ['a'.repeat(251)]: faker.random.word() };
   const dimensionWithLongValue = { d1: 'a'.repeat(1025) };
-  const dimensionWithEmptyName = { ['']: 'value' };
+  const dimensionWithEmptyName = { ['']: faker.random.word() };
   const dimensionWithEmptyValue = { d1: '' };
   const dimensionNameStartWithColon = { ':d1': faker.random.word() };
 
