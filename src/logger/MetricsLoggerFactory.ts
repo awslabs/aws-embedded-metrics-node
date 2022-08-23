@@ -19,8 +19,7 @@ import { MetricsContext } from './MetricsContext';
 
 const createMetricsLogger = (): MetricsLogger => {
   const context = MetricsContext.empty();
-  const logger = new MetricsLogger(resolveEnvironment, context);
-  return logger;
+  return new MetricsLogger(resolveEnvironment, context);
 };
 
 export { createMetricsLogger };

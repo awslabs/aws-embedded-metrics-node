@@ -32,7 +32,7 @@ export class TcpClient implements ISocketClient {
       .on('end', () => this.disconnect('end'))
       .on('data', data => LOG('TcpClient received data.', data));
 
-    // Used to create an initial connection on the socket right after creation to avoid socket failures.    
+    // Used to create an initial connection on the socket right after creation to avoid socket failures.
     this.initialConnect.apply(this);
   }
 

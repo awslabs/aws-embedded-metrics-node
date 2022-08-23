@@ -25,33 +25,32 @@ const SOCKET_TIMEOUT = 1000;
 const fetch = (options: RequestOptions): Promise<Buffer> => {
   return new Promise<Buffer>((resolve, reject) => {
     const request = httpRequest(options, (response: IncomingMessage) => {
-        if (!response.statusCode) {
-          reject(`Received undefined response status code from '${options.host}${options.path}'`);
-          return;
-        }
+      if (!response.statusCode) {
+        reject(`Received undefined response status code from '${options.host}${options.path}'`);
+        return;
+      }
 
-        if (response.statusCode < 200 || response.statusCode > 299) {
-          reject(new Error('Failed to load page, status code: ' + response.statusCode));
-          return;
-        }
+      if (response.statusCode < 200 || response.statusCode > 299) {
+        reject(new Error('Failed to load page, status code: ' + response.statusCode));
+        return;
+      }
 
-        // using similar approach to node-fetch
-        // https://github.com/bitinn/node-fetch/blob/6a5d192034a0f438551dffb6d2d8df2c00921d16/src/body.js#L217
-        const body: Uint8Array[] = [];
-        let bodyBytes = 0;
-        response.on('data', (chunk: Uint8Array) => {
-          bodyBytes += chunk.length;
-          body.push(chunk);
-        });
-
-        response.on('end', () => {
-          const buffer: Buffer = Buffer.concat(body, bodyBytes);
-          resolve(buffer)
-        });
-      })
-      .on('error', (err: unknown) => {
-        reject(err);
+      // using similar approach to node-fetch
+      // https://github.com/bitinn/node-fetch/blob/6a5d192034a0f438551dffb6d2d8df2c00921d16/src/body.js#L217
+      const body: Uint8Array[] = [];
+      let bodyBytes = 0;
+      response.on('data', (chunk: Uint8Array) => {
+        bodyBytes += chunk.length;
+        body.push(chunk);
       });
+
+      response.on('end', () => {
+        const buffer: Buffer = Buffer.concat(body, bodyBytes);
+        resolve(buffer);
+      });
+    }).on('error', (err: unknown) => {
+      reject(err);
+    });
 
     request.on('socket', socket => {
       socket.on('timeout', () => {
@@ -62,8 +61,8 @@ const fetch = (options: RequestOptions): Promise<Buffer> => {
     });
 
     request.end();
-  })
-}
+  });
+};
 
 /**
  * Fetch a string from a remote HTTP endpoint with the provided headers.
@@ -73,7 +72,7 @@ const fetch = (options: RequestOptions): Promise<Buffer> => {
 const fetchString = async (options: RequestOptions): Promise<string> => {
   const buffer = await fetch(options);
   return buffer.toString();
-}
+};
 
 /**
  * Fetch JSON data from a remote HTTP endpoint with the provided headers and de-serialize to the provided type.
@@ -84,8 +83,8 @@ const fetchString = async (options: RequestOptions): Promise<string> => {
  * @param options - HTTP request options
  */
 const fetchJSON = async <T>(options: RequestOptions): Promise<T> => {
-  const responseString = await fetchString(options)
+  const responseString = await fetchString(options);
   return JSON.parse(responseString);
-}
+};
 
 export { fetch, fetchJSON, fetchString };
