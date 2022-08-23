@@ -39,6 +39,7 @@
     "@types/faker": "^4.1.5",
     "@types/jest": "^26.0.22",
     "@types/node": "^12.0.8",
+    "@types/validator": "^13.7.5",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
     "aws-sdk": "^2.551.0",
@@ -52,6 +53,7 @@
     "prettier": "^1.19.1",
     "ts-jest": "^26.5.4",
     "typescript": "^3.8.0",
+    "validator": "^13.7.0",
     "y18n": ">=4.0.1"
   },
   "files": [

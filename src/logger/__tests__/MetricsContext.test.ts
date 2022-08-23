@@ -1,6 +1,7 @@
 import * as faker from 'faker';
 import { MetricsContext } from '../MetricsContext';
 import { DimensionSetExceededError } from '../../exceptions/DimensionSetExceededError';
+import { InvalidDimensionError } from '../../exceptions/InvalidDimensionError';
 
 test('can set property', () => {
   // arrange
@@ -265,6 +266,41 @@ test('setDimensions checks all the dimension sets have less than 30 dimensions',
   expect(() => {
     context.setDimensions([getDimensionSet(numOfDimensions)]);
   }).toThrow(DimensionSetExceededError);
+});
+
+test('adding dimensions validates them', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const dimensionNameWithInvalidAscii = { '🚀': faker.random.word() };
+  const dimensionValueWithInvalidAscii = { d1: 'مارك' };
+  const dimensionWithLongName = { ['a'.repeat(251)]: faker.random.word() };
+  const dimensionWithLongValue = { d1: 'a'.repeat(1025) };
+  const dimensionWithEmptyName = { ['']: faker.random.word() };
+  const dimensionWithEmptyValue = { d1: '' };
+  const dimensionNameStartWithColon = { ':d1': faker.random.word() };
+
+  // act
+  expect(() => {
+    context.putDimensions(dimensionNameWithInvalidAscii);
+  }).toThrow(InvalidDimensionError);
+  expect(() => {
+    context.setDimensions([dimensionValueWithInvalidAscii]);
+  }).toThrow(InvalidDimensionError);
+  expect(() => {
+    context.putDimensions(dimensionWithLongName);
+  }).toThrow(InvalidDimensionError);
+  expect(() => {
+    context.setDimensions([dimensionWithLongValue]);
+  }).toThrow(InvalidDimensionError);
+  expect(() => {
+    context.putDimensions(dimensionWithEmptyName);
+  }).toThrow(InvalidDimensionError);
+  expect(() => {
+    context.setDimensions([dimensionWithEmptyValue]);
+  }).toThrow(InvalidDimensionError);
+  expect(() => {
+    context.putDimensions(dimensionNameStartWithColon);
+  }).toThrow(InvalidDimensionError);
 });
 
 const getDimensionSet = (numOfDimensions: number) => {
