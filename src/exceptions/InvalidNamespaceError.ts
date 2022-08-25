@@ -13,22 +13,12 @@
  * limitations under the License.
  */
 
-import { Unit } from '..';
-
-export class MetricValues {
-  public values: number[];
-  public unit: string;
-
-  constructor(value: number, unit?: Unit | string) {
-    this.values = [value];
-    this.unit = unit || 'None';
+export class InvalidNamespaceError extends Error {
+    constructor(msg: string) {
+      super(msg);
+  
+      // Set the prototype explicitly.
+      Object.setPrototypeOf(this, InvalidNamespaceError.prototype);
+    }
   }
-
-  /**
-   * Appends the provided value to the current metric
-   * @param value
-   */
-  public addValue(value: number): void {
-    this.values.push(value);
-  }
-}
+  

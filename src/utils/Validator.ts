@@ -15,8 +15,11 @@
 
 import validator from 'validator';
 import { Constants } from '../Constants';
+import { Unit } from '../logger/Unit';
 import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
 import { InvalidDimensionError } from '../exceptions/InvalidDimensionError';
+import { InvalidMetricError } from '../exceptions/InvalidMetricError';
+import { InvalidNamespaceError } from '../exceptions/InvalidNamespaceError';
 
 export class Validator {
   /**
@@ -69,5 +72,68 @@ export class Validator {
         throw new InvalidDimensionError(`Dimension key ${key} cannot start with ':'`);
       }
     });
+  }
+
+  /**
+   * Validates metric name.
+   * @see [CloudWatch Metric](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
+   *
+   * @param key
+   * @param value
+   *
+   * @throws {InvalidMetricError} Metric name must be valid.
+   */
+  public static validateMetric(key: string, value: number, unit?: Unit | string): void {
+    if (key.trim().length == 0) {
+      throw new InvalidMetricError(`Metric key ${key} must include at least one non-whitespace character`);
+    }
+
+    if (key.length > Constants.MAX_METRIC_NAME_LENGTH) {
+      throw new InvalidMetricError(
+        `Metric key ${key} must not exceed maximum length ${Constants.MAX_METRIC_NAME_LENGTH}`,
+      );
+    }
+
+    if (isNaN(value) || value === -Infinity || value === Infinity) {
+      throw new InvalidMetricError(`Metric value ${value} is not a number`);
+    }
+
+    if (value >= Constants.MAX_METRIC_VALUE) {
+      throw new InvalidMetricError(
+        `Metric value ${value} must not exceed maximum value ${Constants.MAX_METRIC_VALUE}`,
+      );
+    }
+
+    if (value <= Constants.MIN_METRIC_VALUE) {
+      throw new InvalidMetricError(
+        `Metric value ${value} must not be less than minimum value ${Constants.MIN_METRIC_VALUE}`,
+      );
+    }
+
+    if (
+      unit &&
+      !Object.values(Unit)
+        .map(u => String(u))
+        .includes(unit)
+    ) {
+      throw new InvalidMetricError(`Metric unit ${unit} is not valid`);
+    }
+  }
+
+  /**
+   * Validates metric namespace.
+   * @see [CloudWatch Namespace](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Metric.html)
+   *
+   * @param namespace
+   * @throws {InvalidNamespaceError} Namespace must be of valid length.
+   */
+  public static validateNamespace(namespace: string): void {
+    if (namespace.trim().length == 0) {
+      throw new InvalidNamespaceError(`Namespace must include at least one non-whitespace character`);
+    }
+
+    if (namespace.length > Constants.MAX_NAMESPACE_LENGTH) {
+      throw new InvalidNamespaceError(`Namespace must not exceed maximum length ${Constants.MAX_NAMESPACE_LENGTH}`);
+    }
   }
 }
