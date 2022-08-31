@@ -92,6 +92,7 @@ export class MetricsContext {
   }
 
   public setTimestamp(timestamp: Date | number): void {
+    Validator.validateTimestamp(timestamp);
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
   }

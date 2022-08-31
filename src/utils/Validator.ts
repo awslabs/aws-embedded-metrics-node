@@ -20,6 +20,7 @@ import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededErr
 import { InvalidDimensionError } from '../exceptions/InvalidDimensionError';
 import { InvalidMetricError } from '../exceptions/InvalidMetricError';
 import { InvalidNamespaceError } from '../exceptions/InvalidNamespaceError';
+import { InvalidTimestampError } from '../exceptions/InvalidTimestampError';
 
 export class Validator {
   /**
@@ -99,9 +100,7 @@ export class Validator {
     }
 
     if (value >= Constants.MAX_METRIC_VALUE) {
-      throw new InvalidMetricError(
-        `Metric value ${value} must not exceed maximum value ${Constants.MAX_METRIC_VALUE}`,
-      );
+      throw new InvalidMetricError(`Metric value ${value} must not exceed maximum value ${Constants.MAX_METRIC_VALUE}`);
     }
 
     if (value <= Constants.MIN_METRIC_VALUE) {
@@ -122,7 +121,7 @@ export class Validator {
 
   /**
    * Validates metric namespace.
-   * @see [CloudWatch Namespace](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Metric.html)
+   * @see [CloudWatch Namespace](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Namespace)
    *
    * @param namespace
    * @throws {InvalidNamespaceError} Namespace must be of valid length.
@@ -134,6 +133,48 @@ export class Validator {
 
     if (namespace.length > Constants.MAX_NAMESPACE_LENGTH) {
       throw new InvalidNamespaceError(`Namespace must not exceed maximum length ${Constants.MAX_NAMESPACE_LENGTH}`);
+    }
+
+    if (!validator.matches(namespace, Constants.VALID_NAMESPACE_REGEX)) {
+      throw new InvalidNamespaceError(`Namespace ${namespace} has invalid characters`);
+    }
+  }
+
+  /**
+   * Validates timestamp.
+   * @see [CloudWatch Timestamp](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Metric)
+   *
+   * @param timestamp
+   */
+  public static validateTimestamp(timestamp: Date | number): void {
+    timestamp = timestamp instanceof Date ? timestamp : new Date(timestamp);
+
+    let timestampStr;
+    try {
+      timestampStr = timestamp.toISOString();
+    } catch (e) {
+      throw new InvalidTimestampError(`Timestamp ${timestamp} is invalid`);
+    }
+
+    const isTooOld = validator.isBefore(
+      timestampStr,
+      new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE).toISOString(),
+    );
+    const isTooNew = validator.isAfter(
+      timestampStr,
+      new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE).toISOString(),
+    );
+
+    if (isTooOld) {
+      throw new InvalidTimestampError(
+        `Timestamp ${timestampStr} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
+      );
+    }
+
+    if (isTooNew) {
+      throw new InvalidTimestampError(
+        `Timestamp ${timestampStr} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
+      );
     }
   }
 }

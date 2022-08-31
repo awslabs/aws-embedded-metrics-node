@@ -6,6 +6,7 @@ import { InvalidMetricError } from '../../exceptions/InvalidMetricError';
 import { Unit } from '../Unit';
 import { Constants } from '../../Constants';
 import { InvalidNamespaceError } from '../../exceptions/InvalidNamespaceError';
+import { InvalidTimestampError } from '../../exceptions/InvalidTimestampError';
 
 test('can set property', () => {
   // arrange
@@ -281,7 +282,7 @@ test.each([
   [{ ['']: faker.random.word() }],
   [{ d1: '' }],
   [{ ':d1': faker.random.word() }],
-])('putDimensions/setDimensions with dimension %s throws error', dimensionSet => {
+])('putDimensions/setDimensions with invalid dimension %s throws error', dimensionSet => {
   // arrange
   const context = MetricsContext.empty();
 
@@ -295,11 +296,29 @@ test.each([
 });
 
 test.each([
+  [{ [faker.random.word()]: faker.random.word() }],
+  [{ d: faker.random.word() }],
+  [{ [faker.random.word()]: 'a' }],
+  [{ ['dimension:1']: 'a'.repeat(1024) }],
+])('putDimensions/setDimensions with valid dimension %s does not throw error', dimensionSet => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  // act
+  expect(() => {
+    context.putDimensions(dimensionSet);
+  }).not.toThrow(InvalidDimensionError);
+  expect(() => {
+    context.setDimensions([dimensionSet]);
+  }).not.toThrow(InvalidDimensionError);
+});
+
+test.each([
   ['', faker.random.number(), faker.random.arrayElement(Object.values(Unit))],
-  ['a'.repeat(Constants.MAX_METRIC_NAME_LENGTH + 1), faker.random.number(), "None"],
+  ['a'.repeat(Constants.MAX_METRIC_NAME_LENGTH + 1), faker.random.number(), 'None'],
   [faker.random.word(), Constants.MAX_METRIC_VALUE + 1, undefined],
   [faker.random.word(), Constants.MAX_METRIC_VALUE - 1, undefined],
-  [faker.random.word(), parseFloat("not a number"), undefined],
+  [faker.random.word(), parseFloat('not a number'), undefined],
   [faker.random.word(), Infinity, faker.random.arrayElement(Object.values(Unit))],
   [faker.random.word(), -Infinity, faker.random.arrayElement(Object.values(Unit))],
   [faker.random.word(), faker.random.number(), 'Fahrenheit'],
@@ -313,8 +332,22 @@ test.each([
   }).toThrow(InvalidMetricError);
 });
 
-test.each([[''], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)]])(
-  'setNamespace with namespace: %s throws error',
+test.each([
+  [faker.random.word(), faker.random.number({ min: -1e3, max: -1 }), undefined],
+  [faker.random.word(), faker.random.number(), faker.random.arrayElement(Object.values(Unit))],
+  [faker.random.word(), faker.random.number(), undefined],
+])('putMetric with name: %s, value: %d and unit: %s does not throw error', (metricName, metricValue, metricUnit) => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  // act
+  expect(() => {
+    context.putMetric(metricName, metricValue, metricUnit);
+  }).not.toThrow(InvalidMetricError);
+});
+
+test.each([[''], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ']])(
+  'setNamespace with invalid namespace: %s throws error',
   namespace => {
     // arrange
     const context = MetricsContext.empty();
@@ -325,6 +358,37 @@ test.each([[''], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)]])(
     }).toThrow(InvalidNamespaceError);
   },
 );
+
+test("setNamespace with valid namespace does not throw error", () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const namespace = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-_/#:';
+
+  // act
+  expect(() => {
+    context.setNamespace(namespace);
+  }).not.toThrow(InvalidNamespaceError);
+});
+
+test.each([
+  [NaN],
+  [12345],
+  [912884400], // Dec 5, 1998
+  [32532951600], // Dec 5, 3000
+  [Infinity],
+  [-Infinity],
+  [new Date('Yesterday')],
+  [Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE - 100],
+  [Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE + 100],
+])('setTimestamp with invalid timestamp: %s throws error', timestamp => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  // act
+  expect(() => {
+    context.setTimestamp(timestamp);
+  }).toThrow(InvalidTimestampError);
+});
 
 const getDimensionSet = (numOfDimensions: number) => {
   const dimensionSet: Record<string, string> = {};
