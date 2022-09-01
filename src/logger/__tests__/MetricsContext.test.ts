@@ -359,7 +359,7 @@ test.each([[''], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ć�
   },
 );
 
-test("setNamespace with valid namespace does not throw error", () => {
+test('setNamespace with valid namespace does not throw error', () => {
   // arrange
   const context = MetricsContext.empty();
   const namespace = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-_/#:';
@@ -378,8 +378,8 @@ test.each([
   [Infinity],
   [-Infinity],
   [new Date('Yesterday')],
-  [Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE - 100],
-  [Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE + 100],
+  [Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE - 1000],
+  [Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE + 1000],
 ])('setTimestamp with invalid timestamp: %s throws error', timestamp => {
   // arrange
   const context = MetricsContext.empty();
