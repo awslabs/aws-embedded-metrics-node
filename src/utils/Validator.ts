@@ -76,7 +76,7 @@ export class Validator {
   }
 
   /**
-   * Validates metric name.
+   * Validates metric.
    * @see [CloudWatch Metric](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
    *
    * @param key
