@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import config from '../../config/Configuration';
 import { ECSEnvironment } from '../ECSEnvironment';
 import { MetricsContext } from '../../logger/MetricsContext';
@@ -199,7 +199,7 @@ describe('getName()', () => {
   test('returns formatted image name if available', async () => {
     // arrange
     const formattedImageName = `${faker.lorem.word()}:latest`;
-    const fullImageName = `${faker.random.number({
+    const fullImageName = `${faker.datatype.number({
       min: 0,
       max: 999999999999,
     })}.dkr.ecr.<region>.amazonaws.com/${formattedImageName}`;

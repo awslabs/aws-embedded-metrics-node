@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { TcpClient } from '../connections/TcpClient';
 import sleep from '../../../test/utils/Sleep';
 import net = require('net');
@@ -18,9 +18,9 @@ test('handles tcp client errors', async () => {
 test('handles server disconnect', async () => {
   // arrange
   const port = 9999;
-  const successSends = faker.random.number({ min: 1, max: 100 });
-  const failedSends = faker.random.number({ min: 1, max: 100 });
-  const successSendsReconnect = faker.random.number({ min: 1, max: 100 });
+  const successSends = faker.datatype.number({ min: 1, max: 100 });
+  const failedSends = faker.datatype.number({ min: 1, max: 100 });
+  const successSendsReconnect = faker.datatype.number({ min: 1, max: 100 });
 
   let receivedMessages = 0;
   const server = net.createServer(socket => socket.on('data', () => receivedMessages++)).listen(port, '0.0.0.0');

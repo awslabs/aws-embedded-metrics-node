@@ -26,12 +26,14 @@ const fetch = (options: RequestOptions): Promise<Buffer> => {
   return new Promise<Buffer>((resolve, reject) => {
     const request = httpRequest(options, (response: IncomingMessage) => {
       if (!response.statusCode) {
-        reject(`Received undefined response status code from '${options.host}${options.path}'`);
+        reject(
+          `Received undefined response status code from '${options.host || 'unknown'}/${options.path || 'unknown'}'`,
+        );
         return;
       }
 
       if (response.statusCode < 200 || response.statusCode > 299) {
-        reject(new Error('Failed to load page, status code: ' + response.statusCode));
+        reject(new Error(`Failed to load page, status code: ${response.statusCode}`));
         return;
       }
 
@@ -55,7 +57,7 @@ const fetch = (options: RequestOptions): Promise<Buffer> => {
     request.on('socket', socket => {
       socket.on('timeout', () => {
         request.abort();
-        reject(`Socket timeout while connecting to '${options.host}${options.path}'`);
+        reject(`Socket timeout while connecting to '${options.host || 'unknown'}/${options.path || 'unknown'}'`);
       });
       socket.setTimeout(SOCKET_TIMEOUT);
     });
@@ -84,7 +86,7 @@ const fetchString = async (options: RequestOptions): Promise<string> => {
  */
 const fetchJSON = async <T>(options: RequestOptions): Promise<T> => {
   const responseString = await fetchString(options);
-  return JSON.parse(responseString);
+  return JSON.parse(responseString) as Promise<T>;
 };
 
 export { fetch, fetchJSON, fetchString };

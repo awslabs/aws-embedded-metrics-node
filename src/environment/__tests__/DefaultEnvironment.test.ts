@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import config from '../../config/Configuration';
 import { DefaultEnvironment } from '../DefaultEnvironment';
 

@@ -95,22 +95,24 @@ export class Validator {
       );
     }
 
-    if (isNaN(value) || value === -Infinity || value === Infinity) {
+    if (Number.isNaN(value) || value === -Infinity || value === Infinity) {
       throw new InvalidMetricError(`Metric value ${value} is not a number`);
     }
 
-    if (value >= Constants.MAX_METRIC_VALUE) {
-      throw new InvalidMetricError(`Metric value ${value} must not exceed maximum value ${Constants.MAX_METRIC_VALUE}`);
+    if (value > Number.MAX_SAFE_INTEGER) {
+      throw new InvalidMetricError(
+        `Metric value ${value} must not exceed maximum value ${Number.MAX_SAFE_INTEGER}}`,
+      );
     }
 
-    if (value <= Constants.MIN_METRIC_VALUE) {
+    if (value < -Number.MAX_SAFE_INTEGER) {
       throw new InvalidMetricError(
-        `Metric value ${value} must not be less than minimum value ${Constants.MIN_METRIC_VALUE}`,
+        `Metric value ${value} must not be less than minimum value ${-Number.MAX_SAFE_INTEGER}`,
       );
     }
 
     if (
-      unit &&
+      unit !== undefined &&
       !Object.values(Unit)
         .map(u => String(u))
         .includes(unit)
@@ -153,7 +155,7 @@ export class Validator {
     try {
       timestampStr = timestamp.toISOString();
     } catch (e) {
-      throw new InvalidTimestampError(`Timestamp ${timestamp} is invalid`);
+      throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
     }
 
     const isTooOld = validator.isBefore(

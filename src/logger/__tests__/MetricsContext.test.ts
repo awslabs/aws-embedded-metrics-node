@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { MetricsContext } from '../MetricsContext';
 import { DimensionSetExceededError } from '../../exceptions/DimensionSetExceededError';
 import { InvalidDimensionError } from '../../exceptions/InvalidDimensionError';
@@ -173,8 +173,8 @@ test('putMetric adds metric to metrics key', () => {
   // arrange
   const context = MetricsContext.empty();
   const expectedKey = faker.random.word();
-  const expectedValue = faker.random.number();
-  const expectedUnit = faker.random.arrayElement(Object.values(Unit));
+  const expectedValue = faker.datatype.number();
+  const expectedUnit = faker.helpers.arrayElement(Object.values(Unit));
 
   // act
   context.putMetric(expectedKey, expectedValue, expectedUnit);
@@ -190,7 +190,7 @@ test('putMetric uses None unit if not provided', () => {
   // arrange
   const context = MetricsContext.empty();
   const expectedKey = faker.random.word();
-  const expectedValue = faker.random.number();
+  const expectedValue = faker.datatype.number();
   const expectedUnit = 'None';
 
   // act
@@ -314,14 +314,18 @@ test.each([
 });
 
 test.each([
-  ['', faker.random.number(), faker.random.arrayElement(Object.values(Unit))],
-  ['a'.repeat(Constants.MAX_METRIC_NAME_LENGTH + 1), faker.random.number(), 'None'],
-  [faker.random.word(), Constants.MAX_METRIC_VALUE + 1, undefined],
-  [faker.random.word(), Constants.MAX_METRIC_VALUE - 1, undefined],
+  ['', faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit))],
+  ['a'.repeat(Constants.MAX_METRIC_NAME_LENGTH + 1), faker.datatype.number(), 'None'],
+  [faker.random.word(), Number.MAX_VALUE, undefined],
+  [faker.random.word(), -Number.MAX_VALUE, undefined],
+  [faker.random.word(), Number.MAX_SAFE_INTEGER + 1, undefined],
+  [faker.random.word(), -Number.MAX_SAFE_INTEGER - 1, undefined],
   [faker.random.word(), parseFloat('not a number'), undefined],
-  [faker.random.word(), Infinity, faker.random.arrayElement(Object.values(Unit))],
-  [faker.random.word(), -Infinity, faker.random.arrayElement(Object.values(Unit))],
-  [faker.random.word(), faker.random.number(), 'Fahrenheit'],
+  [faker.random.word(), Infinity, faker.helpers.arrayElement(Object.values(Unit))],
+  [faker.random.word(), -Infinity, faker.helpers.arrayElement(Object.values(Unit))],
+  [faker.random.word(), faker.datatype.number(), 'Fahrenheit'],
+  [faker.random.word(), 4, ''],
+  [faker.random.word(), NaN, faker.helpers.arrayElement(Object.values(Unit))],
 ])('putMetric with name: %s, value: %d and unit: %s throws error', (metricName, metricValue, metricUnit) => {
   // arrange
   const context = MetricsContext.empty();
@@ -333,9 +337,12 @@ test.each([
 });
 
 test.each([
-  [faker.random.word(), faker.random.number({ min: -1e3, max: -1 }), undefined],
-  [faker.random.word(), faker.random.number(), faker.random.arrayElement(Object.values(Unit))],
-  [faker.random.word(), faker.random.number(), undefined],
+  [faker.random.word(), faker.datatype.number({ min: -1e3, max: -1 }), undefined],
+  [faker.random.word(), faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit))],
+  [faker.random.words(2), faker.datatype.number(), undefined],
+  [faker.random.words(3), faker.datatype.number(), Unit.Seconds],
+  ['Max_Value', Number.MAX_SAFE_INTEGER, Unit.Milliseconds],
+  ['-Max_Value', -Number.MAX_SAFE_INTEGER, "Bytes/Second"],
 ])('putMetric with name: %s, value: %d and unit: %s does not throw error', (metricName, metricValue, metricUnit) => {
   // arrange
   const context = MetricsContext.empty();

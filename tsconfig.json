@@ -4,7 +4,9 @@
     "module": "commonjs",
     "declaration": true,
     "outDir": "./lib",
-    "strict": true
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node"
   },
   "include": ["src"],
   "exclude": ["node_modules", "test", "**/__tests__/*"]
