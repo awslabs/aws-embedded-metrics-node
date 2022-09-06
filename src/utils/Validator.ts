@@ -95,7 +95,7 @@ export class Validator {
       );
     }
 
-    if (Number.isNaN(value) || value === -Infinity || value === Infinity) {
+    if (!Number.isFinite(value)) {
       throw new InvalidMetricError(`Metric value ${value} is not a number`);
     }
 
