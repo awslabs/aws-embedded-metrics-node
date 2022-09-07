@@ -282,7 +282,7 @@ test.each([
   [{ ['']: faker.random.word() }],
   [{ d1: '' }],
   [{ ':d1': faker.random.word() }],
-])('putDimensions/setDimensions with invalid dimension %s throws error', dimensionSet => {
+])('putDimensions/setDimensions with invalid dimension %s throws error', (dimensionSet) => {
   // arrange
   const context = MetricsContext.empty();
 
@@ -300,7 +300,7 @@ test.each([
   [{ d: faker.random.word() }],
   [{ [faker.random.word()]: 'a' }],
   [{ ['dimension:1']: 'a'.repeat(1024) }],
-])('putDimensions/setDimensions with valid dimension %s does not throw error', dimensionSet => {
+])('putDimensions/setDimensions with valid dimension %s does not throw error', (dimensionSet) => {
   // arrange
   const context = MetricsContext.empty();
 
@@ -342,7 +342,7 @@ test.each([
   [faker.random.words(2), faker.datatype.number(), undefined],
   [faker.random.words(3), faker.datatype.number(), Unit.Seconds],
   ['Max_Value', Number.MAX_SAFE_INTEGER, Unit.Milliseconds],
-  ['-Max_Value', -Number.MAX_SAFE_INTEGER, "Bytes/Second"],
+  ['-Max_Value', -Number.MAX_SAFE_INTEGER, 'Bytes/Second'],
 ])('putMetric with name: %s, value: %d and unit: %s does not throw error', (metricName, metricValue, metricUnit) => {
   // arrange
   const context = MetricsContext.empty();
@@ -353,9 +353,9 @@ test.each([
   }).not.toThrow(InvalidMetricError);
 });
 
-test.each([[''], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ']])(
+test.each([[''], [' '], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ'], ['namespace ']])(
   'setNamespace with invalid namespace: %s throws error',
-  namespace => {
+  (namespace) => {
     // arrange
     const context = MetricsContext.empty();
 
@@ -387,7 +387,7 @@ test.each([
   [new Date('Yesterday')],
   [Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE - 1000],
   [Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE + 1000],
-])('setTimestamp with invalid timestamp: %s throws error', timestamp => {
+])('setTimestamp with invalid timestamp: %s throws error', (timestamp) => {
   // arrange
   const context = MetricsContext.empty();
 
