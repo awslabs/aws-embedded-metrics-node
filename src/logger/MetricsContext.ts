@@ -189,7 +189,7 @@ export class MetricsContext {
 
   /**
    * Creates an independently flushable context.
-   * Custom dimensions are preserved.
+   * Custom dimensions are preserved by default unless preserveDimensions parameter is set.
    * @param preserveDimensions Indicates whether custom dimensions should be preserved
    */
   public createCopyWithContext(preserveDimensions = true): MetricsContext {
