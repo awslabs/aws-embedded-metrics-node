@@ -190,27 +190,13 @@ export class MetricsContext {
   /**
    * Creates an independently flushable context.
    * Custom dimensions are preserved.
+   * @param preserveDimensions Indicates whether custom dimensions should be preserved
    */
-  public createCopyWithContext(): MetricsContext {
+  public createCopyWithContext(preserveDimensions = true): MetricsContext {
     return new MetricsContext(
       this.namespace,
       Object.assign({}, this.properties),
-      Object.assign([], this.dimensions),
-      this.defaultDimensions,
-      this.shouldUseDefaultDimensions,
-      this.timestamp,
-    );
-  }
-
-  /**
-   * Creates an independently flushable context.
-   * Custom dimensions are NOT preserved.
-   */
-  public createCopyWithContextWithoutDimensions(): MetricsContext {
-    return new MetricsContext(
-      this.namespace,
-      Object.assign({}, this.properties),
-      [],
+      preserveDimensions ? Object.assign([], this.dimensions) : [],
       this.defaultDimensions,
       this.shouldUseDefaultDimensions,
       this.timestamp,

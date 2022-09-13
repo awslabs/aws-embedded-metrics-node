@@ -50,10 +50,7 @@ export class MetricsLogger {
 
     // accept and reset the context
     await sink.accept(this.context);
-    this.context = this.flushPreserveDimensions
-      ? this.context.createCopyWithContext()
-      : this.context.createCopyWithContextWithoutDimensions();
-    this.context = this.context.createCopyWithContext();
+    this.context = this.context.createCopyWithContext(this.flushPreserveDimensions);
   }
 
   /**
