@@ -27,10 +27,12 @@ import { Unit } from './Unit';
 export class MetricsLogger {
   private context: MetricsContext;
   private resolveEnvironment: EnvironmentProvider;
+  public flushPreserveDimensions: boolean;
 
   constructor(resolveEnvironment: EnvironmentProvider, context?: MetricsContext) {
     this.resolveEnvironment = resolveEnvironment;
     this.context = context || MetricsContext.empty();
+    this.flushPreserveDimensions = true;
   }
 
   /**
@@ -48,6 +50,9 @@ export class MetricsLogger {
 
     // accept and reset the context
     await sink.accept(this.context);
+    this.context = this.flushPreserveDimensions
+      ? this.context.createCopyWithContext()
+      : this.context.createCopyWithContextWithoutDimensions();
     this.context = this.context.createCopyWithContext();
   }
 
@@ -83,12 +88,35 @@ export class MetricsLogger {
 
   /**
    * Overwrite all dimensions on this MetricsLogger instance.
-   *
-   * @param dimensionSets
    * @see [CloudWatch Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Dimension)
+   *
+   * @param {Array<Record<string, string>> | Record<string, string>} dimensionSetOrSets Dimension sets to overwrite with
+   * @param {boolean} [useDefault=false] whether to use default dimensions
    */
-  public setDimensions(...dimensionSets: Array<Record<string, string>>): MetricsLogger {
-    this.context.setDimensions(dimensionSets);
+  public setDimensions(dimensionSet: Record<string, string>, useDefault: boolean): MetricsLogger;
+  public setDimensions(dimensionSet: Record<string, string>): MetricsLogger;
+  public setDimensions(dimensionSets: Array<Record<string, string>>, useDefault: boolean): MetricsLogger;
+  public setDimensions(dimensionSets: Array<Record<string, string>>): MetricsLogger;
+  public setDimensions(
+    dimensionSetOrSets: Array<Record<string, string>> | Record<string, string>,
+    useDefault = false,
+  ): MetricsLogger {
+    if (Array.isArray(dimensionSetOrSets)) {
+      this.context.setDimensions(dimensionSetOrSets, useDefault);
+    } else {
+      this.context.setDimensions([dimensionSetOrSets], useDefault);
+    }
+
+    return this;
+  }
+
+  /**
+   * Clear all custom dimensions on this MetricsLogger instance
+   *
+   * @param useDefault indicates whether default dimensions should be used
+   */
+  public resetDimensions(useDefault: boolean): MetricsLogger {
+    this.context.resetDimensions(useDefault);
     return this;
   }
 
