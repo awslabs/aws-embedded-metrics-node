@@ -113,7 +113,7 @@ Requirements:
 - Name Length 1-255 characters
 - Name must be ASCII characters only
 - Values must be in the range of 8.515920e-109 to 1.174271e+108. In addition, special values (for example, NaN, +Infinity, -Infinity) are not supported.
-- Metrics must meet CloudWatch Metrics requirements, otherwise a `InvalidMetricError` will be thrown.
+- Metrics must meet CloudWatch Metrics requirements, otherwise a `InvalidMetricError` will be thrown. See [MetricDatum](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html) for valid values.
 
 Examples:
 
@@ -149,7 +149,7 @@ using `setProperty` instead.
 Requirements:
 - Length 1-255 characters
 - ASCII characters only
-- Dimensions must meet CloudWatch Dimensions requirements, otherwise a `InvalidDimensionError` will be thrown. See [Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Dimension.html) for valid values.
+- Dimensions must meet CloudWatch Dimensions requirements, otherwise a `InvalidDimensionError` or `DimensionSetExceededError` will be thrown. See [Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Dimension.html) for valid values.
 
 Examples:
 ```js
@@ -168,7 +168,7 @@ using `setProperty` instead.
 Requirements:
 - Length 1-255 characters
 - ASCII characters only
-- Dimensions must meet CloudWatch Dimensions requirements, otherwise a `InvalidDimensionError` will be thrown. See [Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Dimension.html) for valid values.
+- Dimensions must meet CloudWatch Dimensions requirements, otherwise a `InvalidDimensionError` or `DimensionSetExceededError` will be thrown. See [Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Dimension.html) for valid values.
 
 Examples:
 
