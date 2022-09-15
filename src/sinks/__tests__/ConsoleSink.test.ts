@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { ConsoleSink } from '../ConsoleSink';
 
@@ -24,7 +24,7 @@ test('accept serializes and writes result to stdout', () => {
 
 test('accept writes multiple messages to stdout', () => {
   // arrange
-  const expectedMessages = faker.random.number({ min: 2, max: 100 });
+  const expectedMessages = faker.datatype.number({ min: 2, max: 100 });
   const expected = new Array(expectedMessages).fill(null).map(() => faker.random.alphaNumeric(20));
   const serializer: any = {
     serialize: jest.fn(() => expected),

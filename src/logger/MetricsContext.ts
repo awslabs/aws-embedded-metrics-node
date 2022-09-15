@@ -83,6 +83,7 @@ export class MetricsContext {
   }
 
   public setNamespace(value: string): void {
+    Validator.validateNamespace(value);
     this.namespace = value;
   }
 
@@ -91,6 +92,7 @@ export class MetricsContext {
   }
 
   public setTimestamp(timestamp: Date | number): void {
+    Validator.validateTimestamp(timestamp);
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
   }
@@ -172,6 +174,8 @@ export class MetricsContext {
   }
 
   public putMetric(key: string, value: number, unit?: Unit | string): void {
+    Validator.validateMetric(key, value, unit);
+
     const currentMetric = this.metrics.get(key);
     if (currentMetric) {
       currentMetric.addValue(value);

@@ -1,5 +1,3 @@
-import { Unit } from '..';
-
 /*
  * Copyright 2019 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
@@ -14,6 +12,8 @@ import { Unit } from '..';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import { Unit } from '..';
 
 export class MetricValues {
   public values: number[];

@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { Constants } from '../../Constants';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { LogSerializer } from '../LogSerializer';
@@ -44,7 +44,7 @@ test('serializes properties', () => {
 test('serializes metrics with single datapoint', () => {
   // arrange
   const expectedKey = faker.random.word();
-  const expectedValue = faker.random.number();
+  const expectedValue = faker.datatype.number();
   const expectedMetricDefinition = {
     Name: expectedKey,
     Unit: 'None',
@@ -66,7 +66,7 @@ test('serializes metrics with single datapoint', () => {
 test('serializes metrics with multiple datapoints', () => {
   // arrange
   const expectedKey = faker.random.word();
-  const expectedValues = [faker.random.number(), faker.random.number()];
+  const expectedValues = [faker.datatype.number(), faker.datatype.number()];
   const expectedMetricDefinition = {
     Name: expectedKey,
     Unit: 'None',

@@ -48,7 +48,6 @@ export class LogSerializer implements ISerializer {
         throw new DimensionSetExceededError(errMsg);
       }
 
-
       dimensionKeys.push(keys);
       dimensionProperties = { ...dimensionProperties, ...dimensionSet };
     });
@@ -72,14 +71,17 @@ export class LogSerializer implements ISerializer {
     };
 
     const eventBatches: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     let currentBody = createBody();
 
+    // eslint-disable-next-line
     const currentMetricsInBody = (): number => currentBody._aws.CloudWatchMetrics[0].Metrics.length;
     const hasMaxMetrics = (): boolean => currentMetricsInBody() === Constants.MAX_METRICS_PER_EVENT;
 
     // converts the body to JSON and pushes it into the batches
     const serializeCurrentBody = (): void => {
       eventBatches.push(JSON.stringify(currentBody));
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       currentBody = createBody();
     };
 
@@ -102,8 +104,11 @@ export class LogSerializer implements ISerializer {
         const metricValue =
           metricProgress.numLeft === 1
             ? metric.values[startIndex]
-            : metric.values.slice(startIndex, startIndex + Constants.MAX_VALUES_PER_METRIC);
+            : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              metric.values.slice(startIndex, startIndex + Constants.MAX_VALUES_PER_METRIC);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         currentBody[metricProgress.name] = metricValue;
+        // eslint-disable-next-line
         currentBody._aws.CloudWatchMetrics[0].Metrics.push({ Name: metricProgress.name, Unit: metric.unit });
 
         metricProgress.numLeft -= Constants.MAX_VALUES_PER_METRIC;

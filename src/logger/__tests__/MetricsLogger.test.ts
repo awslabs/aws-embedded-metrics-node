@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { Unit } from '../..';
 import { TestSink } from '../../../test/utils/TestSink';
 import Configuration from '../../config/Configuration';
@@ -51,7 +51,7 @@ describe('successful', () => {
   test('can put metric', async () => {
     // arrange
     const expectedKey = faker.random.word();
-    const expectedValue = faker.random.number();
+    const expectedValue = faker.datatype.number();
 
     // act
     logger.putMetric(expectedKey, expectedValue);
@@ -68,7 +68,7 @@ describe('successful', () => {
   test('put metric appends metrics using same key', async () => {
     // arrange
     const expectedKey = faker.random.word();
-    const expectedValues = [faker.random.number(), faker.random.number()];
+    const expectedValues = [faker.datatype.number(), faker.datatype.number()];
 
     // act
     logger.putMetric(expectedKey, expectedValues[0]);
@@ -86,7 +86,7 @@ describe('successful', () => {
   test('can put metric with enum unit', async () => {
     // arrange
     const expectedKey = faker.random.word();
-    const expectedValue = faker.random.number();
+    const expectedValue = faker.datatype.number();
     const expectedUnit = Unit.Bits;
 
     // act
@@ -103,7 +103,7 @@ describe('successful', () => {
   test('can put metric with string unit', async () => {
     // arrange
     const expectedKey = faker.random.word();
-    const expectedValue = faker.random.number();
+    const expectedValue = faker.datatype.number();
     const expectedUnit = 'Bits/Second';
 
     // act
@@ -209,7 +209,7 @@ describe('successful', () => {
     logger = createLogger(() => Promise.resolve(environment));
 
     // act
-    logger.putMetric(faker.random.word(), faker.random.number());
+    logger.putMetric(faker.random.word(), faker.datatype.number());
     await logger.flush();
 
     //assert
@@ -224,7 +224,7 @@ describe('successful', () => {
     logger.setTimestamp(timestamp);
 
     // act
-    logger.putMetric(faker.random.word(), faker.random.number());
+    logger.putMetric(faker.random.word(), faker.datatype.number());
     await logger.flush();
 
     //assert
@@ -238,9 +238,9 @@ describe('successful', () => {
     logger.setTimestamp(timestamp);
 
     // act
-    logger.putMetric(faker.random.word(), faker.random.number());
+    logger.putMetric(faker.random.word(), faker.datatype.number());
     await logger.flush();
-    logger.putMetric(faker.random.word(), faker.random.number());
+    logger.putMetric(faker.random.word(), faker.datatype.number());
     await logger.flush();
 
     //assert
@@ -256,10 +256,10 @@ describe('successful', () => {
     environment = createEnvironment(sink);
     logger = createLogger(() => Promise.resolve(environment));
     // act
-    logger.putMetric(faker.random.word(), faker.random.number());
+    logger.putMetric(faker.random.word(), faker.datatype.number());
     await logger.flush();
     const afterFirstFlush = new Date();
-    logger.putMetric(faker.random.word(), faker.random.number());
+    logger.putMetric(faker.random.word(), faker.datatype.number());
     await logger.flush();
     const afterSecondFlush = new Date();
 
