@@ -15,8 +15,12 @@
 
 import validator from 'validator';
 import { Constants } from '../Constants';
+import { Unit } from '../logger/Unit';
 import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
 import { InvalidDimensionError } from '../exceptions/InvalidDimensionError';
+import { InvalidMetricError } from '../exceptions/InvalidMetricError';
+import { InvalidNamespaceError } from '../exceptions/InvalidNamespaceError';
+import { InvalidTimestampError } from '../exceptions/InvalidTimestampError';
 
 export class Validator {
   /**
@@ -69,5 +73,110 @@ export class Validator {
         throw new InvalidDimensionError(`Dimension key ${key} cannot start with ':'`);
       }
     });
+  }
+
+  /**
+   * Validates metric.
+   * @see [CloudWatch Metric](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html)
+   *
+   * @param key
+   * @param value
+   *
+   * @throws {InvalidMetricError} Metric name must be valid.
+   */
+  public static validateMetric(key: string, value: number, unit?: Unit | string): void {
+    if (key.trim().length == 0) {
+      throw new InvalidMetricError(`Metric key ${key} must include at least one non-whitespace character`);
+    }
+
+    if (key.length > Constants.MAX_METRIC_NAME_LENGTH) {
+      throw new InvalidMetricError(
+        `Metric key ${key} must not exceed maximum length ${Constants.MAX_METRIC_NAME_LENGTH}`,
+      );
+    }
+
+    if (!Number.isFinite(value)) {
+      throw new InvalidMetricError(`Metric value ${value} is not a number`);
+    }
+
+    if (value > Number.MAX_SAFE_INTEGER) {
+      throw new InvalidMetricError(
+        `Metric value ${value} must not exceed maximum value ${Number.MAX_SAFE_INTEGER}}`,
+      );
+    }
+
+    if (value < -Number.MAX_SAFE_INTEGER) {
+      throw new InvalidMetricError(
+        `Metric value ${value} must not be less than minimum value ${-Number.MAX_SAFE_INTEGER}`,
+      );
+    }
+
+    if (
+      unit !== undefined &&
+      !Object.values(Unit)
+        .map(u => String(u))
+        .includes(unit)
+    ) {
+      throw new InvalidMetricError(`Metric unit ${unit} is not valid`);
+    }
+  }
+
+  /**
+   * Validates metric namespace.
+   * @see [CloudWatch Namespace](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Namespace)
+   *
+   * @param namespace
+   * @throws {InvalidNamespaceError} Namespace must be of valid length.
+   */
+  public static validateNamespace(namespace: string): void {
+    if (namespace.trim().length == 0) {
+      throw new InvalidNamespaceError(`Namespace must include at least one non-whitespace character`);
+    }
+
+    if (namespace.length > Constants.MAX_NAMESPACE_LENGTH) {
+      throw new InvalidNamespaceError(`Namespace must not exceed maximum length ${Constants.MAX_NAMESPACE_LENGTH}`);
+    }
+
+    if (!validator.matches(namespace, Constants.VALID_NAMESPACE_REGEX)) {
+      throw new InvalidNamespaceError(`Namespace ${namespace} has invalid characters`);
+    }
+  }
+
+  /**
+   * Validates timestamp.
+   * @see [CloudWatch Timestamp](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp)
+   *
+   * @param timestamp
+   */
+  public static validateTimestamp(timestamp: Date | number): void {
+    timestamp = timestamp instanceof Date ? timestamp : new Date(timestamp);
+
+    let timestampStr;
+    try {
+      timestampStr = timestamp.toISOString();
+    } catch (e) {
+      throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
+    }
+
+    const isTooOld = validator.isBefore(
+      timestampStr,
+      new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE).toISOString(),
+    );
+    const isTooNew = validator.isAfter(
+      timestampStr,
+      new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE).toISOString(),
+    );
+
+    if (isTooOld) {
+      throw new InvalidTimestampError(
+        `Timestamp ${timestampStr} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
+      );
+    }
+
+    if (isTooNew) {
+      throw new InvalidTimestampError(
+        `Timestamp ${timestampStr} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
+      );
+    }
   }
 }

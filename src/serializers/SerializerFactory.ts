@@ -24,7 +24,7 @@ const createSerializer = (version: FormatVersion): LogSerializer => {
     case FormatVersion.ZERO:
       return new LogSerializer();
     default:
-      throw new Error(`Version '${version}' is not supported.`);
+      throw new Error(`Unsupported version.`);
   }
 };
 

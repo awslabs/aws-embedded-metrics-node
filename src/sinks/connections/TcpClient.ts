@@ -33,6 +33,7 @@ export class TcpClient implements ISocketClient {
       .on('data', data => LOG('TcpClient received data.', data));
 
     // Used to create an initial connection on the socket right after creation to avoid socket failures.
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.initialConnect.apply(this);
   }
 

@@ -112,6 +112,7 @@ export class AgentSink implements ISink {
   private getSocketClient(endpoint: IEndpoint): ISocketClient {
     LOG('Getting socket client for connection.', endpoint);
     const client = endpoint.protocol === TCP ? new TcpClient(endpoint) : new UdpClient(endpoint);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     client.warmup();
     return client;
   }

@@ -113,7 +113,7 @@ Requirements:
 - Name Length 1-255 characters
 - Name must be ASCII characters only
 - Values must be in the range of 8.515920e-109 to 1.174271e+108. In addition, special values (for example, NaN, +Infinity, -Infinity) are not supported.
-- Units must meet CW Metrics unit requirements, if not it will default to None.
+- Metrics must meet CloudWatch Metrics requirements, otherwise a `InvalidMetricError` will be thrown. See [MetricDatum](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html) for valid values.
 
 Examples:
 
@@ -149,6 +149,7 @@ using `setProperty` instead.
 Requirements:
 - Length 1-255 characters
 - ASCII characters only
+- Dimensions must meet CloudWatch Dimensions requirements, otherwise a `InvalidDimensionError` or `DimensionSetExceededError` will be thrown. See [Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Dimension.html) for valid values.
 
 Examples:
 ```js
@@ -167,6 +168,7 @@ using `setProperty` instead.
 Requirements:
 - Length 1-255 characters
 - ASCII characters only
+- Dimensions must meet CloudWatch Dimensions requirements, otherwise a `InvalidDimensionError` or `DimensionSetExceededError` will be thrown. See [Dimensions](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_Dimension.html) for valid values.
 
 Examples:
 
@@ -201,6 +203,7 @@ Requirements:
 
 - Name Length 1-255 characters
 - Name must be ASCII characters only
+- Namespaces must meet CloudWatch Namespace requirements, otherwise a `InvalidNamespaceError` will be thrown. See [Namespace](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Namespace) for valid values.
 
 Example:
 
@@ -215,7 +218,7 @@ Sets the CloudWatch [timestamp](https://docs.aws.amazon.com/AmazonCloudWatch/lat
 If set for a given `MetricsLogger`, timestamp will be preserved across calls to flush().
 
 Requirements: 
- * Date or Unix epoch millis, up to two weeks in the past and up to two hours in the future, as enforced by [CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp). 
+ * Date or Unix epoch millis, up to two weeks in the past and up to two hours in the future, as enforced by [CloudWatch](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp). If the timestamp is outside of this range, a `InvalidTimestampError` will be thrown.
 
 Examples:
 

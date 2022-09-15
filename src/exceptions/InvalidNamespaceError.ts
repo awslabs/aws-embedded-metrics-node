@@ -13,19 +13,12 @@
  * limitations under the License.
  */
 
-export enum Constants {
-  MAX_DIMENSION_SET_SIZE = 30,
-  MAX_DIMENSION_NAME_LENGTH = 250,
-  MAX_DIMENSION_VALUE_LENGTH = 1024,
-  MAX_METRIC_NAME_LENGTH = 1024,
-  MAX_NAMESPACE_LENGTH = 256,
-  VALID_NAMESPACE_REGEX = '^[a-zA-Z0-9._#:/-]+$',
-  MAX_TIMESTAMP_PAST_AGE = 1209600000, // 2 weeks
-  MAX_TIMESTAMP_FUTURE_AGE = 7200000, // 2 hours
-
-  DEFAULT_NAMESPACE = 'aws-embedded-metrics',
-  MAX_METRICS_PER_EVENT = 100,
-  MAX_VALUES_PER_METRIC = 100,
-  DEFAULT_AGENT_HOST = '0.0.0.0',
-  DEFAULT_AGENT_PORT = 25888,
-}
+export class InvalidNamespaceError extends Error {
+    constructor(msg: string) {
+      super(msg);
+  
+      // Set the prototype explicitly.
+      Object.setPrototypeOf(this, InvalidNamespaceError.prototype);
+    }
+  }
+  

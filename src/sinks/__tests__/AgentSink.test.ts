@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import Configuration from '../../config/Configuration';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { AgentSink } from '../AgentSink';

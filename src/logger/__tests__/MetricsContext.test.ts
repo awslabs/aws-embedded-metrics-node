@@ -1,7 +1,12 @@
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 import { MetricsContext } from '../MetricsContext';
 import { DimensionSetExceededError } from '../../exceptions/DimensionSetExceededError';
 import { InvalidDimensionError } from '../../exceptions/InvalidDimensionError';
+import { InvalidMetricError } from '../../exceptions/InvalidMetricError';
+import { Unit } from '../Unit';
+import { Constants } from '../../Constants';
+import { InvalidNamespaceError } from '../../exceptions/InvalidNamespaceError';
+import { InvalidTimestampError } from '../../exceptions/InvalidTimestampError';
 
 test('can set property', () => {
   // arrange
@@ -168,8 +173,8 @@ test('putMetric adds metric to metrics key', () => {
   // arrange
   const context = MetricsContext.empty();
   const expectedKey = faker.random.word();
-  const expectedValue = faker.random.number();
-  const expectedUnit = faker.random.word();
+  const expectedValue = faker.datatype.number();
+  const expectedUnit = faker.helpers.arrayElement(Object.values(Unit));
 
   // act
   context.putMetric(expectedKey, expectedValue, expectedUnit);
@@ -185,7 +190,7 @@ test('putMetric uses None unit if not provided', () => {
   // arrange
   const context = MetricsContext.empty();
   const expectedKey = faker.random.word();
-  const expectedValue = faker.random.number();
+  const expectedValue = faker.datatype.number();
   const expectedUnit = 'None';
 
   // act
@@ -268,39 +273,128 @@ test('setDimensions checks all the dimension sets have less than 30 dimensions',
   }).toThrow(DimensionSetExceededError);
 });
 
-test('adding dimensions validates them', () => {
+test.each([
+  [{ '🚀': faker.random.word() }],
+  [{ d1: 'مارك' }],
+  [{ ['a'.repeat(251)]: faker.random.word() }],
+  [{ d1: 'a'.repeat(1025) }],
+  [{ d1: 'a'.repeat(1025) }],
+  [{ ['']: faker.random.word() }],
+  [{ d1: '' }],
+  [{ ':d1': faker.random.word() }],
+])('putDimensions/setDimensions with invalid dimension %s throws error', (dimensionSet) => {
   // arrange
   const context = MetricsContext.empty();
-  const dimensionNameWithInvalidAscii = { '🚀': faker.random.word() };
-  const dimensionValueWithInvalidAscii = { d1: 'مارك' };
-  const dimensionWithLongName = { ['a'.repeat(251)]: faker.random.word() };
-  const dimensionWithLongValue = { d1: 'a'.repeat(1025) };
-  const dimensionWithEmptyName = { ['']: faker.random.word() };
-  const dimensionWithEmptyValue = { d1: '' };
-  const dimensionNameStartWithColon = { ':d1': faker.random.word() };
 
   // act
   expect(() => {
-    context.putDimensions(dimensionNameWithInvalidAscii);
+    context.putDimensions(dimensionSet);
   }).toThrow(InvalidDimensionError);
   expect(() => {
-    context.setDimensions([dimensionValueWithInvalidAscii]);
+    context.setDimensions([dimensionSet]);
   }).toThrow(InvalidDimensionError);
+});
+
+test.each([
+  [{ [faker.random.word()]: faker.random.word() }],
+  [{ d: faker.random.word() }],
+  [{ [faker.random.word()]: 'a' }],
+  [{ ['dimension:1']: 'a'.repeat(1024) }],
+])('putDimensions/setDimensions with valid dimension %s does not throw error', (dimensionSet) => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  // act
   expect(() => {
-    context.putDimensions(dimensionWithLongName);
-  }).toThrow(InvalidDimensionError);
+    context.putDimensions(dimensionSet);
+  }).not.toThrow(InvalidDimensionError);
   expect(() => {
-    context.setDimensions([dimensionWithLongValue]);
-  }).toThrow(InvalidDimensionError);
+    context.setDimensions([dimensionSet]);
+  }).not.toThrow(InvalidDimensionError);
+});
+
+test.each([
+  ['', faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit))],
+  ['a'.repeat(Constants.MAX_METRIC_NAME_LENGTH + 1), faker.datatype.number(), 'None'],
+  [faker.random.word(), Number.MAX_VALUE, undefined],
+  [faker.random.word(), -Number.MAX_VALUE, undefined],
+  [faker.random.word(), Number.MAX_SAFE_INTEGER + 1, undefined],
+  [faker.random.word(), -Number.MAX_SAFE_INTEGER - 1, undefined],
+  [faker.random.word(), parseFloat('not a number'), undefined],
+  [faker.random.word(), Infinity, faker.helpers.arrayElement(Object.values(Unit))],
+  [faker.random.word(), -Infinity, faker.helpers.arrayElement(Object.values(Unit))],
+  [faker.random.word(), faker.datatype.number(), 'Fahrenheit'],
+  [faker.random.word(), 4, ''],
+  [faker.random.word(), NaN, faker.helpers.arrayElement(Object.values(Unit))],
+])('putMetric with name: %s, value: %d and unit: %s throws error', (metricName, metricValue, metricUnit) => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  // act
   expect(() => {
-    context.putDimensions(dimensionWithEmptyName);
-  }).toThrow(InvalidDimensionError);
+    context.putMetric(metricName, metricValue, metricUnit);
+  }).toThrow(InvalidMetricError);
+});
+
+test.each([
+  [faker.random.word(), faker.datatype.number({ min: -1e3, max: -1 }), undefined],
+  [faker.random.word(), faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit))],
+  [faker.random.words(2), faker.datatype.number(), undefined],
+  [faker.random.words(3), faker.datatype.number(), Unit.Seconds],
+  ['Max_Value', Number.MAX_SAFE_INTEGER, Unit.Milliseconds],
+  ['-Max_Value', -Number.MAX_SAFE_INTEGER, 'Bytes/Second'],
+])('putMetric with name: %s, value: %d and unit: %s does not throw error', (metricName, metricValue, metricUnit) => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  // act
   expect(() => {
-    context.setDimensions([dimensionWithEmptyValue]);
-  }).toThrow(InvalidDimensionError);
+    context.putMetric(metricName, metricValue, metricUnit);
+  }).not.toThrow(InvalidMetricError);
+});
+
+test.each([[''], [' '], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ'], ['namespace ']])(
+  'setNamespace with invalid namespace: %s throws error',
+  (namespace) => {
+    // arrange
+    const context = MetricsContext.empty();
+
+    // act
+    expect(() => {
+      context.setNamespace(namespace);
+    }).toThrow(InvalidNamespaceError);
+  },
+);
+
+test('setNamespace with valid namespace does not throw error', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const namespace = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-_/#:';
+
+  // act
   expect(() => {
-    context.putDimensions(dimensionNameStartWithColon);
-  }).toThrow(InvalidDimensionError);
+    context.setNamespace(namespace);
+  }).not.toThrow(InvalidNamespaceError);
+});
+
+test.each([
+  [NaN],
+  [12345],
+  [912884400], // Dec 5, 1998
+  [32532951600], // Dec 5, 3000
+  [Infinity],
+  [-Infinity],
+  [new Date('Yesterday')],
+  [Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE - 1000],
+  [Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE + 1000],
+])('setTimestamp with invalid timestamp: %s throws error', (timestamp) => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  // act
+  expect(() => {
+    context.setTimestamp(timestamp);
+  }).toThrow(InvalidTimestampError);
 });
 
 const getDimensionSet = (numOfDimensions: number) => {
