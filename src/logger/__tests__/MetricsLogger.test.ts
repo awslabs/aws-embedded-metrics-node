@@ -186,6 +186,129 @@ describe('successful', () => {
     expect(actualValue).toBe(expectedValue);
   });
 
+  test('setDimensions with default dimensions enabled', async () => {
+    // arrange
+    const expectedKey = 'key';
+    const expectedValue = 'value';
+    const dimensions: Record<string, string> = {};
+    dimensions[expectedKey] = expectedValue;
+
+    // act
+    logger.putDimensions({ foo: 'bar' });
+    logger.setDimensions(dimensions, true);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(1);
+
+    const dimensionSets = sink.events[0].getDimensions();
+    expect(dimensionSets).toHaveLength(1);
+
+    const dimension = dimensionSets[0];
+    expect(Object.keys(dimension).length).toBe(4);
+    expect(dimension[expectedKey]).toBe(expectedValue);
+  });
+
+  test('setDimensions with default dimensions disabled', async () => {
+    // arrange
+    const expectedKey1 = 'key1';
+    const expectedValue1 = 'value1';
+    const expectedKey2 = 'key2';
+    const expectedValue2 = 'value2';
+    const dimensions1: Record<string, string> = {};
+    const dimensions2: Record<string, string> = {};
+    dimensions1[expectedKey1] = expectedValue1;
+    dimensions2[expectedKey2] = expectedValue2;
+
+    const dimensionsList = [dimensions1, dimensions2];
+
+    // act
+    logger.putDimensions({ foo: 'bar' });
+    logger.setDimensions(dimensionsList, false);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(1);
+
+    const dimensionSets = sink.events[0].getDimensions();
+    expect(dimensionSets).toHaveLength(2);
+
+    const dimension1 = dimensionSets[0];
+    const dimension2 = dimensionSets[1];
+    expect(Object.keys(dimension1).length).toBe(1);
+    expect(Object.keys(dimension2).length).toBe(1);
+
+    expect(dimension1[expectedKey1]).toBe(expectedValue1);
+    expect(dimension2[expectedKey2]).toBe(expectedValue2);
+  });
+
+  test('setDimensions with empty dimension set', async () => {
+    // arrange
+    const dimensions: Record<string, string> = {};
+
+    // act
+    logger.putDimensions({ foo: 'bar' });
+    logger.setDimensions(dimensions);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(1);
+
+    const dimensionSets = sink.events[0].getDimensions();
+    expect(dimensionSets).toHaveLength(1);
+    expect(Object.keys(dimensionSets[0]).length).toBe(0);
+  });
+
+  test('resetDimensions with default dimensions enabled', async () => {
+    // arrange
+    const expectedKey = 'key';
+    const expectedValue = 'value';
+    const dimensions: Record<string, string> = {};
+    dimensions[expectedKey] = expectedValue;
+
+    // act
+    logger.putDimensions({ foo: 'bar' });
+    logger.resetDimensions(true);
+    logger.putDimensions(dimensions);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(1);
+    const dimensionSets = sink.events[0].getDimensions();
+
+    expect(dimensionSets).toHaveLength(1);
+    const dimension = dimensionSets[0];
+
+    expect(Object.keys(dimension).length).toBe(4);
+    expect(dimension[expectedKey]).toBe(expectedValue);
+    expect(dimension['foo']).toBeUndefined();
+  });
+
+  test('resetDimensions with default dimensions disabled', async () => {
+    // arrange
+    const expectedKey = 'key';
+    const expectedValue = 'value';
+    const dimensions: Record<string, string> = {};
+    dimensions[expectedKey] = expectedValue;
+
+    // act
+    logger.putDimensions({ foo: 'bar' });
+    logger.resetDimensions(false);
+    logger.putDimensions(dimensions);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(1);
+    const dimensionSets = sink.events[0].getDimensions();
+
+    expect(dimensionSets).toHaveLength(1);
+    const dimension = dimensionSets[0];
+
+    expect(Object.keys(dimension).length).toBe(1);
+    expect(dimension[expectedKey]).toBe(expectedValue);
+    expect(dimension['foo']).toBeUndefined();
+  });
+
   test('can set namespace', async () => {
     // arrange
     const expectedValue = faker.random.word();
@@ -369,6 +492,63 @@ describe('successful', () => {
       // @ts-ignore
       expect(evt.metrics.get(metricKey).values).toStrictEqual([i]);
     }
+  });
+
+  test('configure flush() to not preserve custom dimensions', async () => {
+    // arrange
+    const expectedKey = 'dim';
+    const expectedValue = 'value';
+    const dimensions: Record<string, string> = {};
+    dimensions[expectedKey] = expectedValue;
+
+    // act
+    logger.flushPreserveDimensions = false;
+    logger.putDimensions({ foo: 'bar' });
+    await logger.flush();
+
+    logger.putDimensions(dimensions);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(2);
+
+    const evt1 = sink.events[0];
+    expect(Object.keys(evt1.getDimensions()[0]).length).toBe(4);
+    expect(evt1.getDimensions()[0]['foo']).toBe('bar');
+
+    const evt2 = sink.events[1];
+    expect(Object.keys(evt2.getDimensions()[0]).length).toBe(4);
+    expect(evt2.getDimensions()[0]['foo']).toBeUndefined();
+    expect(evt2.getDimensions()[0][expectedKey]).toBe(expectedValue);
+  });
+
+  test('configure flush() to not preserve any dimenions', async () => {
+    // arrange
+    logger.flushPreserveDimensions = false;
+    logger.resetDimensions(false);
+
+    // act
+    logger.putDimensions({ foo: 'bar' });
+    await logger.flush();
+
+    logger.putDimensions({ baz: 'qux' });
+    await logger.flush();
+
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(3);
+
+    const evt1 = sink.events[0];
+    expect(Object.keys(evt1.getDimensions()[0]).length).toBe(1);
+    expect(evt1.getDimensions()[0]['foo']).toBe('bar');
+
+    const evt2 = sink.events[1];
+    expect(Object.keys(evt2.getDimensions()[0]).length).toBe(1);
+    expect(evt2.getDimensions()[0]['baz']).toBe('qux');
+
+    const evt3 = sink.events[2];
+    expect(evt3.getDimensions().length).toBe(0);
   });
 
   const expectDimension = (key: string, value: string) => {

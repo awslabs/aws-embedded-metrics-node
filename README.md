@@ -157,9 +157,9 @@ putDimensions({ Operation: "Aggregator" })
 putDimensions({ Operation: "Aggregator", DeviceType: "Actuator" })
 ```
 
-- **setDimensions**(Record<String, String>[] dimensions...)
+- **setDimensions**(Record<String, String> | Record<String, String>[] dimensions, boolean useDefault)
 
-Explicitly override all dimensions. This will remove the default dimensions.
+Explicitly override all dimensions. This will remove the default dimensions unless the `useDefault` parameter is set to `true` (defaults to false).
 
 **WARNING**: Every distinct value will result in a new CloudWatch Metric.
 If the cardinality of a particular value is expected to be high, you should consider
@@ -173,9 +173,26 @@ Requirements:
 Examples:
 
 ```js
-setDimensions(
+// Overwrites custom dimensions - keeps default dimensions
+setDimensions({Operation: "Aggregator"}, true)
+```
+
+```js
+// Overwrites custom dimensions - removes default dimensions
+setDimensions([
   { Operation: "Aggregator" },
-  { Operation: "Aggregator", DeviceType: "Actuator" })
+  { Operation: "Aggregator", DeviceType: "Actuator" }
+])
+```
+
+- **resetDimensions**(boolean useDefault)
+
+Explicitly clear all custom dimensions. Set `useDefault` to `true` to keep the default dimensions.
+
+Example:
+
+```js
+resetDimensions(false)  // this will clear all custom dimensions as well as disable default dimensions
 ```
 
 - **setNamespace**(String value)
@@ -188,7 +205,7 @@ Requirements:
 - Name must be ASCII characters only
 - Namespaces must meet CloudWatch Namespace requirements, otherwise a `InvalidNamespaceError` will be thrown. See [Namespace](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Namespace) for valid values.
 
-Examples:
+Example:
 
 ```js
 setNamespace("MyApplication");
@@ -212,7 +229,24 @@ setTimestamp(new Date().getTime())
 
 - **flush**()
 
-Flushes the current MetricsContext to the configured sink and resets all properties, dimensions and metric values. The namespace and default dimensions will be preserved across flushes. Timestamp will be preserved if set explicitly via `setTimestamp()`.
+Flushes the current MetricsContext to the configured sink and resets all properties and metric values. The namespace and default dimensions will be preserved across flushes. Custom dimensions are preserved by default, but this behavior can be changed by setting `logger.flushPreserveDimensions = false`. Timestamp will be preserved if set explicitly via `setTimestamp()`.
+
+Examples:
+
+```js
+logger.flush()  // custom and default dimensions will be preserved after each flush
+```
+
+```js
+logger.flushPreserveDimensions = false
+logger.flush()  // only default dimensions will be preserved after flush()
+```
+
+```js
+logger.flushPreserveDimensions = false
+logger.resetDimensions(false)
+logger.flush()  // default dimensions are disabled - no dimensions will be preserved after flush()
+```
 
 ## Configuration
 

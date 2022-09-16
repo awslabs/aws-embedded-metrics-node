@@ -120,12 +120,12 @@ export class MetricsContext {
     // This ensures the latest dimension key-value is used as a target member on the root EMF node.
     // This operation is O(n^2), but acceptable given sets are capped at 10 dimensions
     const incomingDimensionSetKeys = Object.keys(incomingDimensionSet);
-    this.dimensions = this.dimensions.filter(existingDimensionSet => {
+    this.dimensions = this.dimensions.filter((existingDimensionSet) => {
       const existingDimensionSetKeys = Object.keys(existingDimensionSet);
       if (existingDimensionSetKeys.length !== incomingDimensionSetKeys.length) {
         return true;
       }
-      return !existingDimensionSetKeys.every(existingDimensionSetKey =>
+      return !existingDimensionSetKeys.every((existingDimensionSetKey) =>
         incomingDimensionSetKeys.includes(existingDimensionSetKey),
       );
     });
@@ -138,12 +138,19 @@ export class MetricsContext {
    *
    * @param dimensionSets
    */
-  public setDimensions(dimensionSets: Array<Record<string, string>>): void {
-    this.shouldUseDefaultDimensions = false;
-
-    dimensionSets.forEach(dimensionSet => Validator.validateDimensionSet(dimensionSet));
-
+  public setDimensions(dimensionSets: Array<Record<string, string>>, useDefault = false): void {
+    dimensionSets.forEach((dimensionSet) => Validator.validateDimensionSet(dimensionSet));
+    this.shouldUseDefaultDimensions = useDefault;
     this.dimensions = dimensionSets;
+  }
+
+  /**
+   * Reset all custom dimensions
+   * @param useDefault Indicates whether default dimensions should be used
+   */
+  public resetDimensions(useDefault: boolean): void {
+    this.shouldUseDefaultDimensions = useDefault;
+    this.dimensions = [];
   }
 
   /**
@@ -168,7 +175,7 @@ export class MetricsContext {
     // otherwise, merge the dimensions
     // we do this on the read path because default dimensions
     // may get updated asynchronously by environment detection
-    return this.dimensions.map(custom => {
+    return this.dimensions.map((custom) => {
       return { ...this.defaultDimensions, ...custom };
     });
   }
@@ -186,12 +193,14 @@ export class MetricsContext {
 
   /**
    * Creates an independently flushable context.
+   * Custom dimensions are preserved by default unless preserveDimensions parameter is set.
+   * @param preserveDimensions Indicates whether custom dimensions should be preserved
    */
-  public createCopyWithContext(): MetricsContext {
+  public createCopyWithContext(preserveDimensions = true): MetricsContext {
     return new MetricsContext(
       this.namespace,
       Object.assign({}, this.properties),
-      Object.assign([], this.dimensions),
+      preserveDimensions ? Object.assign([], this.dimensions) : [],
       this.defaultDimensions,
       this.shouldUseDefaultDimensions,
       this.timestamp,
