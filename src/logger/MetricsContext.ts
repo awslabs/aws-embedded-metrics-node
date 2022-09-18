@@ -15,7 +15,7 @@
 
 import Configuration from '../config/Configuration';
 import { LOG } from '../utils/Logger';
-import { Validator } from '../utils/Validator';
+import { validateNamespace, validateTimestamp, validateDimensionSet, validateMetric } from '../utils/Validator';
 import { MetricValues } from './MetricValues';
 import { Unit } from './Unit';
 
@@ -83,7 +83,7 @@ export class MetricsContext {
   }
 
   public setNamespace(value: string): void {
-    Validator.validateNamespace(value);
+    validateNamespace(value);
     this.namespace = value;
   }
 
@@ -92,7 +92,7 @@ export class MetricsContext {
   }
 
   public setTimestamp(timestamp: Date | number): void {
-    Validator.validateTimestamp(timestamp);
+    validateTimestamp(timestamp);
     this.timestamp = timestamp;
     this.meta.Timestamp = MetricsContext.resolveMetaTimestamp(timestamp);
   }
@@ -114,7 +114,7 @@ export class MetricsContext {
    * @param dimensions
    */
   public putDimensions(incomingDimensionSet: Record<string, string>): void {
-    Validator.validateDimensionSet(incomingDimensionSet);
+    validateDimensionSet(incomingDimensionSet);
 
     // Duplicate dimensions sets are removed before being added to the end of the collection.
     // This ensures the latest dimension key-value is used as a target member on the root EMF node.
@@ -139,7 +139,7 @@ export class MetricsContext {
    * @param dimensionSets
    */
   public setDimensions(dimensionSets: Array<Record<string, string>>, useDefault = false): void {
-    dimensionSets.forEach((dimensionSet) => Validator.validateDimensionSet(dimensionSet));
+    dimensionSets.forEach((dimensionSet) => validateDimensionSet(dimensionSet));
     this.shouldUseDefaultDimensions = useDefault;
     this.dimensions = dimensionSets;
   }
@@ -181,7 +181,7 @@ export class MetricsContext {
   }
 
   public putMetric(key: string, value: number, unit?: Unit | string): void {
-    Validator.validateMetric(key, value, unit);
+    validateMetric(key, value, unit);
 
     const currentMetric = this.metrics.get(key);
     if (currentMetric) {
