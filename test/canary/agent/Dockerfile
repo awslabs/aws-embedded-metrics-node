@@ -7,4 +7,4 @@ RUN rm -rf node_modules/aws-embedded-metrics
 COPY node_modules/aws-embedded-metrics ./node_modules/aws-embedded-metrics
 COPY . .
 
-CMD npm i; node index
+CMD [ "node", "index" ]
