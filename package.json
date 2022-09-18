@@ -33,14 +33,15 @@
   ],
   "license": "Apache-2.0",
   "dependencies": {
-    "@datastructures-js/heap": "^4.0.2"
+    "@datastructures-js/heap": "^4.0.2",
+    "@types/validator": "^13.7.5",
+    "validator": "^13.7.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.5.0",
     "@types/faker": "^4.1.5",
     "@types/jest": "^26.0.22",
     "@types/node": "^12.0.8",
-    "@types/validator": "^13.7.5",
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
     "aws-sdk": "^2.551.0",
@@ -53,7 +54,6 @@
     "prettier": "^2.7.1",
     "ts-jest": "^26.5.4",
     "typescript": "^4.8.2",
-    "validator": "^13.7.0",
     "y18n": ">=4.0.1"
   },
   "files": [
