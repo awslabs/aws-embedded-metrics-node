@@ -16,6 +16,7 @@
 import validator from 'validator';
 import { Constants } from '../Constants';
 import { Unit } from '../logger/Unit';
+import { StorageResolution } from '../logger/StorageResolution';
 import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
 import { InvalidDimensionError } from '../exceptions/InvalidDimensionError';
 import { InvalidMetricError } from '../exceptions/InvalidMetricError';
@@ -80,10 +81,18 @@ const validateDimensionSet = (dimensionSet: Record<string, string>): void => {
  *
  * @param key
  * @param value
+ * @param unit
+ * @param storageResolution
  *
  * @throws {InvalidMetricError} Metric name must be valid.
  */
-const validateMetric = (key: string, value: number, unit?: Unit | string): void => {
+const validateMetric = (
+  key: string,
+  value: number,
+  unit?: Unit | string,
+  storageResolution?: StorageResolution,
+  metricNameAndResolutionMap?: Map<string, StorageResolution>,
+): void => {
   if (key.trim().length == 0) {
     throw new InvalidMetricError(`Metric key ${key} must include at least one non-whitespace character`);
   }
@@ -115,6 +124,25 @@ const validateMetric = (key: string, value: number, unit?: Unit | string): void 
       .includes(unit)
   ) {
     throw new InvalidMetricError(`Metric unit ${unit} is not valid`);
+  }
+
+  if (
+    storageResolution !== undefined &&
+    !Object.values(StorageResolution)
+      .map((s) => s)
+      .includes(storageResolution)
+  ) {
+    throw new InvalidMetricError(`Metric resolution ${storageResolution} is not valid`);
+  }
+
+  if (metricNameAndResolutionMap && metricNameAndResolutionMap.has(key)) {
+    if (metricNameAndResolutionMap.get(key) !== (storageResolution?storageResolution:StorageResolution.Standard)) {
+      throw new InvalidMetricError(
+        `Resolution for metrics ${key} is already set. A single log event cannot have a metric with two different resolutions.`,
+      );
+    }
+  } else {
+    metricNameAndResolutionMap?.set(key, storageResolution||StorageResolution.Standard);
   }
 };
 

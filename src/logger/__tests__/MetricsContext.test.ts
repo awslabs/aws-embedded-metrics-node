@@ -203,6 +203,23 @@ test('putMetric uses None unit if not provided', () => {
   expect(metricDatum.unit).toBe(expectedUnit);
 });
 
+test('putMetric uses Standard storageResolution if not provided', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const expectedKey = faker.random.word();
+  const expectedValue = faker.datatype.number();
+  const expectedStorageResolution = 60; //TODO_M remove this after metric validation
+
+  // act
+  context.putMetric(expectedKey, expectedValue);
+
+  // assert
+  const metricDatum: any = context.metrics.get(expectedKey);
+  expect(metricDatum).toBeTruthy();
+  expect(metricDatum.values).toStrictEqual([expectedValue]);
+  expect(metricDatum.storageResolution).toBe(expectedStorageResolution);
+});
+
 test('createCopyWithContext creates new instance', () => {
   // arrange
   const context = MetricsContext.empty();

@@ -17,6 +17,7 @@ import { MaxHeap } from '@datastructures-js/heap';
 import { Constants } from '../Constants';
 import { DimensionSetExceededError } from '../exceptions/DimensionSetExceededError';
 import { MetricsContext } from '../logger/MetricsContext';
+import { StorageResolution } from '../logger/StorageResolution';
 import { ISerializer } from './Serializer';
 
 interface MetricProgress {
@@ -38,7 +39,7 @@ export class LogSerializer implements ISerializer {
     const dimensionKeys: string[][] = [];
     let dimensionProperties = {};
 
-    context.getDimensions().forEach(dimensionSet => {
+    context.getDimensions().forEach((dimensionSet) => {
       const keys = Object.keys(dimensionSet);
 
       if (keys.length > Constants.MAX_DIMENSION_SET_SIZE) {
@@ -89,7 +90,7 @@ export class LogSerializer implements ISerializer {
       Array.from(context.metrics, ([key, value]) => {
         return { name: key, numLeft: value.values.length };
       }),
-      metric => metric.numLeft,
+      (metric) => metric.numLeft,
     );
     let processedMetrics: MetricProgress[] = [];
 
@@ -109,8 +110,18 @@ export class LogSerializer implements ISerializer {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         currentBody[metricProgress.name] = metricValue;
         // eslint-disable-next-line
-        currentBody._aws.CloudWatchMetrics[0].Metrics.push({ Name: metricProgress.name, Unit: metric.unit });
-
+        if (metric.storageResolution === StorageResolution.Standard) {
+          currentBody._aws.CloudWatchMetrics[0].Metrics.push({
+            Name: metricProgress.name,
+            Unit: metric.unit,
+          });
+        } else {
+          currentBody._aws.CloudWatchMetrics[0].Metrics.push({
+            Name: metricProgress.name,
+            Unit: metric.unit,
+            StorageResolution: metric.storageResolution,
+          });
+        }
         metricProgress.numLeft -= Constants.MAX_VALUES_PER_METRIC;
         if (metricProgress.numLeft > 0) {
           processedMetrics.push(metricProgress);
@@ -119,7 +130,7 @@ export class LogSerializer implements ISerializer {
         if (hasMaxMetrics() || remainingMetrics.isEmpty()) {
           serializeCurrentBody();
           // inserts these metrics back in the heap to be processed in the next iteration.
-          processedMetrics.forEach(processingMetric => remainingMetrics.insert(processingMetric));
+          processedMetrics.forEach((processingMetric) => remainingMetrics.insert(processingMetric));
           processedMetrics = [];
         }
       }
