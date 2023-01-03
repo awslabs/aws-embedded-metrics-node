@@ -19,9 +19,9 @@ import { StorageResolution } from './StorageResolution';
 export class MetricValues {
   public values: number[];
   public unit: string;
-  public storageResolution: StorageResolution;
+  public storageResolution: number;
 
-  constructor(value: number, unit?: Unit | string, storageResolution?: StorageResolution) {
+  constructor(value: number, unit?: Unit | string, storageResolution?: StorageResolution | number) {
     this.values = [value];
     this.unit = unit || 'None';
     this.storageResolution = storageResolution || StorageResolution.Standard;

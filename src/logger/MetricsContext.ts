@@ -182,7 +182,12 @@ export class MetricsContext {
     });
   }
 
-  public putMetric(key: string, value: number, unit?: Unit | string, storageResolution?:StorageResolution): void {
+  public putMetric(
+    key: string,
+    value: number,
+    unit?: Unit | string,
+    storageResolution?: StorageResolution | number,
+  ): void {
     validateMetric(key, value, unit, storageResolution, this.metricNameAndResolutionMap);
 
     const currentMetric = this.metrics.get(key);
