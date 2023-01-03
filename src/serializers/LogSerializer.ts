@@ -109,7 +109,7 @@ export class LogSerializer implements ISerializer {
               metric.values.slice(startIndex, startIndex + Constants.MAX_VALUES_PER_METRIC);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         currentBody[metricProgress.name] = metricValue;
-        let metricBody: {[key: string]: any} = {
+        const metricBody: {[key: string]: any} = {
           Name: metricProgress.name,
           Unit: metric.unit,
         }
@@ -117,6 +117,7 @@ export class LogSerializer implements ISerializer {
         {
           metricBody.StorageResolution = StorageResolution.High;
         }
+        // eslint-disable-next-line
         currentBody._aws.CloudWatchMetrics[0].Metrics.push(metricBody);
         metricProgress.numLeft -= Constants.MAX_VALUES_PER_METRIC;
         if (metricProgress.numLeft > 0) {

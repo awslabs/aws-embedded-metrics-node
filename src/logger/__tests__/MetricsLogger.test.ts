@@ -154,18 +154,18 @@ describe('successful', () => {
     expect(actualMetric!.storageResolution).toBe(expectedStorageResolution);
   });
 
-  test('can put metric with same key and different resolution in separate flushes', async () => {
+  test('can put metric with same key and different resolution in separate flushes', () => {
     const expectedKey = 'MetricName';
     const expectedValue = faker.datatype.number();
     const expectedUnit = 'None';
-  
+
     // assert
-   expect(async () => {
-     logger.putMetric(expectedKey, expectedValue,expectedUnit,StorageResolution.Standard);
-     await logger.flush();
-     logger.putMetric(expectedKey, expectedValue,expectedUnit,StorageResolution.High);
-     await logger.flush();
-   }).not.toThrow(InvalidMetricError);
+    expect(async () => {
+      logger.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.Standard);
+      await logger.flush();
+      logger.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.High);
+      await logger.flush();
+    }).not.toThrow(InvalidMetricError);
   });
 
   test('can put dimension', async () => {
