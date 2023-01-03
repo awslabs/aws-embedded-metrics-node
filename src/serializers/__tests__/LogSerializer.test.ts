@@ -3,6 +3,7 @@ import { Constants } from '../../Constants';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { LogSerializer } from '../LogSerializer';
 import { DimensionSetExceededError } from '../../exceptions/DimensionSetExceededError';
+import { Unit, StorageResolution } from '../..';
 
 test('serializes dimensions', () => {
   // arrange
@@ -78,6 +79,55 @@ test('serializes metrics with multiple datapoints', () => {
   const context = getContext();
   context.putMetric(expectedKey, expectedValues[0]);
   context.putMetric(expectedKey, expectedValues[1]);
+
+  // act
+  const resultJson = serializer.serialize(context)[0];
+
+  // assert
+  assertJsonEquality(resultJson, expected);
+});
+
+test('serialize high resolution metrics', () => {
+  // arrange
+  const expectedKey = faker.random.word();
+  const expectedValue = faker.datatype.number();
+  const expectedUnit = Unit.Bits;
+  const expectedStorageResolution = StorageResolution.High;
+  const expectedMetricDefinition = {
+    Name: expectedKey,
+    Unit: 'Bits',
+    StorageResolution:1
+  };
+  const expected: any = { ...getEmptyPayload() };
+  expected[expectedKey] = expectedValue;
+  expected._aws.CloudWatchMetrics[0].Metrics.push(expectedMetricDefinition);
+
+  const context = getContext();
+  context.putMetric(expectedKey, expectedValue, expectedUnit,expectedStorageResolution);
+
+  // act
+  const resultJson = serializer.serialize(context)[0];
+
+  // assert
+  assertJsonEquality(resultJson, expected);
+});
+
+test('serialize standard resolution metrics', () => {
+  // arrange
+  const expectedKey = faker.random.word();
+  const expectedValue = faker.datatype.number();
+  const expectedUnit = Unit.Bits;
+  const expectedStorageResolution = StorageResolution.Standard;
+  const expectedMetricDefinition = {
+    Name: expectedKey,
+    Unit: 'Bits'
+  };
+  const expected: any = { ...getEmptyPayload() };
+  expected[expectedKey] = expectedValue;
+  expected._aws.CloudWatchMetrics[0].Metrics.push(expectedMetricDefinition);
+
+  const context = getContext();
+  context.putMetric(expectedKey, expectedValue, expectedUnit,expectedStorageResolution);
 
   // act
   const resultJson = serializer.serialize(context)[0];

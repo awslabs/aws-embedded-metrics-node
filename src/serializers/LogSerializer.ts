@@ -109,19 +109,15 @@ export class LogSerializer implements ISerializer {
               metric.values.slice(startIndex, startIndex + Constants.MAX_VALUES_PER_METRIC);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         currentBody[metricProgress.name] = metricValue;
-        // eslint-disable-next-line
-        if (metric.storageResolution === StorageResolution.Standard) {
-          currentBody._aws.CloudWatchMetrics[0].Metrics.push({
-            Name: metricProgress.name,
-            Unit: metric.unit,
-          });
-        } else {
-          currentBody._aws.CloudWatchMetrics[0].Metrics.push({
-            Name: metricProgress.name,
-            Unit: metric.unit,
-            StorageResolution: metric.storageResolution,
-          });
+        let metricBody: {[key: string]: any} = {
+          Name: metricProgress.name,
+          Unit: metric.unit,
         }
+        if (metric.storageResolution === StorageResolution.High)
+        {
+          metricBody.StorageResolution = StorageResolution.High;
+        }
+        currentBody._aws.CloudWatchMetrics[0].Metrics.push(metricBody);
         metricProgress.numLeft -= Constants.MAX_VALUES_PER_METRIC;
         if (metricProgress.numLeft > 0) {
           processedMetrics.push(metricProgress);

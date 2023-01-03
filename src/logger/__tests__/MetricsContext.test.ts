@@ -7,6 +7,7 @@ import { Unit } from '../Unit';
 import { Constants } from '../../Constants';
 import { InvalidNamespaceError } from '../../exceptions/InvalidNamespaceError';
 import { InvalidTimestampError } from '../../exceptions/InvalidTimestampError';
+import { StorageResolution } from '../StorageResolution';
 
 test('can set property', () => {
   // arrange
@@ -169,7 +170,7 @@ test('getDimensions returns only custom dimensions if no default dimensions', ()
   expect(dimensions[0]).toStrictEqual(expectedDimensions);
 });
 
-test('putMetric adds metric to metrics key', () => {
+test('putMetric adds standard resolution metric to metrics key', () => {
   // arrange
   const context = MetricsContext.empty();
   const expectedKey = faker.random.word();
@@ -184,6 +185,25 @@ test('putMetric adds metric to metrics key', () => {
   expect(metricDatum).toBeTruthy();
   expect(metricDatum.values).toStrictEqual([expectedValue]);
   expect(metricDatum.unit).toBe(expectedUnit);
+});
+
+test('putMetric adds high resolution metric to metrics key', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const expectedKey = faker.random.word();
+  const expectedValue = faker.datatype.number();
+  const expectedUnit = faker.helpers.arrayElement(Object.values(Unit));
+  const expectedStorageResolution = StorageResolution.High;
+
+  // act
+  context.putMetric(expectedKey, expectedValue, expectedUnit, expectedStorageResolution);
+
+  // assert
+  const metricDatum: any = context.metrics.get(expectedKey);
+  expect(metricDatum).toBeTruthy();
+  expect(metricDatum.values).toStrictEqual([expectedValue]);
+  expect(metricDatum.unit).toBe(expectedUnit);
+  expect(metricDatum.storageResolution).toBe(expectedStorageResolution);
 });
 
 test('putMetric uses None unit if not provided', () => {
@@ -368,6 +388,20 @@ test.each([
   expect(() => {
     context.putMetric(metricName, metricValue, metricUnit);
   }).not.toThrow(InvalidMetricError);
+});
+
+test('put metric with same key and different resolution in single flush throws error' ,() => {
+  //arrange
+  const context = MetricsContext.empty();
+  const expectedKey = 'MetricName';
+  const expectedValue = faker.datatype.number();
+  const expectedUnit = 'None';
+
+  // act 
+ expect(() => {
+    context.putMetric(expectedKey, expectedValue,expectedUnit,StorageResolution.High);
+    context.putMetric(expectedKey, expectedValue,expectedUnit,StorageResolution.Standard);
+ }).toThrow(InvalidMetricError);
 });
 
 test.each([[''], [' '], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ'], ['namespace ']])(
