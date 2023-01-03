@@ -1,4 +1,4 @@
-const { metricScope, Unit, Configuration } = require('aws-embedded-metrics');
+const { metricScope, Unit, Configuration, StorageResolution} = require('aws-embedded-metrics');
 
 let version = '';
 try {
@@ -23,7 +23,7 @@ const recordMetric = metricScope(metrics => () => {
   metrics.putMetric('Invoke', 1, Unit.Count);
 
   metrics.putMetric('Memory.HeapTotal', memoryUsage.heapTotal, Unit.Bytes);
-  metrics.putMetric('Memory.HeapUsed', memoryUsage.heapUsed, Unit.Bytes);
+  metrics.putMetric('Memory.HeapUsed', memoryUsage.heapUsed, Unit.Bytes, StorageResolution.High);
   metrics.putMetric('Memory.RSS', memoryUsage.rss, Unit.Bytes);
 });
 

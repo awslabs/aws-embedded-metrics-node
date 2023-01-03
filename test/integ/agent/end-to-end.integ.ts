@@ -1,6 +1,7 @@
 import { metricScope } from '../../../src/logger/MetricScope';
 import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
+import { StorageResolution } from '../../../src';
 import os = require('os');
 import CloudWatch = require('aws-sdk/clients/cloudwatch');
 const cwmClient = new CloudWatch();
@@ -33,7 +34,7 @@ test(
 
     const doWork = metricScope(metrics => () => {
       metrics.putDimensions(dimensions);
-      metrics.putMetric(metricName, 100, 'Milliseconds');
+      metrics.putMetric(metricName, 100, 'Milliseconds', StorageResolution.High);
     });
 
     // act
@@ -57,7 +58,7 @@ test(
 
     const doWork = metricScope(metrics => () => {
       metrics.putDimensions(dimensions);
-      metrics.putMetric(metricName, 100, 'Milliseconds');
+      metrics.putMetric(metricName, 100, 'Milliseconds', StorageResolution.High);
       metrics.setProperty('RequestId', '422b1569-16f6-4a03-b8f0-fe3fd9b100f8');
     });
 
