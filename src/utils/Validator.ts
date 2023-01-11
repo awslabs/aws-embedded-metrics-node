@@ -141,8 +141,6 @@ const validateMetric = (
         `Resolution for metrics ${key} is already set. A single log event cannot have a metric with two different resolutions.`,
       );
     }
-  } else {
-    metricNameAndResolutionMap?.set(key, storageResolution||StorageResolution.Standard);
   }
 };
 

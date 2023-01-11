@@ -196,6 +196,10 @@ export class MetricsContext {
     } else {
       this.metrics.set(key, new MetricValues(value, unit, storageResolution));
     }
+    if (this.metricNameAndResolutionMap && !this.metricNameAndResolutionMap.has(key)) {
+      this.metricNameAndResolutionMap?.set(key, storageResolution||StorageResolution.Standard);
+    }
+ 
   }
 
   /**
