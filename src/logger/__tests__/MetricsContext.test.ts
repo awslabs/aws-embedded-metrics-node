@@ -228,7 +228,7 @@ test('putMetric uses Standard storageResolution if not provided', () => {
   const context = MetricsContext.empty();
   const expectedKey = faker.random.word();
   const expectedValue = faker.datatype.number();
-  const expectedStorageResolution = 60; //TODO_M remove this after metric validation
+  const expectedStorageResolution = 60;
 
   // act
   context.putMetric(expectedKey, expectedValue);
