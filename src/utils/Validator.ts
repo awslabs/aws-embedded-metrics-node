@@ -135,12 +135,13 @@ const validateMetric = (
     throw new InvalidMetricError(`Metric resolution ${storageResolution} is not valid`);
   }
 
-  if (metricNameAndResolutionMap && metricNameAndResolutionMap.has(key)) {
-    if (metricNameAndResolutionMap.get(key) !== (storageResolution ? storageResolution : StorageResolution.Standard)) {
-      throw new InvalidMetricError(
-        `Resolution for metrics ${key} is already set. A single log event cannot have a metric with two different resolutions.`,
-      );
-    }
+  if (
+    metricNameAndResolutionMap?.has(key) &&
+    metricNameAndResolutionMap.get(key) !== (storageResolution ? storageResolution : StorageResolution.Standard)
+  ) {
+    throw new InvalidMetricError(
+      `Resolution for metrics ${key} is already set. A single log event cannot have a metric with two different resolutions.`,
+    );
   }
 };
 
