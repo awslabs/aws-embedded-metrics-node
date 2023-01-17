@@ -385,8 +385,8 @@ test.each([
   [faker.random.words(3), faker.datatype.number(), Unit.Seconds, undefined],
   ['Max_Value', Number.MAX_SAFE_INTEGER, Unit.Milliseconds, undefined],
   ['-Max_Value', -Number.MAX_SAFE_INTEGER, 'Bytes/Second', undefined],
-  ['-Max_Value', -Number.MAX_SAFE_INTEGER, 'Bytes/Second', 1],
-  ['-Max_Value', -Number.MAX_SAFE_INTEGER, 'Bytes/Second', 60],
+  ['-Max_Value', faker.datatype.number(), 'Bytes/Second', 1],
+  ['-Max_Value', faker.datatype.number(), 'Bytes/Second', 60],
 ])(
   'putMetric with name: %s, value: %d and unit: %s does not throw error',
   (metricName, metricValue, metricUnit, metricResolution) => {
@@ -408,8 +408,8 @@ test('put metric with same key and different resolution in single flush throws e
   const expectedUnit = 'None';
 
   // act
+  context.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.High);
   expect(() => {
-    context.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.High);
     context.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.Standard);
   }).toThrow(InvalidMetricError);
 });

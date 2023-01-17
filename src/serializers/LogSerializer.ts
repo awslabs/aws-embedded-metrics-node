@@ -112,10 +112,8 @@ export class LogSerializer implements ISerializer {
         const metricBody: { [key: string]: any } = {
           Name: metricProgress.name,
           Unit: metric.unit,
+          ...(metric.storageResolution == StorageResolution.High ? { StorageResolution: StorageResolution.High } : {}),
         };
-        if (metric.storageResolution === StorageResolution.High) {
-          metricBody.StorageResolution = StorageResolution.High;
-        }
         // eslint-disable-next-line
         currentBody._aws.CloudWatchMetrics[0].Metrics.push(metricBody);
         metricProgress.numLeft -= Constants.MAX_VALUES_PER_METRIC;

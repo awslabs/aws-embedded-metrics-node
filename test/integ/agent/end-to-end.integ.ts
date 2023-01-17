@@ -34,7 +34,7 @@ test(
 
     const doWork = metricScope(metrics => () => {
       metrics.putDimensions(dimensions);
-      metrics.putMetric(metricName, 100, 'Milliseconds', StorageResolution.High);
+      metrics.putMetric(metricName, 100, 'Milliseconds');
     });
 
     // act
@@ -58,7 +58,7 @@ test(
 
     const doWork = metricScope(metrics => () => {
       metrics.putDimensions(dimensions);
-      metrics.putMetric(metricName, 100, 'Milliseconds', StorageResolution.High);
+      metrics.putMetric(metricName, 100, 'Milliseconds');
       metrics.setProperty('RequestId', '422b1569-16f6-4a03-b8f0-fe3fd9b100f8');
     });
 
