@@ -1,4 +1,4 @@
-const { metricScope , StorageResolution} = require('aws-embedded-metrics');
+const { metricScope, StorageResolution } = require('aws-embedded-metrics');
 
 const aggregator = metricScope(metrics => async event => {
   console.log('received message');

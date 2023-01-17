@@ -96,14 +96,14 @@ test('serialize high resolution metrics', () => {
   const expectedMetricDefinition = {
     Name: expectedKey,
     Unit: 'Bits',
-    StorageResolution:1
+    StorageResolution: 1,
   };
   const expected: any = { ...getEmptyPayload() };
   expected[expectedKey] = expectedValue;
   expected._aws.CloudWatchMetrics[0].Metrics.push(expectedMetricDefinition);
 
   const context = getContext();
-  context.putMetric(expectedKey, expectedValue, expectedUnit,expectedStorageResolution);
+  context.putMetric(expectedKey, expectedValue, expectedUnit, expectedStorageResolution);
 
   // act
   const resultJson = serializer.serialize(context)[0];
@@ -120,14 +120,14 @@ test('serialize standard resolution metrics', () => {
   const expectedStorageResolution = StorageResolution.Standard;
   const expectedMetricDefinition = {
     Name: expectedKey,
-    Unit: 'Bits'
+    Unit: 'Bits',
   };
   const expected: any = { ...getEmptyPayload() };
   expected[expectedKey] = expectedValue;
   expected._aws.CloudWatchMetrics[0].Metrics.push(expectedMetricDefinition);
 
   const context = getContext();
-  context.putMetric(expectedKey, expectedValue, expectedUnit,expectedStorageResolution);
+  context.putMetric(expectedKey, expectedValue, expectedUnit, expectedStorageResolution);
 
   // act
   const resultJson = serializer.serialize(context)[0];

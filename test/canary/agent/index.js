@@ -1,4 +1,4 @@
-const { metricScope, Unit, Configuration, StorageResolution} = require('aws-embedded-metrics');
+const { metricScope, Unit, Configuration, StorageResolution } = require('aws-embedded-metrics');
 
 let version = '';
 try {

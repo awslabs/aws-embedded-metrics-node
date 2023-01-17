@@ -127,7 +127,12 @@ export class MetricsLogger {
    * @param unit
    * @param storageResolution
    */
-  public putMetric(key: string, value: number, unit?: Unit | string, storageResolution?: StorageResolution | number): MetricsLogger {
+  public putMetric(
+    key: string,
+    value: number,
+    unit?: Unit | string,
+    storageResolution?: StorageResolution | number,
+  ): MetricsLogger {
     this.context.putMetric(key, value, unit, storageResolution);
     return this;
   }

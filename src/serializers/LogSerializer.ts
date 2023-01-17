@@ -109,12 +109,11 @@ export class LogSerializer implements ISerializer {
               metric.values.slice(startIndex, startIndex + Constants.MAX_VALUES_PER_METRIC);
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         currentBody[metricProgress.name] = metricValue;
-        const metricBody: {[key: string]: any} = {
+        const metricBody: { [key: string]: any } = {
           Name: metricProgress.name,
           Unit: metric.unit,
-        }
-        if (metric.storageResolution === StorageResolution.High)
-        {
+        };
+        if (metric.storageResolution === StorageResolution.High) {
           metricBody.StorageResolution = StorageResolution.High;
         }
         // eslint-disable-next-line

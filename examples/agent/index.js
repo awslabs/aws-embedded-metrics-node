@@ -1,4 +1,4 @@
-const { metricScope, Unit, StorageResolution} = require('aws-embedded-metrics');
+const { metricScope, Unit, StorageResolution } = require('aws-embedded-metrics');
 
 const doWork = metricScope(metrics => async event => {
   metrics.putDimensions({ Operation: 'Agent' });

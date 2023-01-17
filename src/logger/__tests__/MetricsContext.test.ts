@@ -390,18 +390,18 @@ test.each([
   }).not.toThrow(InvalidMetricError);
 });
 
-test('put metric with same key and different resolution in single flush throws error' ,() => {
+test('put metric with same key and different resolution in single flush throws error', () => {
   //arrange
   const context = MetricsContext.empty();
   const expectedKey = 'MetricName';
   const expectedValue = faker.datatype.number();
   const expectedUnit = 'None';
 
-  // act 
- expect(() => {
-    context.putMetric(expectedKey, expectedValue,expectedUnit,StorageResolution.High);
-    context.putMetric(expectedKey, expectedValue,expectedUnit,StorageResolution.Standard);
- }).toThrow(InvalidMetricError);
+  // act
+  expect(() => {
+    context.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.High);
+    context.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.Standard);
+  }).toThrow(InvalidMetricError);
 });
 
 test.each([[''], [' '], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ'], ['namespace ']])(
