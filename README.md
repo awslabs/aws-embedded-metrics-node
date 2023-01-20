@@ -118,7 +118,7 @@ Requirements:
 - Values must be in the range of 8.515920e-109 to 1.174271e+108. In addition, special values (for example, NaN, +Infinity, -Infinity) are not supported.
 - Metrics must meet CloudWatch Metrics requirements, otherwise a `InvalidMetricError` will be thrown. See [MetricDatum](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html) for valid values.
 
-##### Storage Resolution.
+##### Storage Resolution
 An OPTIONAL value representing the storage resolution for the corresponding metric. Setting this to `High` specifies this metric as a high-resolution metric, so that CloudWatch stores the metric with sub-minute resolution down to one second. Setting this to `Standard` specifies this metric as a standard-resolution metric, which CloudWatch stores at 1-minute resolution. If a value is not provided, then a default value of `Standard` is assumed. See [Cloud Watch High-Resolution metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics)
 
 Examples:
