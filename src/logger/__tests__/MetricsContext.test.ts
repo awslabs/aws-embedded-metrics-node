@@ -366,7 +366,7 @@ test.each([
   [faker.random.words(3), faker.datatype.number(), Unit.Seconds, 45],
   [faker.random.words(3), faker.datatype.number(), Unit.Seconds, 0],
 ])(
-  'putMetric with name: %s, value: %d and unit: %s throws error',
+  'putMetric with name: %s, value: %d, unit: %s and resolution: %d throws error',
   (metricName, metricValue, metricUnit, metricResolution) => {
     // arrange
     const context = MetricsContext.empty();
@@ -388,7 +388,7 @@ test.each([
   ['-Max_Value', faker.datatype.number(), 'Bytes/Second', 1],
   ['-Max_Value', faker.datatype.number(), 'Bytes/Second', 60],
 ])(
-  'putMetric with name: %s, value: %d and unit: %s does not throw error',
+  'putMetric with name: %s, value: %d, unit: %s and resolution: %d does not throw error',
   (metricName, metricValue, metricUnit, metricResolution) => {
     // arrange
     const context = MetricsContext.empty();
