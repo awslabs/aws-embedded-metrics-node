@@ -13,13 +13,7 @@
  * limitations under the License.
  */
 
-export { MetricsLogger } from './logger/MetricsLogger';
-export { ConsoleSink as LocalSink } from './sinks/ConsoleSink';
-export { AgentSink } from './sinks/AgentSink';
-export { metricScope } from './logger/MetricScope';
-export { createMetricsLogger } from './logger/MetricsLoggerFactory';
-export { Unit } from './logger/Unit';
-export { StorageResolution } from './logger/StorageResolution';
-
-import Configuration from './config/Configuration';
-export { Configuration };
+export enum StorageResolution {
+  High = 1,
+  Standard = 60,
+}

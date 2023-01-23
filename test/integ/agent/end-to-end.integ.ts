@@ -1,6 +1,7 @@
 import { metricScope } from '../../../src/logger/MetricScope';
 import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
+import { StorageResolution } from '../../../src';
 import os = require('os');
 import CloudWatch = require('aws-sdk/clients/cloudwatch');
 const cwmClient = new CloudWatch();

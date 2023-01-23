@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker';
-import { Unit } from '../..';
+import { Unit, StorageResolution } from '../..';
 import { TestSink } from '../../../test/utils/TestSink';
 import Configuration from '../../config/Configuration';
 import { EnvironmentProvider } from '../../environment/EnvironmentDetector';
@@ -7,6 +7,7 @@ import { IEnvironment } from '../../environment/IEnvironment';
 import { ISink } from '../../sinks/Sink';
 import { MetricsContext } from '../MetricsContext';
 import { MetricsLogger } from '../MetricsLogger';
+import { InvalidMetricError } from '../../exceptions/InvalidMetricError';
 
 const createSink = (forceAcceptRejects = false) => new TestSink(forceAcceptRejects);
 const createEnvironment = (sink: ISink) => {
@@ -115,6 +116,56 @@ describe('successful', () => {
     const actualMetric = sink.events[0].metrics.get(expectedKey);
     expect(actualMetric).toBeTruthy();
     expect(actualMetric!.unit).toBe(expectedUnit);
+  });
+
+  test('can put high resolution metric with unit', async () => {
+    // arrange
+    const expectedKey = faker.random.word();
+    const expectedValue = faker.datatype.number();
+    const expectedUnit = Unit.Bits;
+    const expectedStorageResolution = StorageResolution.High;
+
+    // act
+    logger.putMetric(expectedKey, expectedValue, expectedUnit, expectedStorageResolution);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(1);
+    const actualMetric = sink.events[0].metrics.get(expectedKey);
+    expect(actualMetric).toBeTruthy();
+    expect(actualMetric!.unit).toBe(expectedUnit);
+    expect(actualMetric!.storageResolution).toBe(expectedStorageResolution);
+  });
+
+  test('can put high resolution metric without unit', async () => {
+    // arrange
+    const expectedKey = faker.random.word();
+    const expectedValue = faker.datatype.number();
+    const expectedStorageResolution = StorageResolution.High;
+
+    // act
+    logger.putMetric(expectedKey, expectedValue, undefined, expectedStorageResolution);
+    await logger.flush();
+
+    // assert
+    expect(sink.events).toHaveLength(1);
+    const actualMetric = sink.events[0].metrics.get(expectedKey);
+    expect(actualMetric).toBeTruthy();
+    expect(actualMetric!.storageResolution).toBe(expectedStorageResolution);
+  });
+
+  test('can put metric with same key and different resolution in separate flushes', () => {
+    const expectedKey = 'MetricName';
+    const expectedValue = faker.datatype.number();
+    const expectedUnit = 'None';
+
+    // assert
+    expect(async () => {
+      logger.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.Standard);
+      await logger.flush();
+      logger.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.High);
+      await logger.flush();
+    }).not.toThrow(InvalidMetricError);
   });
 
   test('can put dimension', async () => {

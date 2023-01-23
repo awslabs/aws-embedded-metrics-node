@@ -17,6 +17,7 @@ import Configuration from '../config/Configuration';
 import { LOG } from '../utils/Logger';
 import { validateNamespace, validateTimestamp, validateDimensionSet, validateMetric } from '../utils/Validator';
 import { MetricValues } from './MetricValues';
+import { StorageResolution } from './StorageResolution';
 import { Unit } from './Unit';
 
 interface IProperties {
@@ -41,6 +42,7 @@ export class MetricsContext {
   private defaultDimensions: Record<string, string>;
   private shouldUseDefaultDimensions = true;
   private timestamp: Date | number | undefined;
+  private metricNameAndResolutionMap: Map<string, StorageResolution> = new Map<string, StorageResolution>();
 
   /**
    * Constructor used to create child instances.
@@ -180,15 +182,21 @@ export class MetricsContext {
     });
   }
 
-  public putMetric(key: string, value: number, unit?: Unit | string): void {
-    validateMetric(key, value, unit);
+  public putMetric(
+    key: string,
+    value: number,
+    unit?: Unit | string,
+    storageResolution?: StorageResolution | number,
+  ): void {
+    validateMetric(key, value, unit, storageResolution, this.metricNameAndResolutionMap);
 
     const currentMetric = this.metrics.get(key);
     if (currentMetric) {
       currentMetric.addValue(value);
     } else {
-      this.metrics.set(key, new MetricValues(value, unit));
+      this.metrics.set(key, new MetricValues(value, unit, storageResolution));
     }
+    this.metricNameAndResolutionMap?.set(key, storageResolution || StorageResolution.Standard);
   }
 
   /**

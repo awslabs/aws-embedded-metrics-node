@@ -7,6 +7,7 @@ import { Unit } from '../Unit';
 import { Constants } from '../../Constants';
 import { InvalidNamespaceError } from '../../exceptions/InvalidNamespaceError';
 import { InvalidTimestampError } from '../../exceptions/InvalidTimestampError';
+import { StorageResolution } from '../StorageResolution';
 
 test('can set property', () => {
   // arrange
@@ -169,7 +170,7 @@ test('getDimensions returns only custom dimensions if no default dimensions', ()
   expect(dimensions[0]).toStrictEqual(expectedDimensions);
 });
 
-test('putMetric adds metric to metrics key', () => {
+test('putMetric adds standard resolution metric to metrics key', () => {
   // arrange
   const context = MetricsContext.empty();
   const expectedKey = faker.random.word();
@@ -184,6 +185,25 @@ test('putMetric adds metric to metrics key', () => {
   expect(metricDatum).toBeTruthy();
   expect(metricDatum.values).toStrictEqual([expectedValue]);
   expect(metricDatum.unit).toBe(expectedUnit);
+});
+
+test('putMetric adds high resolution metric to metrics key', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const expectedKey = faker.random.word();
+  const expectedValue = faker.datatype.number();
+  const expectedUnit = faker.helpers.arrayElement(Object.values(Unit));
+  const expectedStorageResolution = StorageResolution.High;
+
+  // act
+  context.putMetric(expectedKey, expectedValue, expectedUnit, expectedStorageResolution);
+
+  // assert
+  const metricDatum: any = context.metrics.get(expectedKey);
+  expect(metricDatum).toBeTruthy();
+  expect(metricDatum.values).toStrictEqual([expectedValue]);
+  expect(metricDatum.unit).toBe(expectedUnit);
+  expect(metricDatum.storageResolution).toBe(expectedStorageResolution);
 });
 
 test('putMetric uses None unit if not provided', () => {
@@ -201,6 +221,23 @@ test('putMetric uses None unit if not provided', () => {
   expect(metricDatum).toBeTruthy();
   expect(metricDatum.values).toStrictEqual([expectedValue]);
   expect(metricDatum.unit).toBe(expectedUnit);
+});
+
+test('putMetric uses Standard storageResolution if not provided', () => {
+  // arrange
+  const context = MetricsContext.empty();
+  const expectedKey = faker.random.word();
+  const expectedValue = faker.datatype.number();
+  const expectedStorageResolution = 60;
+
+  // act
+  context.putMetric(expectedKey, expectedValue);
+
+  // assert
+  const metricDatum: any = context.metrics.get(expectedKey);
+  expect(metricDatum).toBeTruthy();
+  expect(metricDatum.values).toStrictEqual([expectedValue]);
+  expect(metricDatum.storageResolution).toBe(expectedStorageResolution);
 });
 
 test('createCopyWithContext creates new instance', () => {
@@ -314,43 +351,67 @@ test.each([
 });
 
 test.each([
-  ['', faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit))],
-  ['a'.repeat(Constants.MAX_METRIC_NAME_LENGTH + 1), faker.datatype.number(), 'None'],
-  [faker.random.word(), Number.MAX_VALUE, undefined],
-  [faker.random.word(), -Number.MAX_VALUE, undefined],
-  [faker.random.word(), Number.MAX_SAFE_INTEGER + 1, undefined],
-  [faker.random.word(), -Number.MAX_SAFE_INTEGER - 1, undefined],
-  [faker.random.word(), parseFloat('not a number'), undefined],
-  [faker.random.word(), Infinity, faker.helpers.arrayElement(Object.values(Unit))],
-  [faker.random.word(), -Infinity, faker.helpers.arrayElement(Object.values(Unit))],
-  [faker.random.word(), faker.datatype.number(), 'Fahrenheit'],
-  [faker.random.word(), 4, ''],
-  [faker.random.word(), NaN, faker.helpers.arrayElement(Object.values(Unit))],
-])('putMetric with name: %s, value: %d and unit: %s throws error', (metricName, metricValue, metricUnit) => {
-  // arrange
-  const context = MetricsContext.empty();
+  ['', faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit)), undefined],
+  ['a'.repeat(Constants.MAX_METRIC_NAME_LENGTH + 1), faker.datatype.number(), 'None', undefined],
+  [faker.random.word(), Number.MAX_VALUE, undefined, undefined],
+  [faker.random.word(), -Number.MAX_VALUE, undefined, undefined],
+  [faker.random.word(), Number.MAX_SAFE_INTEGER + 1, undefined, undefined],
+  [faker.random.word(), -Number.MAX_SAFE_INTEGER - 1, undefined, undefined],
+  [faker.random.word(), parseFloat('not a number'), undefined, undefined],
+  [faker.random.word(), Infinity, faker.helpers.arrayElement(Object.values(Unit)), undefined],
+  [faker.random.word(), -Infinity, faker.helpers.arrayElement(Object.values(Unit)), undefined],
+  [faker.random.word(), faker.datatype.number(), 'Fahrenheit', undefined],
+  [faker.random.word(), 4, '', undefined],
+  [faker.random.word(), NaN, faker.helpers.arrayElement(Object.values(Unit)), undefined],
+  [faker.random.words(3), faker.datatype.number(), Unit.Seconds, 45],
+  [faker.random.words(3), faker.datatype.number(), Unit.Seconds, 0],
+])(
+  'putMetric with name: %s, value: %d, unit: %s and resolution: %d throws error',
+  (metricName, metricValue, metricUnit, metricResolution) => {
+    // arrange
+    const context = MetricsContext.empty();
 
-  // act
-  expect(() => {
-    context.putMetric(metricName, metricValue, metricUnit);
-  }).toThrow(InvalidMetricError);
-});
+    // act
+    expect(() => {
+      context.putMetric(metricName, metricValue, metricUnit, metricResolution);
+    }).toThrow(InvalidMetricError);
+  },
+);
 
 test.each([
-  [faker.random.word(), faker.datatype.number({ min: -1e3, max: -1 }), undefined],
-  [faker.random.word(), faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit))],
-  [faker.random.words(2), faker.datatype.number(), undefined],
-  [faker.random.words(3), faker.datatype.number(), Unit.Seconds],
-  ['Max_Value', Number.MAX_SAFE_INTEGER, Unit.Milliseconds],
-  ['-Max_Value', -Number.MAX_SAFE_INTEGER, 'Bytes/Second'],
-])('putMetric with name: %s, value: %d and unit: %s does not throw error', (metricName, metricValue, metricUnit) => {
-  // arrange
+  [faker.random.word(), faker.datatype.number({ min: -1e3, max: -1 }), undefined, undefined],
+  [faker.random.word(), faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit)), undefined],
+  [faker.random.words(2), faker.datatype.number(), undefined, undefined],
+  [faker.random.words(3), faker.datatype.number(), Unit.Seconds, undefined],
+  ['Max_Value', Number.MAX_SAFE_INTEGER, Unit.Milliseconds, undefined],
+  ['-Max_Value', -Number.MAX_SAFE_INTEGER, 'Bytes/Second', undefined],
+  ['-Max_Value', faker.datatype.number(), 'Bytes/Second', 1],
+  ['-Max_Value', faker.datatype.number(), 'Bytes/Second', 60],
+])(
+  'putMetric with name: %s, value: %d, unit: %s and resolution: %d does not throw error',
+  (metricName, metricValue, metricUnit, metricResolution) => {
+    // arrange
+    const context = MetricsContext.empty();
+
+    // act
+    expect(() => {
+      context.putMetric(metricName, metricValue, metricUnit, metricResolution);
+    }).not.toThrow(InvalidMetricError);
+  },
+);
+
+test('put metric with same key and different resolution in single flush throws error', () => {
+  //arrange
   const context = MetricsContext.empty();
+  const expectedKey = 'MetricName';
+  const expectedValue = faker.datatype.number();
+  const expectedUnit = 'None';
 
   // act
+  context.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.High);
   expect(() => {
-    context.putMetric(metricName, metricValue, metricUnit);
-  }).not.toThrow(InvalidMetricError);
+    context.putMetric(expectedKey, expectedValue, expectedUnit, StorageResolution.Standard);
+  }).toThrow(InvalidMetricError);
 });
 
 test.each([[''], [' '], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ'], ['namespace ']])(

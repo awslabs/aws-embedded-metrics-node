@@ -18,6 +18,7 @@ import { EnvironmentProvider } from '../environment/EnvironmentDetector';
 import { IEnvironment } from '../environment/IEnvironment';
 import { MetricsContext } from './MetricsContext';
 import { Unit } from './Unit';
+import { StorageResolution } from './StorageResolution';
 
 /**
  * An async metrics logger.
@@ -124,9 +125,15 @@ export class MetricsLogger {
    * @param key
    * @param value
    * @param unit
+   * @param storageResolution
    */
-  public putMetric(key: string, value: number, unit?: Unit | string): MetricsLogger {
-    this.context.putMetric(key, value, unit);
+  public putMetric(
+    key: string,
+    value: number,
+    unit?: Unit | string,
+    storageResolution?: StorageResolution | number,
+  ): MetricsLogger {
+    this.context.putMetric(key, value, unit, storageResolution);
     return this;
   }
 

@@ -38,12 +38,13 @@ To get a metric logger, you can either decorate your function with a metricScope
 Using the metricScope decorator without function parameters:
 
 ```js
-const { metricScope, Unit } = require("aws-embedded-metrics");
+const { metricScope, Unit, StorageResolution } = require("aws-embedded-metrics");
 
 const myFunc = metricScope(metrics =>
   async () => {
     metrics.putDimensions({ Service: "Aggregator" });
-    metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds);
+    metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds, StorageResolution.Standard);
+    metrics.putMetric("Memory.HeapUsed", 1600424.0, Unit.Bytes, StorageResolution.High);
     metrics.setProperty("RequestId", "422b1569-16f6-4a03-b8f0-fe3fd9b100f8");
     // ...
   });
@@ -54,12 +55,13 @@ await myFunc();
 Using the metricScope decorator with function parameters:
 
 ```js
-const { metricScope, Unit } = require("aws-embedded-metrics");
+const { metricScope, Unit, StorageResolution } = require("aws-embedded-metrics");
 
 const myFunc = metricScope(metrics =>
   async (param1: string, param2: number) => {
     metrics.putDimensions({ Service: "Aggregator" });
-    metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds);
+    metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds, StorageResolution.Standard);
+    metrics.putMetric("Memory.HeapUsed", 1600424.0, Unit.Bytes, StorageResolution.High);
     metrics.setProperty("RequestId", "422b1569-16f6-4a03-b8f0-fe3fd9b100f8");
     // ...
   });
@@ -70,12 +72,13 @@ await myFunc('myParam', 0);
 Manually constructing and flushing the logger:
 
 ```js
-const { createMetricsLogger, Unit } = require("aws-embedded-metrics");
+const { createMetricsLogger, Unit, StorageResolution } = require("aws-embedded-metrics");
 
 const myFunc = async () => {
   const metrics = createMetricsLogger();
   metrics.putDimensions({ Service: "Aggregator" });
-  metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds);
+  metrics.putMetric("ProcessingLatency", 100, Unit.Milliseconds, StorageResolution.Standard);
+  metrics.putMetric("Memory.HeapUsed", 1600424.0, Unit.Bytes, StorageResolution.High);
   metrics.setProperty("RequestId", "422b1569-16f6-4a03-b8f0-fe3fd9b100f8");
   // ...
   await metrics.flush();
@@ -105,9 +108,9 @@ exports.handler = myFunc;
 
 The `MetricLogger` is the interface you will use to publish embedded metrics.
 
-- **putMetric**(String name, Double value, Unit? unit)
+- **putMetric**(String name, Double value, Unit? unit, StorageResolution? storageResolution)
 
-Adds a new metric to the current logger context. Multiple metrics using the same key will be appended to an array of values. The Embedded Metric Format supports a maximum of 100 values per key. If more metric values are added than are supported by the format, the logger will be flushed to allow for new metric values to be captured.
+Adds a new metric to the current logger context. Multiple metrics using the same key will be appended to an array of values. Multiple metrics cannot have same key and different storage resolution. The Embedded Metric Format supports a maximum of 100 values per key. If more metric values are added than are supported by the format, the logger will be flushed to allow for new metric values to be captured.
 
 Requirements:
 - Name Length 1-255 characters
@@ -115,10 +118,18 @@ Requirements:
 - Values must be in the range of 8.515920e-109 to 1.174271e+108. In addition, special values (for example, NaN, +Infinity, -Infinity) are not supported.
 - Metrics must meet CloudWatch Metrics requirements, otherwise a `InvalidMetricError` will be thrown. See [MetricDatum](https://docs.aws.amazon.com/AmazonCloudWatch/latest/APIReference/API_MetricDatum.html) for valid values.
 
+##### Storage Resolution
+An OPTIONAL value representing the storage resolution for the corresponding metric. Setting this to `High` specifies this metric as a high-resolution metric, so that CloudWatch stores the metric with sub-minute resolution down to one second. Setting this to `Standard` specifies this metric as a standard-resolution metric, which CloudWatch stores at 1-minute resolution. If a value is not provided, then a default value of `Standard` is assumed. See [Cloud Watch High-Resolution metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics)
+
 Examples:
 
 ```js
+// Standard Resolution example
 putMetric("Latency", 200, Unit.Milliseconds)
+putMetric("Latency", 201, Unit.Milliseconds, StorageResolution.Standard)
+
+// High Resolution example
+putMetric("Memory.HeapUsed", 1600424.0, Unit.Bytes, StorageResolution.High);
 ```
 
 - **setProperty**(String key, Object value)
