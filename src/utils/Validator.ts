@@ -161,7 +161,7 @@ const validateNamespace = (namespace: string): void => {
     throw new InvalidNamespaceError(`Namespace must not exceed maximum length ${Constants.MAX_NAMESPACE_LENGTH}`);
   }
 
-  if (!validator.matches(namespace, Constants.VALID_NAMESPACE_REGEX)) {
+  if (namespace.match(Constants.VALID_NAMESPACE_REGEX) == null) {
     throw new InvalidNamespaceError(`Namespace ${namespace} has invalid characters`);
   }
 };
