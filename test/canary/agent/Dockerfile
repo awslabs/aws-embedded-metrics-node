@@ -5,6 +5,7 @@ WORKDIR /app/src
 COPY package.json ./
 RUN rm -rf node_modules/aws-embedded-metrics
 COPY node_modules/aws-embedded-metrics ./node_modules/aws-embedded-metrics
+RUN npm install @datastructures-js/heap
 COPY . .
 
 CMD [ "node", "index" ]
