@@ -41,13 +41,12 @@ const validateDimensionSet = (dimensionSet: Record<string, string>): void => {
   Object.entries(dimensionSet).forEach(([key, value]) => {
     dimensionSet[key] = value = String(value);
 
-    if (key.match(Constants.VALID_DIMENSION_REGEX) == null) {
+    if (!new RegExp(Constants.VALID_DIMENSION_REGEX).test(key)) {
       throw new InvalidDimensionError(`Dimension key ${key} has invalid characters`);
     }
-    if (value.match(Constants.VALID_DIMENSION_REGEX) == null) {
+    if (!new RegExp(Constants.VALID_DIMENSION_REGEX).test(value)) {
       throw new InvalidDimensionError(`Dimension value ${value} has invalid characters`);
     }
-
     if (key.trim().length == 0) {
       throw new InvalidDimensionError(`Dimension key ${key} must include at least one non-whitespace character`);
     }
@@ -160,7 +159,7 @@ const validateNamespace = (namespace: string): void => {
     throw new InvalidNamespaceError(`Namespace must not exceed maximum length ${Constants.MAX_NAMESPACE_LENGTH}`);
   }
 
-  if (namespace.match(Constants.VALID_NAMESPACE_REGEX) == null) {
+  if (!new RegExp(Constants.VALID_NAMESPACE_REGEX).test(namespace)) {
     throw new InvalidNamespaceError(`Namespace ${namespace} has invalid characters`);
   }
 };
@@ -181,13 +180,13 @@ const validateTimestamp = (timestamp: Date | number): void => {
     throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
   }
 
-  if (timestampStr < (new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE).toISOString())) {
+  if (timestampStr < new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE).toISOString()) {
     throw new InvalidTimestampError(
       `Timestamp ${timestampStr} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
     );
   }
 
-  if (timestampStr > (new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE).toISOString())) {
+  if (timestampStr > new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE).toISOString()) {
     throw new InvalidTimestampError(
       `Timestamp ${timestampStr} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
     );
