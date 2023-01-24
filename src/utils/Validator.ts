@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import validator from 'validator';
 import { Constants } from '../Constants';
 import { Unit } from '../logger/Unit';
 import { StorageResolution } from '../logger/StorageResolution';
@@ -182,22 +181,13 @@ const validateTimestamp = (timestamp: Date | number): void => {
     throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
   }
 
-  const isTooOld = validator.isBefore(
-    timestampStr,
-    new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE).toISOString(),
-  );
-  const isTooNew = validator.isAfter(
-    timestampStr,
-    new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE).toISOString(),
-  );
-
-  if (isTooOld) {
+  if (timestampStr < (new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE).toISOString())) {
     throw new InvalidTimestampError(
       `Timestamp ${timestampStr} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
     );
   }
 
-  if (isTooNew) {
+  if (timestampStr > (new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE).toISOString())) {
     throw new InvalidTimestampError(
       `Timestamp ${timestampStr} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
     );
