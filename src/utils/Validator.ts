@@ -42,10 +42,10 @@ const validateDimensionSet = (dimensionSet: Record<string, string>): void => {
   Object.entries(dimensionSet).forEach(([key, value]) => {
     dimensionSet[key] = value = String(value);
 
-    if (!validator.isAscii(key)) {
+    if (key.match(Constants.VALID_DIMENSION_REGEX) == null) {
       throw new InvalidDimensionError(`Dimension key ${key} has invalid characters`);
     }
-    if (!validator.isAscii(value)) {
+    if (value.match(Constants.VALID_DIMENSION_REGEX) == null) {
       throw new InvalidDimensionError(`Dimension value ${value} has invalid characters`);
     }
 
