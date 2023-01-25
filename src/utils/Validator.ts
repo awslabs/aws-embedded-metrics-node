@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import validator from 'validator';
 import { Constants } from '../Constants';
 import { Unit } from '../logger/Unit';
 import { StorageResolution } from '../logger/StorageResolution';
@@ -42,13 +41,12 @@ const validateDimensionSet = (dimensionSet: Record<string, string>): void => {
   Object.entries(dimensionSet).forEach(([key, value]) => {
     dimensionSet[key] = value = String(value);
 
-    if (!validator.isAscii(key)) {
+    if (!new RegExp(Constants.VALID_DIMENSION_REGEX).test(key)) {
       throw new InvalidDimensionError(`Dimension key ${key} has invalid characters`);
     }
-    if (!validator.isAscii(value)) {
+    if (!new RegExp(Constants.VALID_DIMENSION_REGEX).test(value)) {
       throw new InvalidDimensionError(`Dimension value ${value} has invalid characters`);
     }
-
     if (key.trim().length == 0) {
       throw new InvalidDimensionError(`Dimension key ${key} must include at least one non-whitespace character`);
     }
@@ -161,7 +159,7 @@ const validateNamespace = (namespace: string): void => {
     throw new InvalidNamespaceError(`Namespace must not exceed maximum length ${Constants.MAX_NAMESPACE_LENGTH}`);
   }
 
-  if (!validator.matches(namespace, Constants.VALID_NAMESPACE_REGEX)) {
+  if (!new RegExp(Constants.VALID_NAMESPACE_REGEX).test(namespace)) {
     throw new InvalidNamespaceError(`Namespace ${namespace} has invalid characters`);
   }
 };
@@ -173,35 +171,27 @@ const validateNamespace = (namespace: string): void => {
  * @param timestamp
  */
 const validateTimestamp = (timestamp: Date | number): void => {
-  timestamp = timestamp instanceof Date ? timestamp : new Date(timestamp);
-
-  let timestampStr;
-  try {
-    timestampStr = timestamp.toISOString();
-  } catch (e) {
+  if (!isDate(timestamp)) {
     throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
   }
 
-  const isTooOld = validator.isBefore(
-    timestampStr,
-    new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE).toISOString(),
-  );
-  const isTooNew = validator.isAfter(
-    timestampStr,
-    new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE).toISOString(),
-  );
+  timestamp = new Date(timestamp);
 
-  if (isTooOld) {
+  if (timestamp < new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE)) {
     throw new InvalidTimestampError(
-      `Timestamp ${timestampStr} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
+      `Timestamp ${String(timestamp)} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
     );
   }
 
-  if (isTooNew) {
+  if (timestamp > new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE)) {
     throw new InvalidTimestampError(
-      `Timestamp ${timestampStr} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
+      `Timestamp ${String(timestamp)} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
     );
   }
+};
+
+const isDate = (timestamp: Date | number): boolean => {
+  return (timestamp instanceof Date && !isNaN(new Date(timestamp).getTime())) || new Date(timestamp).getTime() > 0;
 };
 
 export { validateDimensionSet, validateMetric, validateNamespace, validateTimestamp };
