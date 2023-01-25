@@ -175,6 +175,8 @@ const validateTimestamp = (timestamp: Date | number): void => {
     throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
   }
 
+  timestamp = new Date(timestamp);
+
   if (timestamp < new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE)) {
     throw new InvalidTimestampError(
       `Timestamp ${String(timestamp)} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
@@ -189,7 +191,7 @@ const validateTimestamp = (timestamp: Date | number): void => {
 };
 
 const isDate = (timestamp: Date | number): boolean => {
-  return timestamp instanceof Date && new Date(timestamp).getTime() > 0;
+  return (timestamp instanceof Date && !isNaN(new Date(timestamp).getTime())) || new Date(timestamp).getTime() > 0;
 };
 
 export { validateDimensionSet, validateMetric, validateNamespace, validateTimestamp };
