@@ -171,35 +171,26 @@ const validateNamespace = (namespace: string): void => {
  * @param timestamp
  */
 const validateTimestamp = (timestamp: Date | number): void => {
-  timestamp = timestamp instanceof Date ? timestamp : new Date(timestamp);
 
-  let timestampStr;
-  try {
-    timestampStr = timestamp.toISOString();
-  } catch (e) {
-    throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
-  }
-
-  if (!isDate(timestampStr)) {
+  if (!isDate(timestamp)) {
     throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
   }
 
   if (timestamp < new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE)) {
     throw new InvalidTimestampError(
-      `Timestamp ${timestampStr} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
+      `Timestamp ${timestamp} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
     );
   }
 
   if (timestamp > new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE)) {
     throw new InvalidTimestampError(
-      `Timestamp ${timestampStr} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
+      `Timestamp ${timestamp} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
     );
   }
 };
 
-function isDate(timestampStr: string) {
-  timestampStr = Date.parse(timestampStr).toString();
-  return !isNaN(Number(timestampStr)) ? new Date(timestampStr) : null;
-}
+const isDate = (timestamp: Date | number): boolean => {
+  return timestamp instanceof Date && new Date(timestamp).getTime() > 0;
+};
 
 export { validateDimensionSet, validateMetric, validateNamespace, validateTimestamp };
