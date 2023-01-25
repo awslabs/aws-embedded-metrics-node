@@ -171,20 +171,19 @@ const validateNamespace = (namespace: string): void => {
  * @param timestamp
  */
 const validateTimestamp = (timestamp: Date | number): void => {
-
   if (!isDate(timestamp)) {
     throw new InvalidTimestampError(`Timestamp ${String(timestamp)} is invalid`);
   }
 
   if (timestamp < new Date(Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE)) {
     throw new InvalidTimestampError(
-      `Timestamp ${timestamp} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
+      `Timestamp ${String(timestamp)} must not be older than ${Constants.MAX_TIMESTAMP_PAST_AGE} milliseconds`,
     );
   }
 
   if (timestamp > new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE)) {
     throw new InvalidTimestampError(
-      `Timestamp ${timestamp} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
+      `Timestamp ${String(timestamp)} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
     );
   }
 };
