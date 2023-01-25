@@ -197,9 +197,9 @@ const validateTimestamp = (timestamp: Date | number): void => {
   }
 };
 
-function isDate(timestampStr: any) {
+function isDate(timestampStr: string) {
   timestampStr = Date.parse(timestampStr).toString();
-  return !isNaN(timestampStr) ? new Date(timestampStr) : null;
+  return !isNaN(Number(timestampStr)) ? new Date(timestampStr) : null;
 }
 
 export { validateDimensionSet, validateMetric, validateNamespace, validateTimestamp };
