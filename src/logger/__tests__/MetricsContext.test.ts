@@ -439,6 +439,7 @@ test('setNamespace with valid namespace does not throw error', () => {
 });
 
 test.each([
+  [0],
   [NaN],
   [12345],
   [912884400], // Dec 5, 1998
@@ -456,6 +457,21 @@ test.each([
   expect(() => {
     context.setTimestamp(timestamp);
   }).toThrow(InvalidTimestampError);
+});
+
+test.each([
+  [Date.now()],
+  [Date.now().valueOf()],
+  [Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE + 1000],
+  [Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE - 1000],
+])('setTimestamp with valid timestamp: %s throws no error', timestamp => {
+  // arrange
+  const context = MetricsContext.empty();
+
+  // act
+  expect(() => {
+    context.setTimestamp(timestamp);
+  }).not.toThrow(InvalidTimestampError);
 });
 
 const getDimensionSet = (numOfDimensions: number) => {
