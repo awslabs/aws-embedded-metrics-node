@@ -82,3 +82,56 @@ aws s3api create-bucket --bucket <bucket-name> --region <region>
   "ProcessingTime": 5
 }
 ```
+
+## EKS
+### Install dependencies
+```sh
+npm i
+```
+
+### Deployment
+
+1. Create a new EKS cluster using [eksctl](https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html).
+```sh
+eksctl create cluster --name eks-demo
+```
+
+2. Build and push the docker image. You will want to use your own Dockerhub repository.
+```sh
+docker login
+docker build . -t <username>/eks-demo:latest --platform linux/amd64
+docker push <username>/eks-demo
+```
+
+3. Set the container image name in `kubernetes/deployment.yaml` and apply the configuration to your cluster.
+```sh
+kubectl apply -f kubernetes/
+kubectl get deployment eks-demo
+```
+
+4. Add CloudWatch permissions to the worker nodes.
+```sh
+# Get the IAM role name for the worker nodes (NodeRole):
+aws eks describe-nodegroup --cluster-name eks-demo --nodegroup-name <nodegroup_name>
+
+# Attach the CloudWatchAgentServerPolicy to the role:
+aws iam attach-role-policy --role-name <node_role> --policy-arn arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+```
+
+
+5. To test, naviagate to your ELB endpoint for the cluster. This will generate EMF logs in your AWS account.
+```sh
+# Get endpoint
+kubectl get svc eks-demo
+
+# Ping the endpoint
+curl http://<endpoint>.<region>.elb.amazonaws.com/ping
+```
+
+6. To update, re-build, push changes and delete the running pod.
+
+```sh
+docker build . -t <username>/eks-demo:latest --platform linux/amd64
+docker push <username>/eks-demo
+kubectl delete pod <pod_name>
+```

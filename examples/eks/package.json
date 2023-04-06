@@ -1,17 +1,16 @@
 {
   "name": "eks-example",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "serve-local": "AWS_EMF_ENVIRONMENT=Local node app"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-embedded-metrics": "^3.0.0",
+    "aws-embedded-metrics": "^4.1.0",
     "koa": "^2.11.0"
   }
 }
