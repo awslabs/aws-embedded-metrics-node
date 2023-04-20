@@ -21,7 +21,7 @@ spec:
         app: eks-demo
     spec:
       containers:
-      - image: jaredcnance/eks-demo:latest
+      - image: <username>/eks-demo:latest
         imagePullPolicy: Always
         name: eks-demo
         ports:
@@ -53,4 +53,3 @@ spec:
         - name: cwagentconfig
           configMap:
             name: cw-agent-config
-    
