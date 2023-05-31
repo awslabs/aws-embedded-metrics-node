@@ -29,6 +29,26 @@ Run the example:
 ./examples/agent/run.sh
 ```
 
+## Docker
+
+With Docker images, using the `awslogs` log driver will send your container logs to CloudWatch Logs. All you have to do is write to STDOUT and your EMF logs will be processed.
+
+[Official Docker documentation for `awslogs` driver](https://docs.docker.com/config/containers/logging/awslogs/)
+
+## ECS and Fargate
+
+With ECS and Fargate, you can use the `awslogs` log driver to have your logs sent to CloudWatch Logs on your behalf. After configuring your task to use the `awslogs` log driver, you may write your EMF logs to STDOUT and they will be processed.
+
+[ECS documentation on `awslogs` log driver](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html)
+
+## Fluent Bit and Fluentd
+
+Fluent Bit can be used to collect logs and push them to CloudWatch Logs. After configuring the Amazon CloudWatch Logs output plugin, you may write your EMF logs to STDOUT and they will be processed.
+
+[Getting Started with Fluent Bit](https://docs.fluentbit.io/manual/installation/getting-started-with-fluent-bit)
+
+[Amazon CloudWatch output plugin for Fluent Bit](https://docs.fluentbit.io/manual/pipeline/outputs/cloudwatch)
+
 ## FireLens on ECS
 
 You can deploy the example by running the following:
