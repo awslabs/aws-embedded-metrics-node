@@ -3,7 +3,8 @@ import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
 import { StorageResolution } from '../../../src';
 import os = require('os');
-import CloudWatch = require('aws-sdk/clients/cloudwatch');
+import AWS_client_cloudwatch = require("@aws-sdk/client-cloudwatch");
+import CloudWatch = AWS_client_cloudwatch.CloudWatch;
 const cwmClient = new CloudWatch();
 
 const now = () => new Date().getTime();
@@ -90,7 +91,7 @@ const metricExists = async (metricName: string, expectedSampleCount: number): Pr
     Statistics: ['SampleCount'],
   };
 
-  const result = await cwmClient.getMetricStatistics(request).promise();
+  const result = await cwmClient.getMetricStatistics(request);
 
   if (result && result.Datapoints && result.Datapoints.length > 0) {
     const samples = result.Datapoints.map(dataPoint => dataPoint.SampleCount || 0).reduce((total, i) => total + i);
