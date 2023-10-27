@@ -2,16 +2,15 @@ import { metricScope } from '../../../src/logger/MetricScope';
 import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
 import { StorageResolution } from '../../../src';
-import os = require('os');
-import AWS_client_cloudwatch = require("@aws-sdk/client-cloudwatch");
-import CloudWatch = AWS_client_cloudwatch.CloudWatch;
+import { CloudWatch } from '@aws-sdk/client-cloudwatch';
+import { hostname } from 'os';
 const cwmClient = new CloudWatch();
 
 const now = () => new Date().getTime();
 const startTime = new Date();
 const timeoutMillis = 120_000;
 
-const serviceName = `IntegrationTests-${os.hostname()}`;
+const serviceName = `IntegrationTests-${hostname()}`;
 const serviceType = 'AutomatedTest';
 const logGroupName = 'aws-emf-node-integ';
 
