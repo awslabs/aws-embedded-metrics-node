@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+import { Console } from 'console';
 import { MetricsContext } from '../logger/MetricsContext';
 import { LogSerializer } from '../serializers/LogSerializer';
 import { ISerializer } from '../serializers/Serializer';
@@ -26,15 +27,19 @@ export class ConsoleSink implements ISink {
   public readonly name: string = 'ConsoleSink';
 
   private serializer: ISerializer;
+  public readonly console: Console;
+  private static readonly AWS_LAMBDA_LOG_FORMAT = 'AWS_LAMBDA_LOG_FORMAT';
 
   constructor(serializer?: ISerializer) {
     this.serializer = serializer || new LogSerializer();
+    this.console =
+      process.env[ConsoleSink.AWS_LAMBDA_LOG_FORMAT] === 'JSON' ? new Console(process.stdout, process.stderr) : console;
   }
 
   public accept(context: MetricsContext): Promise<void> {
     // tslint:disable-next-line
     const events = this.serializer.serialize(context);
-    events.forEach(event => console.log(event));
+    events.forEach((event) => this.console.log(event));
     return Promise.resolve();
   }
 }
