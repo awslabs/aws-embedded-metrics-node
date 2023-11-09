@@ -32,6 +32,8 @@ export class ConsoleSink implements ISink {
 
   constructor(serializer?: ISerializer) {
     this.serializer = serializer || new LogSerializer();
+
+    // To avoid escaping EMF when using Lambda JSON log format we need to use Console() instead of console
     this.console =
       process.env[ConsoleSink.AWS_LAMBDA_LOG_FORMAT] === 'JSON' ? new Console(process.stdout, process.stderr) : console;
   }
