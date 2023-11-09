@@ -31,6 +31,9 @@ Generate CloudWatch Metrics embedded within structured log events. The embedded 
 npm install aws-embedded-metrics
 ```
 
+> **Important**
+> Versions 4.1.1+, 3.0.2+, 2.0.7+ are required for usage in Lambda with JSON log format. Using previous versions in such Lambda environments will lead to metric loss.
+
 ## Usage
 
 To get a metric logger, you can either decorate your function with a metricScope, or manually create and flush the logger.
