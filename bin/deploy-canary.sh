@@ -17,8 +17,7 @@ ECS_SERVICE_NAME=emf-canary-$EMF_LANGUAGE-service
 ECR_ENDPOINT=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 ECR_REMOTE=$ECR_ENDPOINT/$IMAGE_NAME
 
-mkdir $NODE_MODULES_PATH
-rm -rf $NODE_MODULES_PATH/aws-embedded-metrics
+cp -r $LIB_PATH/node_modules $NODE_MODULES_PATH/
 cp -r $LIB_PATH/lib $NODE_MODULES_PATH/aws-embedded-metrics
 cp -r $LIB_PATH/package.json $NODE_MODULES_PATH/aws-embedded-metrics/package.json
 
