@@ -1,6 +1,6 @@
 {
   "name": "aws-embedded-metrics",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "AWS Embedded Metrics Client Library",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
