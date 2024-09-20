@@ -1,8 +1,7 @@
 import { metricScope } from '../../../src/logger/MetricScope';
 import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
-import { StorageResolution } from '../../../src';
-import { CloudWatch } from '@aws-sdk/client-cloudwatch';
+import { CloudWatch, GetMetricStatisticsCommandInput } from '@aws-sdk/client-cloudwatch';
 import { hostname } from 'os';
 const cwmClient = new CloudWatch();
 
@@ -75,7 +74,7 @@ test(
 );
 
 const metricExists = async (metricName: string, expectedSampleCount: number): Promise<boolean> => {
-  const request = {
+  const request: GetMetricStatisticsCommandInput = {
     Namespace: 'aws-embedded-metrics',
     MetricName: metricName,
     Dimensions: [
