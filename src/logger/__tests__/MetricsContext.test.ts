@@ -352,7 +352,7 @@ test.each([
 
 test.each([
   ['', faker.datatype.number(), faker.helpers.arrayElement(Object.values(Unit)), undefined],
-  ['a'.repeat(Constants.MAX_METRIC_NAME_LENGTH + 1), faker.datatype.number(), 'None', undefined],
+  ['a'.repeat((Constants.MAX_METRIC_NAME_LENGTH as number) + 1), faker.datatype.number(), 'None', undefined],
   [faker.random.word(), Number.MAX_VALUE, undefined, undefined],
   [faker.random.word(), -Number.MAX_VALUE, undefined, undefined],
   [faker.random.word(), Number.MAX_SAFE_INTEGER + 1, undefined, undefined],
@@ -414,7 +414,7 @@ test('put metric with same key and different resolution in single flush throws e
   }).toThrow(InvalidMetricError);
 });
 
-test.each([[''], [' '], ['a'.repeat(Constants.MAX_NAMESPACE_LENGTH + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ'], ['namespace ']])(
+test.each([[''], [' '], ['a'.repeat((Constants.MAX_NAMESPACE_LENGTH as number) + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ'], ['namespace ']])(
   'setNamespace with invalid namespace: %s throws error',
   (namespace) => {
     // arrange
@@ -448,7 +448,7 @@ test.each([
   [-Infinity],
   [new Date('Yesterday')],
   [Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE - 1000],
-  [Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE + 1000],
+  [Date.now() + (Constants.MAX_TIMESTAMP_FUTURE_AGE as number) + 1000],
 ])('setTimestamp with invalid timestamp: %s throws error', (timestamp) => {
   // arrange
   const context = MetricsContext.empty();
@@ -463,7 +463,7 @@ test.each([
   [Date.now()],
   [Date.now().valueOf()],
   [Date.now() - Constants.MAX_TIMESTAMP_PAST_AGE + 1000],
-  [Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE - 1000],
+  [Date.now() + (Constants.MAX_TIMESTAMP_FUTURE_AGE as number) - 1000],
 ])('setTimestamp with valid timestamp: %s throws no error', timestamp => {
   // arrange
   const context = MetricsContext.empty();

@@ -183,7 +183,7 @@ const validateTimestamp = (timestamp: Date | number): void => {
     );
   }
 
-  if (timestamp > new Date(Date.now() + Constants.MAX_TIMESTAMP_FUTURE_AGE)) {
+  if (timestamp > new Date(Date.now() + (Constants.MAX_TIMESTAMP_FUTURE_AGE as number))) {
     throw new InvalidTimestampError(
       `Timestamp ${String(timestamp)} must not be newer than ${Constants.MAX_TIMESTAMP_FUTURE_AGE} milliseconds`,
     );

@@ -97,7 +97,7 @@ export class LogSerializer implements ISerializer {
     // Batches the metrics with the most number of values first, such that each metric has no more
     // than 100 values, and each batch has no more than 100 metric definitions.
     while (!remainingMetrics.isEmpty()) {
-      const metricProgress = remainingMetrics.extractRoot();
+      const metricProgress = remainingMetrics.extractRoot()!;
       const metric = context.metrics.get(metricProgress.name);
       if (metric) {
         const startIndex = metric.values.length - metricProgress.numLeft;
@@ -106,7 +106,7 @@ export class LogSerializer implements ISerializer {
           metricProgress.numLeft === 1
             ? metric.values[startIndex]
             : // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-              metric.values.slice(startIndex, startIndex + Constants.MAX_VALUES_PER_METRIC);
+              metric.values.slice(startIndex, startIndex + (Constants.MAX_VALUES_PER_METRIC as number));
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         currentBody[metricProgress.name] = metricValue;
         const metricBody: { [key: string]: any } = {
