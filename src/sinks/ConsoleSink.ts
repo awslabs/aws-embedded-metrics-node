@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-import { Console } from 'console';
 import { MetricsContext } from '../logger/MetricsContext';
 import { LogSerializer } from '../serializers/LogSerializer';
 import { ISerializer } from '../serializers/Serializer';
@@ -25,7 +24,6 @@ import { ISink } from './Sink';
  */
 export class ConsoleSink implements ISink {
   public readonly name: string = 'ConsoleSink';
-
   private serializer: ISerializer;
   public readonly console: Console;
   private static readonly AWS_LAMBDA_LOG_FORMAT = 'AWS_LAMBDA_LOG_FORMAT';
@@ -35,7 +33,9 @@ export class ConsoleSink implements ISink {
 
     // To avoid escaping EMF when using Lambda JSON log format we need to use Console() instead of console
     this.console =
-      process.env[ConsoleSink.AWS_LAMBDA_LOG_FORMAT] === 'JSON' ? new Console(process.stdout, process.stderr) : console;
+      process.env[ConsoleSink.AWS_LAMBDA_LOG_FORMAT] === 'JSON'
+        ? new console.Console(process.stdout, process.stderr)
+        : console;
   }
 
   public accept(context: MetricsContext): Promise<void> {
