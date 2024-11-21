@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import url = require('url');
+import url from 'url';
 
 import Configuration from '../config/Configuration';
 import { MetricsContext } from '../logger/MetricsContext';
