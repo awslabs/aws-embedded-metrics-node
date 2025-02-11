@@ -18,11 +18,37 @@ tempfile="$rootdir/test/integ/agent/.temp"
 # Configure and start the agent
 ###################################
 
-pushd $rootdir/test/integ/agent
-echo "[AmazonCloudWatchAgent]
+# Check if IAM user credentials exist
+if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+    echo "No IAM user credentials found, assuming we are running on CodeBuild pipeline, falling back to IAM role.."
+
+    # Store the AWS STS assume-role output and extract credentials
+    CREDS=$(aws sts assume-role \
+        --role-arn $Code_Build_Execution_Role_ARN \
+        --role-session-name "session-$(uuidgen)" \
+        --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+        --output text \
+        --duration-seconds 3600)
+
+    # Parse the output into separate variables
+    read AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN <<< $CREDS
+
+    # Export the variables
+    export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+    
+    CREDENTIALS_CONTENT="[AmazonCloudWatchAgent]
 aws_access_key_id = $AWS_ACCESS_KEY_ID
 aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
-" > ./.aws/credentials
+aws_session_token = $AWS_SESSION_TOKEN"
+else
+    echo "Using provided IAM user credentials..."
+    CREDENTIALS_CONTENT="[AmazonCloudWatchAgent]
+aws_access_key_id = $AWS_ACCESS_KEY_ID
+aws_secret_access_key = $AWS_SECRET_ACCESS_KEY"
+fi
+
+pushd $rootdir/test/integ/agent
+echo "$CREDENTIALS_CONTENT" > ./.aws/credentials
 
 echo "[profile AmazonCloudWatchAgent]
 region = $AWS_REGION
