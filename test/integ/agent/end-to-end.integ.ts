@@ -1,16 +1,15 @@
 import { metricScope } from '../../../src/logger/MetricScope';
 import Sleep from '../../utils/Sleep';
 import Configuration from '../../../src/config/Configuration';
-import { StorageResolution } from '../../../src';
-import os = require('os');
-import CloudWatch = require('aws-sdk/clients/cloudwatch');
+import { CloudWatch, GetMetricStatisticsCommandInput } from '@aws-sdk/client-cloudwatch';
+import { hostname } from 'os';
 const cwmClient = new CloudWatch();
 
 const now = () => new Date().getTime();
 const startTime = new Date();
 const timeoutMillis = 120_000;
 
-const serviceName = `IntegrationTests-${os.hostname()}`;
+const serviceName = `IntegrationTests-${hostname()}`;
 const serviceType = 'AutomatedTest';
 const logGroupName = 'aws-emf-node-integ';
 
@@ -75,7 +74,7 @@ test(
 );
 
 const metricExists = async (metricName: string, expectedSampleCount: number): Promise<boolean> => {
-  const request = {
+  const request: GetMetricStatisticsCommandInput = {
     Namespace: 'aws-embedded-metrics',
     MetricName: metricName,
     Dimensions: [
@@ -90,7 +89,7 @@ const metricExists = async (metricName: string, expectedSampleCount: number): Pr
     Statistics: ['SampleCount'],
   };
 
-  const result = await cwmClient.getMetricStatistics(request).promise();
+  const result = await cwmClient.getMetricStatistics(request);
 
   if (result && result.Datapoints && result.Datapoints.length > 0) {
     const samples = result.Datapoints.map(dataPoint => dataPoint.SampleCount || 0).reduce((total, i) => total + i);
