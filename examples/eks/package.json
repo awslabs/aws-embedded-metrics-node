@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "aws-embedded-metrics": "^4.1.0",
-    "koa": "^2.11.0"
+    "koa": "^2.16.1"
   }
 }
