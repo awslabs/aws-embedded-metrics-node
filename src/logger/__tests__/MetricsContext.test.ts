@@ -414,7 +414,7 @@ test('put metric with same key and different resolution in single flush throws e
   }).toThrow(InvalidMetricError);
 });
 
-test.each([[''], [' '], ['a'.repeat((Constants.MAX_NAMESPACE_LENGTH as number) + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ'], ['namespace ']])(
+test.each([[''], [' '], ['a'.repeat((Constants.MAX_NAMESPACE_LENGTH as number) + 1)], ['àẁş/ćļốṹḓⱳầƭḉⱨ']])(
   'setNamespace with invalid namespace: %s throws error',
   (namespace) => {
     // arrange
@@ -430,7 +430,7 @@ test.each([[''], [' '], ['a'.repeat((Constants.MAX_NAMESPACE_LENGTH as number) +
 test('setNamespace with valid namespace does not throw error', () => {
   // arrange
   const context = MetricsContext.empty();
-  const namespace = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.-_/#:';
+  const namespace = '1234567890 ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz .-_/#:';
 
   // act
   expect(() => {
