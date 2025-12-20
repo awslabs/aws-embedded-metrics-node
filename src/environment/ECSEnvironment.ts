@@ -60,6 +60,11 @@ const formatImageName = (imageName: string): string => {
   return imageName;
 };
 
+// logGroupName must satisfy regular expression pattern: [\\.\\-_/#A-Za-z0-9]+
+const formatLogGroupName = (logGroupName: string): string => {
+  return logGroupName.replace(":", "/");
+}
+
 export class ECSEnvironment implements IEnvironment {
   private sink: ISink | undefined;
   private metadata: IECSMetadataResponse | undefined;
@@ -114,7 +119,9 @@ export class ECSEnvironment implements IEnvironment {
       return '';
     }
 
-    return config.logGroupName || this.getName();
+    const logGroupName = config.logGroupName || this.getName()
+
+    return formatLogGroupName(logGroupName);
   }
 
   public configureContext(context: MetricsContext): void {
