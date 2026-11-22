@@ -1,6 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { MetricsContext } from '../../logger/MetricsContext';
 import { ConsoleSink } from '../ConsoleSink';
+import { LocalEnvironment } from '../../environment/LocalEnvironment';
+import { MetricsLogger } from '../../logger/MetricsLogger';
 
 beforeEach(() => {
   console.log = jest.fn();
@@ -8,6 +10,35 @@ beforeEach(() => {
 
 afterEach(() => {
   delete process.env.AWS_LAMBDA_LOG_FORMAT;
+});
+
+test('logger flush preserves ordinary logs after metric values are reset', async () => {
+  const environment = new LocalEnvironment();
+  const logger = new MetricsLogger(() => Promise.resolve(environment));
+  logger.setProperty('Message', 'still logged');
+  logger.putDimensions({ Operation: 'test-operation' });
+  logger.putMetric('Count', 0);
+
+  await logger.flush();
+  await logger.flush();
+  logger.putMetric('Count', 1);
+  await logger.flush();
+
+  const events = (console.log as jest.Mock).mock.calls.map(([event]) => JSON.parse(event));
+  expect(events).toHaveLength(3);
+  expect(events[0]._aws.CloudWatchMetrics[0].Metrics).toStrictEqual([{ Name: 'Count', Unit: 'None' }]);
+  expect(events[0].Count).toBe(0);
+  expect(events[1]).not.toHaveProperty('_aws');
+  expect(events[1]).not.toHaveProperty('Count');
+  expect(events[2]._aws.CloudWatchMetrics[0].Metrics).toStrictEqual([{ Name: 'Count', Unit: 'None' }]);
+  expect(events[2].Count).toBe(1);
+  for (const event of events) {
+    expect(event.Message).toBe('still logged');
+    expect(event.Operation).toBe('test-operation');
+    expect(event.ServiceName).toBeDefined();
+    expect(event.ServiceType).toBeDefined();
+    expect(event.LogGroup).toBeDefined();
+  }
 });
 
 test('accept serializes and writes result to stdout', () => {

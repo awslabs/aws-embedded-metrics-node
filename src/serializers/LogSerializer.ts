@@ -81,6 +81,11 @@ export class LogSerializer implements ISerializer {
 
     // converts the body to JSON and pushes it into the batches
     const serializeCurrentBody = (): void => {
+      // Additional metadata may be required to route ordinary logs through the agent.
+      if (currentMetricsInBody() === 0 && Object.keys(context.meta).every((key) => key === 'Timestamp')) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        delete currentBody._aws;
+      }
       eventBatches.push(JSON.stringify(currentBody));
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       currentBody = createBody();
