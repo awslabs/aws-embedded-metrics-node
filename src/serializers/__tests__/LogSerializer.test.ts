@@ -12,8 +12,7 @@ test('serializes dimensions', () => {
   const dimensions: any = {};
   dimensions[expectedKey] = expectedValue;
 
-  const expected: any = { ...getEmptyPayload(), ...dimensions };
-  expected._aws.CloudWatchMetrics[0].Dimensions.push([expectedKey]);
+  const expected = { ...dimensions };
 
   const context = getContext();
   context.putDimensions(dimensions);
@@ -29,7 +28,7 @@ test('serializes properties', () => {
   const expectedKey = faker.random.word();
   const expectedValue = faker.random.word();
 
-  const expected: any = { ...getEmptyPayload() };
+  const expected: any = {};
   expected[expectedKey] = expectedValue;
 
   const context = getContext();
@@ -40,6 +39,64 @@ test('serializes properties', () => {
 
   // assert
   assertJsonEquality(resultJson, expected);
+});
+
+test('serializes an empty context as one ordinary log event', () => {
+  expect(serializer.serialize(getContext())).toStrictEqual(['{}']);
+});
+
+test('omits generated metadata while preserving log context', () => {
+  const context = getContext();
+  context.setDefaultDimensions({ ServiceName: 'test-service' });
+  context.putDimensions({ Operation: 'test-operation' });
+  context.setProperty('Message', 'still logged');
+
+  const result = serializer.serialize(context);
+
+  expect(result).toHaveLength(1);
+  assertJsonEquality(result[0], {
+    ServiceName: 'test-service',
+    Operation: 'test-operation',
+    Message: 'still logged',
+  });
+  expect(context.meta).toStrictEqual({ Timestamp: 0 });
+
+  context.putMetric('Count', 0);
+  const metricEvent = JSON.parse(serializer.serialize(context)[0]);
+  expect(metricEvent._aws.Timestamp).toBe(0);
+  expect(metricEvent._aws.CloudWatchMetrics[0].Dimensions).toStrictEqual([['ServiceName', 'Operation']]);
+  expect(metricEvent.Count).toBe(0);
+});
+
+test('retains additional metadata even without metrics', () => {
+  const context = getContext();
+  context.meta.CustomMetadata = 'custom-value';
+  const expected = getEmptyPayload();
+
+  const result = serializer.serialize(context);
+
+  expect(result).toHaveLength(1);
+  assertJsonEquality(result[0], {
+    _aws: { ...expected._aws, CustomMetadata: 'custom-value' },
+  });
+  expect(context.meta).toStrictEqual({ Timestamp: 0, CustomMetadata: 'custom-value' });
+});
+
+test.each([1, 100, 101, 200])('retains metric metadata in every batch for %i metrics', (metricCount) => {
+  const context = getContext();
+  for (let i = 0; i < metricCount; i++) {
+    context.putMetric(`Metric-${i}`, i);
+  }
+
+  const events = serializer.serialize(context).map((event) => JSON.parse(event));
+
+  expect(events).toHaveLength(Math.ceil(metricCount / Constants.MAX_METRICS_PER_EVENT));
+  const metricCounts = events.map((event) => event._aws.CloudWatchMetrics[0].Metrics.length as number);
+  expect(metricCounts.reduce((total, count) => total + count, 0)).toBe(metricCount);
+  for (const event of events) {
+    expect(event._aws.Timestamp).toBe(0);
+    expect(event._aws.CloudWatchMetrics[0].Metrics.length).toBeGreaterThan(0);
+  }
 });
 
 test('serializes metrics with single datapoint', () => {
@@ -152,7 +209,7 @@ test('serializes more than 100 metrics into multiple events', () => {
   const results = serializer.serialize(context);
 
   // assert
-  const resultObjs = results.map(resultJson => JSON.parse(resultJson));
+  const resultObjs = results.map((resultJson) => JSON.parse(resultJson));
   expect(resultObjs.length).toBe(expectedBatches);
   for (let batchIndex = 0; batchIndex < expectedBatches; batchIndex++) {
     const expectedMetricCount = batchIndex === expectedBatches - 1 ? metrics % 100 : 100;
@@ -188,7 +245,7 @@ test('serializes metrics with more than 100 values each into multiple events', (
   const results = serializer.serialize(context);
 
   // assert
-  const resultObjs = results.map(resultJson => JSON.parse(resultJson));
+  const resultObjs = results.map((resultJson) => JSON.parse(resultJson));
   expect(resultObjs.length).toBe(expectedBatches);
   for (const resultObj of resultObjs) {
     expect(resultObj._aws.CloudWatchMetrics[0].Metrics.length).toBeLessThanOrEqual(Constants.MAX_METRICS_PER_EVENT);

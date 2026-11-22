@@ -72,6 +72,7 @@ test('LogGroup is stored in metadata', async () => {
 test('empty LogGroup is not stored in metadata', async () => {
   // arrange
   const context = MetricsContext.empty();
+  context.putMetric('Count', 1);
 
   let receivedMessage: any = {};
   TcpClient.prototype.sendMessage = (message: Buffer): Promise<void> => {
