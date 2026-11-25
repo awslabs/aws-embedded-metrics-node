@@ -24,21 +24,16 @@ jest.mock('aws-embedded-metrics', () => {
 
   // return the mocked module
   return {
-    // by returning the actual mock logger instance,
-    // our tests can make assertions about which metrics
-    // were logged if desired
-    mockLogger,
     metricScope: fn => fn(mockLogger),
     createMetricsLogger: () => mockLogger,
     Unit,
   };
 });
 
-// import the mock logger that we setup above
-// we need to do it this way since Jest won't allow us to
-// share variables with the mocked modules since mocks
-// get hoisted above everything else
-const { mockLogger } = require('aws-embedded-metrics');
+// The mocked factory returns the same logger used by both handlers.
+// TypeScript tests can import createMetricsLogger from the package as usual.
+const { createMetricsLogger } = require('aws-embedded-metrics');
+const mockLogger = createMetricsLogger();
 
 // now we'll begin testing our actual methods
 test('usingScope records latency with metadata', async () => {
